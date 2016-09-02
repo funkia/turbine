@@ -1,7 +1,7 @@
 import {runNow, Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe} from "hareactive/Behavior";
-import {Component, runComponentNow} from ".component";
+import {Component, runComponentNow} from "./component";
 
 // DOM constructor stuff, should eventually be in different file
 

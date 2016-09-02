@@ -1,11 +1,5 @@
 {
-  "name": "hareactive",
-  "dependencies": {
-    "sinon": "registry:npm/sinon#1.16.0+20160427193336"
-  },
-  "globalDependencies": {
-    "benchmark": "registry:dt/benchmark#1.0.0+20160317120654",
-    "chai": "registry:dt/chai#3.4.0+20160317120654",
-    "mocha": "registry:dt/mocha#2.2.5+20160317120654"
-  }
+  "name": "funnel",
+  "dependencies": {},
+  "globalDependencies": {}
 }

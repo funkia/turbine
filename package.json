@@ -4,7 +4,7 @@
   "description": "A functional frontend framework in Typescript",
   "main": "index.js",
   "directories": {
-    "example": "examples",
+    "example": "examples"
   },
   "scripts": {
     "postinstall": "./node_modules/.bin/typings install",
@@ -25,7 +25,7 @@
   "peerDependencies": {
     "jabz": "^0.0.5",
     "hareactive": "*"
-  }
+  },
   "bugs": {
     "url": "https://github.com/Funkia/funnel/issues"
   },
