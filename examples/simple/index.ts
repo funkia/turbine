@@ -5,9 +5,9 @@ import {Stream, snapshotWith} from "hareactive/Stream";
 import {Now} from "hareactive/Now";
 
 import {Component, component} from "../../src/component";
-import {runMain} from "../../src/bootstrap.ts"
-import {list} from "../../src/dom-builder";
-import {span, input, br, text, button, div, h1} from "../../src/elements";
+import {runMain} from "../../src/bootstrap"
+import {list, e} from "../../src/dom-builder";
+import {text, span, button, br, input} from "../../src/elements";
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
@@ -25,6 +25,7 @@ type ViewOut = {
   calcLength: Stream<Event>
 };
 
+
 // The code below creates a `Component` from a `model` function and a
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circulairly dependent.
@@ -37,13 +38,13 @@ const main = component<ToView, ViewOut, {}>({
   }),
   view: ([validB, lengthB]) => Do(function*(): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
-    const {inputValue: emailB} = yield input();
-    yield br;
+    const {input: emailB} = yield input();
+    yield br();
     yield text("The address is ");
     yield text(validB.map(t => t ? "valid" : "invalid"));
-    yield br;
+    yield br();
     const {click: calcLength} = yield button("Calculate length");
-    yield text(" The length of the email is ");
+    yield span(" The length of the email is ");
     yield text(lengthB);
     return Component.of({emailB, calcLength});
   }),

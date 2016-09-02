@@ -3,50 +3,54 @@ import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe} from "hareactive/Behavior";
 import {Component, runComponentNow} from "./component";
 
-// DOM constructor stuff, should eventually be in different file
+export type Showable = string | number;
 
-type Showable = string | number;
-
-type BehaviorDescription<A> = {
-  on: string,
-  name: string,
-  initial: A,
-  extractor: (event: any) => A
+type BehaviorDescription = {
+  [name: string]: [any, (evt: any) => any]
 }
 
-type StreamDescription<A> = {
-  on: string,
-  name: string,
-  extractor: (event: any) => A
+type StreamDescription = {
+  [name: string]: (evt: any) => any
 }
 
-export class CreateDomNow<A> extends Now<A> {
+type Properties = {
+  streams?: StreamDescription,
+  behaviors?: BehaviorDescription
+};
+
+type Children = Component<any> | string;
+
+class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
     private tagName: string,
-    private behaviors: BehaviorDescription<any>[],
-    private streams: StreamDescription<any>[],
-    private text?: string,
-    private children?: Component<any>
+    private props?: Properties,
+    private children?: Children
   ) { super(); };
   run(): A {
     const elm = document.createElement(this.tagName);
-    let output: any;
-    if (this.children !== undefined) {
-      // If the component has children we don't create event listeners
-      // for the element. In this case we instead pass on the streams
-      // and behaviors that hte children creates.
-      output = runComponentNow(elm, this.children);
-    } else {
-      output = {};
-      for (const bd of this.behaviors) {
-        output[bd.name] = behaviorFromEvent(bd, elm);
+    let output: any = {};
+
+    if (this.props !== undefined) {
+      const props = Object.assign({
+        streams: [],
+        behaviors: []
+      }, this.props);
+
+      for (const evt in props.behaviors) {
+        const [initial, extractor] = props.behaviors[evt];
+        output[evt] = behaviorFromEvent<any>(evt, initial, extractor, elm);
       }
-      for (const bd of this.streams) {
-        output[bd.name] = streamFromEvent(bd, elm);
+      for (const evt in props.streams) {
+        const extractor = props.streams[evt];
+        output[evt] = streamFromEvent(evt, extractor, elm);
       }
-      if (this.text !== undefined) {
-        elm.textContent = this.text;
+    }
+    if(this.children !== undefined) {
+      if(typeof this.children === "string") {
+        elm.textContent = this.children;
+      } else {
+        output["children"] = runComponentNow(elm, this.children);
       }
     }
     this.parent.appendChild(elm);
@@ -54,21 +58,35 @@ export class CreateDomNow<A> extends Now<A> {
   }
 }
 
+export function e<A>(tagName: string, propsOrChildren?: Properties, children?: Children ):  (a?: Children | Properties, b?: Properties) => Component<A> {
+  return (newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> => {
+    if (newChildrenOrUndefined === undefined && newPropsOrChildren instanceof Component || typeof newPropsOrChildren === "string") {
+      return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
+    } else {
+      const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
+    }
+  }
+}
+
 function behaviorFromEvent<A>(
-  {on, initial, extractor}: BehaviorDescription<A>,
+  eventName: string,
+  initial: A,
+  extractor: (evt: any) => A,
   dom: Node
 ): Behavior<A> {
   const b = sink(initial);
-  dom.addEventListener(on, (ev) => b.publish(extractor(ev)));
+  dom.addEventListener(eventName, (ev) => b.publish(extractor(ev)));
   return b;
 }
 
 function streamFromEvent<A>(
-  {on, extractor}: StreamDescription<A>,
+  eventName: string,
+  extractor: (evt: any) => A,
   dom: Node
 ): Stream<A> {
   const s = empty<A>();
-  dom.addEventListener(on, (ev) => {
+  dom.addEventListener(eventName, (ev) => {
     s.publish(extractor(ev));
   });
   return s;
