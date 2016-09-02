@@ -1,12 +1,13 @@
 import {Do} from "jabz/monad";
 
-import {Behavior, stepper} from "../../src/Behavior";
-import {Stream, snapshotWith} from "../../src/Stream";
-import {Now} from "../../src/Now";
+import {Behavior, stepper} from "hareactive/Behavior";
+import {Stream, snapshotWith} from "hareactive/Stream";
+import {Now} from "hareactive/Now";
 
-import {
-  Component, component, runMain, span, input, br, text, button
-} from "../../src/framework";
+import {Component, component} from "../../src/component";
+import {runMain} from "../../src/bootstrap.ts"
+import {list} from "../../src/dom-builder";
+import {span, input, br, text, button, div, h1} from "../../src/elements";
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 

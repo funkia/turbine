@@ -1,16 +1,16 @@
 import {Do} from "jabz/monad";
 
-import * as B from "../../src/Behavior";
-import {Behavior, stepper, scan} from "../../src/Behavior";
+import * as B from "hareactive/Behavior";
+import {Behavior, stepper, scan} from "hareactive/Behavior";
 import {
   Stream, snapshotWith, merge, map, mergeList, switchStream, scanS
-} from "../../src/Stream";
-import {Now, sample} from "../../src/Now";
+} from "hareactive/Stream";
+import {Now, sample} from "hareactive/Now";
 
-import {
-  Component, component, runMain, span, input, br, text, button,
-  div, h1, list
-} from "../../src/framework";
+import {Component, component} from "../../src/component";
+import {runMain} from "../../src/bootstrap.ts"
+import {list} from "../../src/dom-builder";
+import {span, input, br, text, button, div, h1} from "../../src/elements";
 
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
