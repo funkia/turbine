@@ -6,15 +6,15 @@ import {e, Showable} from "./dom-builder";
 
 function id<A>(a: A): A { return a; };
 
-export const input = e("input", {behaviors: [
-  ["input", "inputValue", (evt) => evt.target.value, ""]
+export const input = e("input", { behaviors: [
+  ["input", "inputValue", (evt: any) => evt.target.value, ""]
 ]})
 
 export const br = e("br");
 export const span = e("span");
 export const h1 = e("h1");
 export const div = e("div");
-export const button = e("button", {streams: [
+export const button = e("button", { streams: [
   ["click", "click", id]
 ]});
 

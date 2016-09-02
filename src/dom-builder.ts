@@ -51,8 +51,18 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
-export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ):  (a?: Children | Properties, b?: Properties) => Component<A> {
-  return (newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> => {
+type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
+
+export function e<A>(tagName: string): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
+export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties , children: Children ): CreateElementFunc<A>;
+export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
+  function createElement(): Component<A>;
+  function createElement(props: Properties): Component<A>;
+  function createElement(children: Children): Component<A>;
+  function createElement(props: Properties, children: Children): Component<A>;
+  function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
     if (newChildrenOrUndefined === undefined && newPropsOrChildren instanceof Component || typeof newPropsOrChildren === "string") {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
     } else {
@@ -60,6 +70,7 @@ export function e<A>(tagName: string, propsOrChildren?: Properties | Children, c
       return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
     }
   }
+  return createElement;
 }
 
 function behaviorFromEvent<A>(
