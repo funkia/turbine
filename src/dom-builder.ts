@@ -5,17 +5,12 @@ import {Component, runComponentNow} from "./component";
 
 export type Showable = string | number;
 
-type BehaviorDescription = {
-  [name: string]: [any, (evt: any) => any]
-}
-
-type StreamDescription = {
-  [name: string]: (evt: any) => any
-}
+type StreamDescription<A> = [string, string, (evt: any) => A]
+type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 
 type Properties = {
-  streams?: StreamDescription,
-  behaviors?: BehaviorDescription
+  streams?: StreamDescription<any>[],
+  behaviors?: BehaviorDescription<any>[]
 };
 
 type Children = Component<any> | string;
@@ -37,13 +32,11 @@ class CreateDomNow<A> extends Now<A> {
         behaviors: []
       }, this.props);
 
-      for (const evt in props.behaviors) {
-        const [initial, extractor] = props.behaviors[evt];
-        output[evt] = behaviorFromEvent<any>(evt, initial, extractor, elm);
+      for (const [evt, name, extractor, initial] of props.behaviors) {
+        output[name] = behaviorFromEvent<any>(evt, initial, extractor, elm);
       }
-      for (const evt in props.streams) {
-        const extractor = props.streams[evt];
-        output[evt] = streamFromEvent(evt, extractor, elm);
+      for (const [evt, name, extractor] of props.streams) {
+        output[name] = streamFromEvent(evt, extractor, elm);
       }
     }
     if(this.children !== undefined) {
@@ -58,7 +51,7 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
-export function e<A>(tagName: string, propsOrChildren?: Properties, children?: Children ):  (a?: Children | Properties, b?: Properties) => Component<A> {
+export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ):  (a?: Children | Properties, b?: Properties) => Component<A> {
   return (newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> => {
     if (newChildrenOrUndefined === undefined && newPropsOrChildren instanceof Component || typeof newPropsOrChildren === "string") {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));

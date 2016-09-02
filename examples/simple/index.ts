@@ -7,7 +7,7 @@ import {Now} from "hareactive/Now";
 import {Component, component} from "../../src/component";
 import {runMain} from "../../src/bootstrap"
 import {list, e} from "../../src/dom-builder";
-import {text, span, button, br, input} from "../../src/elements";
+import {text, span, button, br, input, div} from "../../src/elements";
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
@@ -25,7 +25,6 @@ type ViewOut = {
   calcLength: Stream<Event>
 };
 
-
 // The code below creates a `Component` from a `model` function and a
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circulairly dependent.
@@ -38,7 +37,7 @@ const main = component<ToView, ViewOut, {}>({
   }),
   view: ([validB, lengthB]) => Do(function*(): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
-    const {input: emailB} = yield input();
+    const {inputValue: emailB} = yield input();
     yield br();
     yield text("The address is ");
     yield text(validB.map(t => t ? "valid" : "invalid"));
@@ -51,4 +50,4 @@ const main = component<ToView, ViewOut, {}>({
 });
 
 // `runMain` should be the only impure function in application code
-runMain("body", main);
+runMain("#mount", main);

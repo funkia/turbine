@@ -8,10 +8,11 @@ import {
 import {Now, sample} from "hareactive/Now";
 
 import {Component, component} from "../../src/component";
-import {runMain} from "../../src/bootstrap.ts"
+import {runMain} from "../../src/bootstrap"
 import {list} from "../../src/dom-builder";
-import {span, input, br, text, button, div, h1} from "../../src/elements";
+import {span, input, br as Br, text, button, div, h1} from "../../src/elements";
 
+const br = Br();
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -42,8 +43,8 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       const count = yield sample(scan(add, 0, merge(increment, decrement)));
       return Now.of([[count], {count, deleteS}]);
     }),
-  view: ([count]) =>
-    div<CounterViewOut>(Do(function*() {
+  view: ([count]) => Do(function*() {
+    const divStreams = yield div(Do(function*() {
       yield text("Counter ");
       yield text(count);
       yield text(" ");
@@ -54,7 +55,9 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       const {click: deleteClick} = yield button("x");
       yield br;
       return Component.of({incrementClick, decrementClick, deleteClick})
-    }))
+    }));
+    return Component.of(divStreams);
+  })
 });
 
 type ToView = [Behavior<number[]>];
