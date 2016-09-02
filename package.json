@@ -1,0 +1,38 @@
+{
+  "name": "funnel",
+  "version": "0.0.1",
+  "description": "A functional frontend framework in Typescript",
+  "main": "index.js",
+  "directories": {
+    "example": "examples",
+  },
+  "scripts": {
+    "postinstall": "./node_modules/.bin/typings install",
+    "build": "./node_modules/.bin/tsc",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Funkia/funnel.git"
+  },
+  "keywords": [
+    "functional",
+    "framework",
+    "typescript"
+  ],
+  "author": "",
+  "license": "MIT",
+  "peerDependencies": {
+    "jabz": "^0.0.5",
+    "hareactive": "*"
+  }
+  "bugs": {
+    "url": "https://github.com/Funkia/funnel/issues"
+  },
+  "homepage": "https://github.com/Funkia/funnel#readme",
+  "devDependencies": {
+    "typescript": "^2.0.0",
+    "typings": "^1.0.4",
+    "webpack": "^1.13.1"
+  }
+}
