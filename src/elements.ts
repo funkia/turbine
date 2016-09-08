@@ -23,9 +23,6 @@ export function text(tOrB: string|Behavior<Showable>): Component<{}> {
   if (typeof tOrB === "string") {
     elm.nodeValue = tOrB;
   } else {
-    if (tOrB.pushing === true) {
-      elm.nodeValue = at(tOrB).toString();
-    }
     subscribe((t) => elm.nodeValue = t.toString(), tOrB);
   }
   return new Component((parent: Node) => {
