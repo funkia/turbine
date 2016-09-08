@@ -8,7 +8,7 @@ function id<A>(a: A): A { return a; };
 
 export const input = e("input", { behaviors: [
   ["input", "inputValue", (evt: any) => evt.target.value, ""]
-]})
+]});
 
 export const br = e("br");
 export const span = e("span");

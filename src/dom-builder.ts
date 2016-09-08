@@ -80,7 +80,7 @@ function behaviorFromEvent<A>(
   dom: Node
 ): Behavior<A> {
   const b = sink(initial);
-  dom.addEventListener(eventName, (ev) => b.publish(extractor(ev)));
+  dom.addEventListener(eventName, (ev) => b.push(extractor(ev)));
   return b;
 }
 
@@ -91,7 +91,7 @@ function streamFromEvent<A>(
 ): Stream<A> {
   const s = empty<A>();
   dom.addEventListener(eventName, (ev) => {
-    s.publish(extractor(ev));
+    s.push(extractor(ev));
   });
   return s;
 }
@@ -139,7 +139,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
         }
       }
       keyToElm = newKeyToElm;
-      resultB.publish(newArray);
+      resultB.push(newArray);
     }, this.list);
     return resultB;
   }
