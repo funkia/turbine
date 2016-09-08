@@ -1,4 +1,4 @@
-import {runNow, Now} from "hareactive/Now";
+import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe} from "hareactive/Behavior";
 import {Component, runComponentNow} from "./component";
@@ -14,6 +14,10 @@ type Properties = {
 };
 
 type Children = Component<any> | string;
+
+function isChildren(a: any): a is Component<any> {
+  return a instanceof Component || typeof a === "string";
+}
 
 class CreateDomNow<A> extends Now<A> {
   constructor(
@@ -39,11 +43,11 @@ class CreateDomNow<A> extends Now<A> {
         output[name] = streamFromEvent(evt, extractor, elm);
       }
     }
-    if(this.children !== undefined) {
-      if(typeof this.children === "string") {
+    if (this.children !== undefined) {
+      if (typeof this.children === "string") {
         elm.textContent = this.children;
       } else {
-        output["children"] = runComponentNow(elm, this.children);
+        output.children = runComponentNow(elm, this.children);
       }
     }
     this.parent.appendChild(elm);
@@ -54,16 +58,16 @@ class CreateDomNow<A> extends Now<A> {
 type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
-export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties , children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
+export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
+export function e<A>(tagName: string, children: Children): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties, children: Children): CreateElementFunc<A>;
+export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children): CreateElementFunc<A> {
   function createElement(): Component<A>;
   function createElement(props: Properties): Component<A>;
   function createElement(children: Children): Component<A>;
   function createElement(props: Properties, children: Children): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
-    if (newChildrenOrUndefined === undefined && newPropsOrChildren instanceof Component || typeof newPropsOrChildren === "string") {
+    if (newChildrenOrUndefined === undefined && isChildren(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
     } else {
       const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
