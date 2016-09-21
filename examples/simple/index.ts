@@ -28,6 +28,9 @@ type ViewOut = {
 const title = e("h1", {
   style: {
     color: "blue"
+  },
+  attribute: {
+    title: "Hover tekst"
   }
 }, "Please enter an email address: ");
 

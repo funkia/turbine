@@ -12,12 +12,15 @@ type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 type Properties = {
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
-  style?: CSSStyleType
+  style?: CSSStyleType,
+  attribute?: {
+    [name: string]: string | Behavior<string>;
+  }
 };
 
 type Children = Component<any> | string;
 
-function isChildren(a: any): a is Component<any> {
+function isChildren(a: any): a is Component<any>{
   return a instanceof Component || typeof a === "string";
 }
 
@@ -43,9 +46,21 @@ class CreateDomNow<A> extends Now<A> {
           }
         }
       }
+
+      if (this.props.attribute !== undefined) {
+        for (const name in this.props.attribute) {
+          const value = this.props.attribute[name];
+          if (isBehavior(value)) {
+            value.subscribe((newValue) => elm.setAttribute(name, newValue));
+          } else {
+            elm.setAttribute(name, value);
+          }
+        }
+      }
+
       if (this.props.behaviors !== undefined) {
         for (const [evt, name, extractor, initial] of this.props.behaviors) {
-          output[name] = behaviorFromEvent<any>(evt, initial, extractor, elm);
+          output[name] = behaviorFromEvent(evt, initial, extractor, elm);
         }
       }
       if (this.props.streams !== undefined) {
