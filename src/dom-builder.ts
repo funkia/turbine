@@ -2,6 +2,7 @@ import {runNow, Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe} from "hareactive/Behavior";
 import {Component, runComponentNow} from "./component";
+import {CSSStyleType} from "./CSSStyleType";
 
 export type Showable = string | number;
 
@@ -10,7 +11,8 @@ type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 
 type Properties = {
   streams?: StreamDescription<any>[],
-  behaviors?: BehaviorDescription<any>[]
+  behaviors?: BehaviorDescription<any>[],
+  style?: CSSStyleType
 };
 
 type Children = Component<any> | string;
@@ -27,16 +29,20 @@ class CreateDomNow<A> extends Now<A> {
     let output: any = {};
 
     if (this.props !== undefined) {
-      const props = Object.assign({
-        streams: [],
-        behaviors: []
-      }, this.props);
-
-      for (const [evt, name, extractor, initial] of props.behaviors) {
-        output[name] = behaviorFromEvent<any>(evt, initial, extractor, elm);
+      if (this.props.style !== undefined) {
+        for (const styleProp in this.props.style) {
+          (<any>elm.style)[styleProp] = (<any>this).props.style[styleProp];
+        }
       }
-      for (const [evt, name, extractor] of props.streams) {
-        output[name] = streamFromEvent(evt, extractor, elm);
+      if (this.props.behaviors !== undefined) {
+        for (const [evt, name, extractor, initial] of this.props.behaviors) {
+          output[name] = behaviorFromEvent<any>(evt, initial, extractor, elm);
+        }
+      }
+      if (this.props.streams !== undefined) {
+        for (const [evt, name, extractor] of this.props.streams) {
+          output[name] = streamFromEvent(evt, extractor, elm);
+        }
       }
     }
     if(this.children !== undefined) {
@@ -54,8 +60,8 @@ class CreateDomNow<A> extends Now<A> {
 type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
 export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
 export function e<A>(tagName: string, props: Properties , children: Children ): CreateElementFunc<A>;
 export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
   function createElement(): Component<A>;
