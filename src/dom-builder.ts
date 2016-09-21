@@ -95,6 +95,8 @@ export function e<A>(tagName: string, propsOrChildren?: Properties | Children, c
   function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
     if (newChildrenOrUndefined === undefined && isChildren(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
+    } else if (isChildren(propsOrChildren)) {
+      return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
     } else {
       const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
       return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
