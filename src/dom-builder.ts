@@ -1,6 +1,6 @@
 import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
-import {Behavior, sink, subscribe} from "hareactive/Behavior";
+import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
 import {Component, runComponentNow} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 
@@ -35,7 +35,12 @@ class CreateDomNow<A> extends Now<A> {
     if (this.props !== undefined) {
       if (this.props.style !== undefined) {
         for (const styleProp in this.props.style) {
-          (<any>elm.style)[styleProp] = (<any>this).props.style[styleProp];
+          const value = (<any>this).props.style[styleProp];
+          if (isBehavior(value)) {
+            value.subscribe((newValue) => (<any>elm.style)[styleProp] = newValue);
+          } else {
+            (<any>elm.style)[styleProp] = value;
+          }
         }
       }
       if (this.props.behaviors !== undefined) {
