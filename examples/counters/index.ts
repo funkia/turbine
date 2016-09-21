@@ -44,7 +44,7 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       return Now.of([[count], {count, deleteS}]);
     }),
   view: ([count]) => Do(function*() {
-    const divStreams = yield div(Do(function*() {
+    const {children: divStreams} = yield div(Do(function*() {
       yield text("Counter ");
       yield text(count);
       yield text(" ");
