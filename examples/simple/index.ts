@@ -25,7 +25,7 @@ type ViewOut = {
   calcLength: Stream<Event>
 };
 
-const title = e("h1", {
+const title = e("h1.className#idName", {
   style: {
     color: "blue"
   },

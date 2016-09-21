@@ -32,8 +32,19 @@ class CreateDomNow<A> extends Now<A> {
     private children?: Children
   ) { super(); };
   run(): A {
-    const elm = document.createElement(this.tagName);
     let output: any = {};
+
+    const parsedTag = this.tagName.match(/[.#]?\w+/g);
+    const elm = document.createElement(parsedTag[0]);
+    for (let i = 1; i < parsedTag.length; i++) {
+      let classOrId = parsedTag[i];
+      let name = classOrId.substring(1, classOrId.length);
+      if (classOrId[0] === "#") {
+        elm.setAttribute("id", name);
+      } else if (classOrId[0] === ".") {
+        elm.classList.add(name);
+      }
+    }
 
     if (this.props !== undefined) {
       if (this.props.style !== undefined) {
