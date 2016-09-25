@@ -85,12 +85,26 @@ class CreateDomNow<A> extends Now<A> {
 
       if (this.props.behaviors !== undefined) {
         for (const [evt, name, extractor, initial] of this.props.behaviors) {
-          output[name] = behaviorFromEvent(evt, initial, extractor, elm);
+          let a : Behavior<any> = null;
+          Object.defineProperty(output, name, {
+            get: () => {
+              if (a === null) {
+                a = behaviorFromEvent(evt, initial, extractor, elm);
+              }
+              return a;
+            }});
         }
       }
       if (this.props.streams !== undefined) {
         for (const [evt, name, extractor] of this.props.streams) {
-          output[name] = streamFromEvent(evt, extractor, elm);
+          let a : Stream<any> = null;
+          Object.defineProperty(output, name, {
+            get: () => {
+              if (a === null) {
+                a = streamFromEvent(evt, extractor, elm);
+              }
+              return a;
+            }});
         }
       }
     }
