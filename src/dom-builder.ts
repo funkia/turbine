@@ -13,6 +13,9 @@ type Properties = {
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
+  props?: {
+    [name: string]: string | Behavior<string>;
+  }
   attribute?: {
     [name: string]: string | Behavior<string>;
   }
@@ -65,6 +68,17 @@ class CreateDomNow<A> extends Now<A> {
             value.subscribe((newValue) => elm.setAttribute(name, newValue));
           } else {
             elm.setAttribute(name, value);
+          }
+        }
+      }
+
+      if (this.props.props !== undefined) {
+        for (const name in this.props.props) {
+          const value = this.props.props[name];
+          if (isBehavior(value)) {
+            value.subscribe((newValue) => (<any>elm)[name] = newValue);
+          } else {
+            (<any>elm)[name] = value;
           }
         }
       }
