@@ -4,10 +4,8 @@ import {Behavior, stepper} from "hareactive/Behavior";
 import {Stream, snapshotWith} from "hareactive/Stream";
 import {Now} from "hareactive/Now";
 
-import {Component, component} from "../../src/component";
-import {runMain} from "../../src/bootstrap"
-import {list, e} from "../../src/dom-builder";
-import {text, span, button, br, input, div} from "../../src/elements";
+import {Component, component, runMain, list, e, elements} from "../../src";
+const {text, span, button, br, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 

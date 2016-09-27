@@ -2,7 +2,7 @@ import {Behavior, at, subscribe} from "hareactive/Behavior";
 import {Now} from "hareactive/Now";
 import {Stream} from "hareactive/Stream";
 import {Component} from "./component";
-import {e, Showable} from "./dom-builder";
+import {e, Showable, CreateElementFunc} from "./dom-builder";
 
 function id<A>(a: A): A { return a; };
 

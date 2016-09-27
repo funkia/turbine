@@ -1,6 +1,6 @@
 import {Behavior} from "hareactive/Behavior";
 
-type StyleValue = string | Behavior<string>;
+export type StyleValue = string | Behavior<string>;
 
 export interface CSSStyleType {
     alignContent?: StyleValue;

@@ -1,12 +1,14 @@
 {
-  "name": "funnel",
-  "version": "0.0.1",
+  "name": "@funkia/funnel",
+  "version": "0.0.4",
   "description": "A functional frontend framework in Typescript",
-  "main": "index.js",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
   "directories": {
-    "example": "examples"
+    "dist": "dist"
   },
   "scripts": {
+    "prepublish": "npm run build",
     "build": "./node_modules/.bin/tsc",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
@@ -19,7 +21,6 @@
     "framework",
     "typescript"
   ],
-  "author": "",
   "license": "MIT",
   "peerDependencies": {
     "jabz": "^0.0.5",
@@ -30,8 +31,17 @@
   },
   "homepage": "https://github.com/Funkia/funnel#readme",
   "devDependencies": {
-    "typescript": "^2.0.0",
+    "typescript": "^2.0.3",
     "typings": "^1.0.4",
     "webpack": "^1.13.1"
-  }
+  },
+  "contributors": [
+    {
+      "name": "Simon Friis Vindum"
+    },
+    {
+      "name": "Emil Gjørup",
+      "email": "limemloh@gmail.com"
+    }
+  ]
 }

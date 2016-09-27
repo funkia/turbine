@@ -6,10 +6,10 @@ import {CSSStyleType} from "./CSSStyleType";
 
 export type Showable = string | number;
 
-type StreamDescription<A> = [string, string, (evt: any) => A]
-type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
+export type StreamDescription<A> = [string, string, (evt: any) => A]
+export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 
-type Properties = {
+export type Properties = {
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
@@ -21,7 +21,7 @@ type Properties = {
   }
 };
 
-type Children = Component<any> | string;
+export type Children = Component<any> | string;
 
 function isChildren(a: any): a is Component<any>{
   return a instanceof Component || typeof a === "string";
@@ -120,7 +120,7 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
-type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
+export type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
 export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
