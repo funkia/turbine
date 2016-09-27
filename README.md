@@ -7,7 +7,7 @@ A functional reactive frontend framework for building webapplications.
 * Functional
 * Reactive
 * Component-based
-* Typescript
+* TypeScript
 
 
 ## Getting started
@@ -23,6 +23,17 @@ Funnel uses two peer dependencies, that you'll need to install too:
 npm install --save jabz hareactive
 ```
 
+## Contributing
 
+Run tests once with the below command. It will additionally generate
+an HTML coverage report in `./generated/coverage-html`.
 
+```sh
+npm test
+```
 
+Continuously run the tests with
+
+```sh
+npm run test-watch
+```

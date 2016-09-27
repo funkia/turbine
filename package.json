@@ -10,7 +10,9 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "./node_modules/.bin/tsc",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/chrome/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/chrome/coverage-final.json -o ./generated/coverage-html -t html",
+    "test-watch": "karma start karma-watch.conf.js",
+    "codecov": "codecov -f generated/coverage-final.json"
   },
   "repository": {
     "type": "git",
@@ -31,8 +33,25 @@
   },
   "homepage": "https://github.com/Funkia/funnel#readme",
   "devDependencies": {
+    "@types/chai": "^3.4.33",
+    "@types/mocha": "^2.2.32",
+    "browserify": "^13.1.0",
+    "browserify-istanbul": "^2.0.0",
+    "chai": "^3.5.0",
+    "codecov": "^1.0.1",
+    "karma": "^1.3.0",
+    "karma-browserify": "^5.1.0",
+    "karma-chrome-launcher": "^2.0.0",
+    "karma-coverage": "^1.1.1",
+    "karma-mocha": "^1.2.0",
+    "karma-mocha-reporter": "^2.2.0",
+    "karma-source-map-support": "^1.2.0",
+    "mocha": "^3.1.0",
+    "remap-istanbul": "^0.6.4",
+    "tsify": "^1.0.7",
     "typescript": "^2.0.3",
     "typings": "^1.0.4",
+    "watchify": "^3.7.0",
     "webpack": "^1.13.1"
   },
   "contributors": [

@@ -7,3 +7,4 @@ typings
 .tern-port
 .#*
 dist/
+generated/
