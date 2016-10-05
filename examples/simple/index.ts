@@ -23,15 +23,6 @@ type ViewOut = {
   calcLength: Stream<Event>
 };
 
-const title = e("h1.className#idName", {
-  style: {
-    color: "blue"
-  },
-  attribute: {
-    title: "Hover tekst"
-  }
-}, "Please enter an email address: ");
-
 // The code below creates a `Component` from a `model` function and a
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circulairly dependent.
@@ -43,7 +34,7 @@ const main = component<ToView, ViewOut, {}>({
     return Now.of([[validB, lengthB], {}]);
   }),
   view: ([validB, lengthB]) => Do(function*(): Iterator<Component<any>> {
-    yield title();
+    yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
     yield br();
     yield text("The address is ");
