@@ -16,7 +16,7 @@ module.exports = function(config) {
       ]
     },
     browsers: [
-      'Chromium'
+      'PhantomJS'
     ],
     reporters: ['mocha', 'coverage'],
     coverageReporter: {

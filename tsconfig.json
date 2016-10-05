@@ -1,12 +1,13 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "target": "es5",
     "module": "commonjs",
     "outDir": "dist",
     "rootDir": "./src",
     "declaration": true,
     "noImplicitAny": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "lib": ["es5", "es2015.promise", "es2015.iterable"]
   },
   "include": [
     "src/**/*"

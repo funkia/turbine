@@ -10,7 +10,7 @@
   "scripts": {
     "prepublish": "npm run build",
     "build": "./node_modules/.bin/tsc",
-    "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/chrome/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/chrome/coverage-final.json -o ./generated/coverage-html -t html",
+    "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-html -t html",
     "test-watch": "karma start karma-watch.conf.js",
     "codecov": "codecov -f generated/coverage-final.json"
   },
@@ -25,8 +25,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "jabz": "^0.0.5",
-    "hareactive": "^0.0.3"
+    "jabz": "^0.0.7",
+    "hareactive": "^0.0.4"
   },
   "bugs": {
     "url": "https://github.com/Funkia/funnel/issues"
@@ -45,6 +45,7 @@
     "karma-coverage": "^1.1.1",
     "karma-mocha": "^1.2.0",
     "karma-mocha-reporter": "^2.2.0",
+    "karma-phantomjs-launcher": "^1.0.2",
     "karma-source-map-support": "^1.2.0",
     "mocha": "^3.1.0",
     "remap-istanbul": "^0.6.4",
