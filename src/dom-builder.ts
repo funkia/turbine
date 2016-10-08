@@ -104,7 +104,8 @@ class CreateDomNow<A> extends Now<A> {
                 a = streamFromEvent(evt, extractor, elm);
               }
               return a;
-            }});
+            }
+          });
         }
       }
     }
