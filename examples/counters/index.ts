@@ -1,18 +1,17 @@
-import {Do} from "jabz/monad";
+import {go} from "jabz/monad";
 
 import * as B from "hareactive/Behavior";
 import {Behavior, stepper, scan} from "hareactive/Behavior";
 import {
-  Stream, snapshotWith, merge, map, mergeList, switchStream, scanS
+  Stream, merge, map, mergeList, switchStream, scanS
 } from "hareactive/Stream";
 import {Now, sample} from "hareactive/Now";
 
 import {Component, component} from "../../src/component";
 import {runMain} from "../../src/bootstrap"
 import {list} from "../../src/dom-builder";
-import {span, input, br as Br, text, button, div, h1} from "../../src/elements";
+import {span, input, br, text, button, div, h1} from "../../src/elements";
 
-const br = Br();
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -36,15 +35,15 @@ type CounterOut = {
 
 const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOut>({
   model: ({incrementClick, decrementClick, deleteClick}) =>
-    Do(function*(): Iterator<Now<any>> {
+    go(function*(): Iterator<Now<any>> {
       const increment = incrementClick.mapTo(1);
       const decrement = decrementClick.mapTo(-1);
       const deleteS = deleteClick.mapTo(id);
       const count = yield sample(scan(add, 0, merge(increment, decrement)));
       return Now.of([[count], {count, deleteS}]);
     }),
-  view: ([count]) => Do(function*() {
-    const {children: divStreams} = yield div(Do(function*() {
+  view: ([count]) => go(function*() {
+    const {children: divStreams} = yield div(go(function*() {
       yield text("Counter ");
       yield text(count);
       yield text(" ");
@@ -68,7 +67,7 @@ type ToModel = {
 };
 
 const main = component<ToView, ToModel, {}>({
-  model: ({addCounter, listOut}) => Do(function*(): Iterator<Now<any>> {
+  model: ({addCounter, listOut}) => go(function*(): Iterator<Now<any>> {
     const removeIdB = listOut.map((l) => mergeList(l.map(o => o.deleteS)));
     const removeCounterIdFn =
       switchStream(removeIdB).map(id => arr => arr.filter(i => i !== id));
@@ -82,7 +81,7 @@ const main = component<ToView, ToModel, {}>({
       yield sample(scan(apply, [0,1,2], modifications));
     return Now.of([[counterIds], {}]);
   }),
-  view: ([counterIds]) => Do(function*(): Iterator<Component<any>> {
+  view: ([counterIds]) => go(function*(): Iterator<Component<any>> {
     yield h1("Counters");
     const {click: addCounter} = yield button("Add counter")
     yield text(" ");

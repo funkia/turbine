@@ -64,7 +64,7 @@ const view = ([status]: ToView) => go(function*(): Iterator<Component<any>> {
   yield span("Please type a valid US zip code: ");
   const {inputValue: zipCode, input: zipInput} =
     yield input({props: {placeholder: "Zip code"}});
-  yield br();
+  yield br;
   yield text(status);
   return Component.of({zipCode, zipInput});
 });

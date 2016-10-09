@@ -10,7 +10,7 @@ export const input = e("input", { behaviors: [
   ["input", "inputValue", (evt: any) => evt.target.value, ""]
 ]});
 
-export const br = e("br");
+export const br = e("br")();
 export const span = e("span");
 export const h1 = e("h1");
 export const div = e("div");
