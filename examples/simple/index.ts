@@ -37,10 +37,10 @@ const main = component<ToView, ViewOut, {}>({
   view: ([validB, lengthB]) => go(function*(): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
-    yield br();
+    yield br;
     yield text("The address is ");
     yield text(validB.map(t => t ? "valid" : "invalid"));
-    yield br();
+    yield br;
     const {click: calcLength} = yield button("Calculate length");
     yield span(" The length of the email is ");
     yield text(lengthB);
