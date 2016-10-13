@@ -1,22 +1,26 @@
+var path = require('path');
+
 module.exports = {
-  entry: {
-    app: ["./index.ts"]
-  },
+  entry: ['babel-polyfill', './index.ts'],
   output: {
     path: __dirname,
-    filename: "bundle.js"
+    filename: 'bundle.js'
   },
   resolve: {
-    extensions: ['', '.webpack.js', '.ts', '.js', '.tsx', 'jsx']
+    extensions: ['.ts', '.tsx', '.js', '.jsx', '']
   },
-  devtool: 'inline-source-map',
+  plugins: [
+  ],
   module: {
     loaders: [
-      {test: /\.tsx?$/, loader: 'awesome-typescript-loader' },
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        loader: 'babel-loader!ts-loader'
+      }
     ]
   },
-  devServer: {
-    contentBase: "./",
-    port: 8080
+  resolveLoader: {
+    root: path.join(__dirname, 'node_modules')
   }
 };

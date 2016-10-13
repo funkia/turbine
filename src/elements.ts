@@ -1,4 +1,4 @@
-import {Behavior, at, subscribe} from "hareactive/Behavior";
+import {Behavior, at, observe} from "hareactive/Behavior";
 import {Now} from "hareactive/Now";
 import {Stream} from "hareactive/Stream";
 import {Component} from "./component";
@@ -6,9 +6,14 @@ import {e, Showable, CreateElementFunc} from "./dom-builder";
 
 function id<A>(a: A): A { return a; };
 
-export const input = e("input", { behaviors: [
-  ["input", "inputValue", (evt: any) => evt.target.value, ""]
-]});
+export const input = e("input", {
+  behaviors: [
+    ["input", "inputValue", (evt: any) => evt.target.value, ""]
+  ],
+  streams: [
+    ["input", "input", id]
+  ]
+});
 
 export const br = e("br")();
 export const span = e("span");
@@ -23,7 +28,18 @@ export function text(tOrB: string|Behavior<Showable>): Component<{}> {
   if (typeof tOrB === "string") {
     elm.nodeValue = tOrB;
   } else {
-    subscribe((t) => elm.nodeValue = t.toString(), tOrB);
+    observe(
+      (t) => elm.nodeValue = t.toString(),
+      () => {
+        const pull = () => {
+          elm.nodeValue = tOrB.pull().toString();
+          requestAnimationFrame(pull);
+        }
+        pull();
+      },
+      () => 1, // FIXME
+      tOrB
+    );
   }
   return new Component((parent: Node) => {
     parent.appendChild(elm);
