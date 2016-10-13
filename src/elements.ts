@@ -19,6 +19,7 @@ export const br = e("br")();
 export const span = e("span");
 export const h1 = e("h1");
 export const div = e("div");
+export const label = e("label");
 export const button = e("button", { streams: [
   ["click", "click", id]
 ]});
