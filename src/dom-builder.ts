@@ -14,10 +14,10 @@ export type Properties = {
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
   props?: {
-    [name: string]: string | Behavior<string>;
+    [name: string]: Showable | Behavior<Showable>;
   }
   attribute?: {
-    [name: string]: string | Behavior<string>;
+    [name: string]: Showable | Behavior<Showable>;
   }
 };
 
@@ -65,9 +65,9 @@ class CreateDomNow<A> extends Now<A> {
         for (const name in this.props.attribute) {
           const value = this.props.attribute[name];
           if (isBehavior(value)) {
-            value.subscribe((newValue) => elm.setAttribute(name, newValue));
+            value.subscribe((newValue) => elm.setAttribute(name, newValue.toString()));
           } else {
-            elm.setAttribute(name, value);
+            elm.setAttribute(name, value.toString());
           }
         }
       }
