@@ -7,7 +7,7 @@
     "declaration": true,
     "noImplicitAny": true,
     "sourceMap": true,
-    "lib": ["dom", "es5", "es2015.promise", "es2015.iterable"]
+    "lib": ["dom", "es5", "es2015.promise", "es2015.iterable", "es2015.proxy"]
   },
   "include": [
     "src/**/*"
