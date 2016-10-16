@@ -23,7 +23,7 @@ export type Properties = {
 
 export type Children = Component<any> | string;
 
-function isChildren(a: any): a is Component<any>{
+function isChildren(a: any): a is Children {
   return a instanceof Component || typeof a === "string";
 }
 
