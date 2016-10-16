@@ -11,8 +11,8 @@ const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 const getLength = (s: string) => s.length;
 
 // The behaviors that the model exposes to the view. This must be an
-// array of behaviors. The `model` function below must return this
-// array, the `view` function then receives it as its argument.
+// object of behaviors. The `model` function below must return this
+// object, the `view` function then receives it as its argument.
 type ToView = {
   validB: Behavior<boolean>,
   lengthB: Behavior<number>
