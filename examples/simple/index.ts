@@ -1,4 +1,4 @@
-import {go} from "jabz/monad";
+import {go, fgo} from "jabz/monad";
 import {Behavior, stepper} from "hareactive/Behavior";
 import {Stream, snapshot} from "hareactive/Stream";
 import {Now} from "hareactive/Now";
@@ -29,30 +29,26 @@ type ViewOut = {
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circularly dependent.
 const main = component<ToView, ViewOut, {}>(
-  function model({emailB, calcLength}) {
-    return go(function*(): Iterator<Now<any>> {
-      const validB = emailB.map(isValidEmail);
-      // Whenever `calcLength` occurs we snapshots the value of `emailB`
-      // and gets its length with `getLength`
-      const lengthUpdate = snapshot(emailB, calcLength).map(getLength);
-      const lengthB = stepper(0, lengthUpdate);
-      return Now.of([{validB, lengthB}, {}]);
-    })
-  },
-  function view({validB, lengthB}) {
-    return go(function*(): Iterator<Component<any>> {
-      yield span("Please enter an email address: ");
-      const {inputValue: emailB} = yield input();
-      yield br;
-      yield text("The address is ");
-      yield text(validB.map(t => t ? "valid" : "invalid"));
-      yield br;
-      const {click: calcLength} = yield button("Calculate length");
-      yield span(" The length of the email is ");
-      yield text(lengthB);
-      return Component.of({emailB, calcLength});
-    })
-  }
+  fgo(function* model({emailB, calcLength}): Iterator<Now<any>> {
+    const validB = emailB.map(isValidEmail);
+    // Whenever `calcLength` occurs we snapshots the value of `emailB`
+    // and gets its length with `getLength`
+    const lengthUpdate = snapshot(emailB, calcLength).map(getLength);
+    const lengthB = stepper(0, lengthUpdate);
+    return Now.of([{validB, lengthB}, {}]);
+  }),
+  fgo(function* view({validB, lengthB}): Iterator<Component<any>> {
+    yield span("Please enter an email address: ");
+    const {inputValue: emailB} = yield input();
+    yield br;
+    yield text("The address is ");
+    yield text(validB.map(t => t ? "valid" : "invalid"));
+    yield br;
+    const {click: calcLength} = yield button("Calculate length");
+    yield span(" The length of the email is ");
+    yield text(lengthB);
+    return Component.of({emailB, calcLength});
+  })
 );
 
 // `runMain` should be the only impure function in application code
