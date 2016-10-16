@@ -71,6 +71,6 @@ const view = ({status}: ToView) => go(function*(): Iterator<Component<any>> {
   return Component.of({zipCode, zipInput});
 });
 
-const main = component<ToView, ViewOut, {}>({model, view});
+const main = component<ToView, ViewOut, {}>(model, view);
 
 runMain("#mount", main);

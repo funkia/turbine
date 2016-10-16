@@ -69,7 +69,7 @@ const behaviorProxyHandler = {
     }
     return target[name];
   }
-}
+};
 
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   constructor(private fn: (m: M) => Now<[M, O]>) {
@@ -95,10 +95,10 @@ function mfixNow<M extends BehaviorObject, O>(
   return new MfixNow(comp);
 }
 
-export function component<M extends BehaviorObject, V, O>({model, view}: {
+export function component<M extends BehaviorObject, V, O>(
   model: (v: V) => Now<[M, O]>,
-  view: (m: M) => Component<V>
-}): Component<O> {
+  view:  (m: M) => Component<V>
+) : Component<O> {
   return new Component((parent: Node) => mfixNow<M, O>(
     (bs) => view(bs).content(parent).chain((v: V) => model(v))
   ).map(snd));
