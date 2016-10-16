@@ -11,7 +11,10 @@ import {span, input, br, text, button, div, h1} from "../../src/elements";
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
 
-type ToView = [Behavior<number>, Behavior<string>];
+type ToView = {
+  time: Behavior<number>,
+  message: Behavior<string>
+};
 
 type ViewOut = {
   snapClick: Stream<any>
@@ -22,9 +25,9 @@ const main = component<ToView, ViewOut, {}>({
     const msgFromClick =
       snapshot(time, snapClick).map((t) => "You last pressed the button at " + formatTime(t));
     const message = stepper("You've not clicked the button yet", msgFromClick);
-    return Now.of([[time, message], {}]);
+    return Now.of([{time, message}, {}]);
   }),
-  view: ([time, message]) => go(function*(): Iterator<Component<any>> {
+  view: ({time, message}) => go(function*(): Iterator<Component<any>> {
     yield text(time.map(formatTime));
     yield br;
     const {click: snapClick} = yield button("Click to snap time");

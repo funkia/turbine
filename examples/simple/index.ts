@@ -13,7 +13,10 @@ const getLength = (s: string) => s.length;
 // The behaviors that the model exposes to the view. This must be an
 // array of behaviors. The `model` function below must return this
 // array, the `view` function then receives it as its argument.
-type ToView = [Behavior<boolean>, Behavior<number>];
+type ToView = {
+  validB: Behavior<boolean>,
+  lengthB: Behavior<number>
+};
 
 // Types representing the behaviors and streams that the view create.
 // These are passed into the `model` function.
@@ -32,9 +35,9 @@ const main = component<ToView, ViewOut, {}>({
     // and gets its length with `getLength`
     const lengthUpdate = snapshot(emailB, calcLength).map(getLength);
     const lengthB = stepper(0, lengthUpdate);
-    return Now.of([[validB, lengthB], {}]);
+    return Now.of([{validB, lengthB}, {}]);
   }),
-  view: ([validB, lengthB]) => go(function*(): Iterator<Component<any>> {
+  view: ({validB, lengthB}) => go(function*(): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
     yield br;

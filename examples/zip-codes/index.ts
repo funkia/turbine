@@ -28,7 +28,9 @@ type ZipResult = {
   places: Place[]
 }
 
-type ToView = [Behavior<string>];
+type ToView = {
+  status: Behavior<string>
+};
 
 type ViewOut = {
   zipCode: Behavior<string>,
@@ -57,10 +59,10 @@ const model = ({zipCode, zipInput}: ViewOut) => go(function*(): Iterator<Now<any
       }))
     ])
   );
-  return Now.of([[status], {}]);
+  return Now.of([{status}, {}]);
 });
 
-const view = ([status]: ToView) => go(function*(): Iterator<Component<any>> {
+const view = ({status}: ToView) => go(function*(): Iterator<Component<any>> {
   yield span("Please type a valid US zip code: ");
   const {inputValue: zipCode, input: zipInput} =
     yield input({props: {placeholder: "Zip code"}});

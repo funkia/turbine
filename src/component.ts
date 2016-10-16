@@ -58,19 +58,29 @@ export class Component<A> {
   }
 }
 
-class MfixNow<M extends Behavior<any>[], O> extends Now<[M, O]> {
+export interface BehaviorObject {
+  [a: string]: Behavior<any>
+}
+
+const behaviorProxyHandler = {
+  get: function (target: any, name: string) {
+    if (!(name in target)) {
+      target[name] = placeholder();
+    }
+    return target[name];
+  }
+}
+
+class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   constructor(private fn: (m: M) => Now<[M, O]>) {
     super();
   };
   run(): [M, O] {
-    const placeholders: any = [
-      placeholder(), placeholder(), placeholder(), placeholder()
-    ];
-    // const fakeArg: [M, O] = [placeholders, undefined];
+    const placeholders = new Proxy({}, behaviorProxyHandler);
     const [behaviors, out] = this.fn(placeholders).run();
     // Tie the recursive knot
-    for (let i = 0; i < behaviors.length; ++i) {
-      placeholders[i].replaceWith(behaviors[i]);
+    for (const name in behaviors) {
+      placeholders[name].replaceWith(behaviors[name]);
     }
     return [behaviors, out];
   };
@@ -79,13 +89,13 @@ class MfixNow<M extends Behavior<any>[], O> extends Now<[M, O]> {
 /**
  * Something resembling the monadic fixpoint combinatior for Now.
  */
-function mfixNow<M extends Behavior<any>[], O>(
+function mfixNow<M extends BehaviorObject, O>(
   comp: (m: M) => Now<[M, O]>
 ): Now<[M, O]> {
   return new MfixNow(comp);
 }
 
-export function component<M extends Behavior<any>[], V, O>({model, view}: {
+export function component<M extends BehaviorObject, V, O>({model, view}: {
   model: (v: V) => Now<[M, O]>,
   view: (m: M) => Component<V>
 }): Component<O> {
