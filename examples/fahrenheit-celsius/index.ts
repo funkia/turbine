@@ -6,7 +6,10 @@ import {Now} from "hareactive/Now";
 import {Component, component, runMain, elements} from "../../src";
 const {input, div, label} = elements;
 
-type ToView = [Behavior<number>, Behavior<number>];
+type ToView = {
+  celsius: Behavior<number>,
+  fahren: Behavior<number>
+};
 
 type ViewOut = {
   fahrenChange: Stream<string>,
@@ -21,9 +24,9 @@ const main = component<ToView, ViewOut, {}>({
     const celsiusNrChange = celsiusChange.map(parseFloat).filter(n => !isNaN(n));
     const celsius = stepper(0, merge(celsiusChange, fahrenNrChange.map(f => (f - 32) / 1.8)));
     const fahren = stepper(0, merge(fahrenChange, celsiusNrChange.map(c => c * 9/5 + 32)));
-    return Now.of([[celsius, fahren], {}]);
+    return Now.of([{celsius, fahren}, {}]);
   }),
-  view: ([celsius, fahren]) => go(function*(): Iterator<Component<any>> {
+  view: ({celsius, fahren}) => go(function*(): Iterator<Component<any>> {
     const {children: {input: fahrenInput}} = yield div(go(function*() {
       yield label("Fahrenheit");
       return input({props: {value: fahren}});

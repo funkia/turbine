@@ -20,7 +20,9 @@ const apply = <A>(f: (a: A) => A, a: A) => f(a);
 
 type Id = number;
 
-type CounterModelOut = [Behavior<number>];
+type CounterModelOut = {
+  count: Behavior<number>
+};
 
 type CounterViewOut = {
   incrementClick: Stream<any>,
@@ -40,9 +42,9 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       const decrement = decrementClick.mapTo(-1);
       const deleteS = deleteClick.mapTo(id);
       const count = yield sample(scan(add, 0, merge(increment, decrement)));
-      return Now.of([[count], {count, deleteS}]);
+      return Now.of([{count}, {count, deleteS}]);
     }),
-  view: ([count]) => go(function*() {
+  view: ({count}) => go(function*() {
     const {children: divStreams} = yield div(go(function*() {
       yield text("Counter ");
       yield text(count);
@@ -59,7 +61,9 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
   })
 });
 
-type ToView = [Behavior<number[]>];
+type ToView = {
+  counterIds: Behavior<number[]>
+};
 
 type ToModel = {
   addCounter: Stream<Event>,
@@ -79,9 +83,9 @@ const main = component<ToView, ToModel, {}>({
       merge(appendCounterFn, removeCounterIdFn);
     const counterIds =
       yield sample(scan(apply, [0,1,2], modifications));
-    return Now.of([[counterIds], {}]);
+    return Now.of([{counterIds}, {}]);
   }),
-  view: ([counterIds]) => go(function*(): Iterator<Component<any>> {
+  view: ({counterIds}) => go(function*(): Iterator<Component<any>> {
     yield h1("Counters");
     const {click: addCounter} = yield button("Add counter")
     yield text(" ");
