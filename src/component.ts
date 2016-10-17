@@ -1,4 +1,4 @@
-import {Monad, fgo} from "jabz/monad";
+import {fgo} from "jabz/monad";
 import {runNow, Now} from "hareactive/Now";
 import {Behavior, placeholder} from "hareactive/Behavior";
 import {Future} from "hareactive/Future";
@@ -96,23 +96,19 @@ function mfixNow<M extends BehaviorObject, O>(
   return new MfixNow(comp);
 }
 
-export type GeneratorFunction<T> = (...a: any[]) => Iterator<T>;
+export type GeneratorFunction<A, T> = (a: A) => Iterator<T>;
 
-function isGeneratorFunction<T>(fn: any): fn is GeneratorFunction<T> {
+function isGeneratorFunction<A, T>(fn: any): fn is GeneratorFunction<A, T> {
   return fn.constructor.name === "GeneratorFunction" || false;
 }
 
 export function component<M extends BehaviorObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | GeneratorFunction<Now<any>>,
-  view:  (m: M) => Component<V>
+  model: ((v: V) => Now<[M, O]>) | GeneratorFunction<V, Now<[M,O]>>,
+  view:  ((m: M) => Component<V>) | GeneratorFunction<M, Component<V>>
 ) : Component<O> {
-  if (isGeneratorFunction(model)) {
-    return new Component<O>((parent: Node) => mfixNow<M, O>(
-      (bs) => view(bs).content(parent).chain(fgo(model))
-    ).map(snd));
-  } else {
-    return new Component<O>((parent: Node) => mfixNow<M, O>(
-      (bs) => view(bs).content(parent).chain(model)
-    ).map(snd));
-  }
+  const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
+  const v = isGeneratorFunction(view) ? (m: M) => fgo(view)(m) : view;
+  return new Component<O>((parent: Node) => mfixNow<M, O>(
+    (bs) => v(bs).content(parent).chain(m)
+  ).map(snd));
 }

@@ -1,4 +1,3 @@
-import {go, fgo} from "jabz/monad";
 import {Behavior, stepper} from "hareactive/Behavior";
 import {Stream, snapshot} from "hareactive/Stream";
 import {Now} from "hareactive/Now";
@@ -29,15 +28,15 @@ type ViewOut = {
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circularly dependent.
 const main = component<ToView, ViewOut, {}>(
-  fgo(function* model({emailB, calcLength}): Iterator<Now<any>> {
+  function* model({emailB, calcLength}): Iterator<Now<any>> {
     const validB = emailB.map(isValidEmail);
     // Whenever `calcLength` occurs we snapshots the value of `emailB`
     // and gets its length with `getLength`
     const lengthUpdate = snapshot(emailB, calcLength).map(getLength);
     const lengthB = stepper(0, lengthUpdate);
     return Now.of([{validB, lengthB}, {}]);
-  }),
-  fgo(function* view({validB, lengthB}): Iterator<Component<any>> {
+  },
+  function* view({validB, lengthB}): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
     yield br;
@@ -48,7 +47,7 @@ const main = component<ToView, ViewOut, {}>(
     yield span(" The length of the email is ");
     yield text(lengthB);
     return Component.of({emailB, calcLength});
-  })
+  }
 );
 
 // `runMain` should be the only impure function in application code
