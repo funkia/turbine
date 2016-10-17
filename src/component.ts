@@ -96,15 +96,15 @@ function mfixNow<M extends BehaviorObject, O>(
   return new MfixNow(comp);
 }
 
-export type GeneratorFunction<A, T> = (a: A) => Iterator<T>;
-
-function isGeneratorFunction<A, T>(fn: any): fn is GeneratorFunction<A, T> {
-  return fn.constructor.name === "GeneratorFunction" || false;
+export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
+  return fn !== undefined
+    && fn.constructor !== undefined
+    && fn.constructor.name === "GeneratorFunction";
 }
 
 export function component<M extends BehaviorObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | GeneratorFunction<V, Now<[M,O]>>,
-  view:  ((m: M) => Component<V>) | GeneratorFunction<M, Component<V>>
+  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<[M,O]>>),
+  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<V>>)
 ) : Component<O> {
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
   const v = isGeneratorFunction(view) ? (m: M) => fgo(view)(m) : view;

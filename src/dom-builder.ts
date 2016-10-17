@@ -1,7 +1,8 @@
+import {go} from "jabz/monad";
 import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
-import {Component, runComponentNow} from "./component";
+import {Component, runComponentNow, isGeneratorFunction} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 
 export type Showable = string | number;
@@ -21,10 +22,10 @@ export type Properties = {
   }
 };
 
-export type Children = Component<any> | string;
+export type Children = Component<any> | string | (() => Iterator<Component<any>>);
 
 function isChildren(a: any): a is Children {
-  return a instanceof Component || typeof a === "string";
+  return a instanceof Component || typeof a === "string" || isGeneratorFunction(a);
 }
 
 class CreateDomNow<A> extends Now<A> {
@@ -112,8 +113,12 @@ class CreateDomNow<A> extends Now<A> {
     if (this.children !== undefined) {
       if (typeof this.children === "string") {
         elm.textContent = this.children;
-      } else {
+      } else if (this.children instanceof Component) {
         output.children = runComponentNow(elm, this.children);
+      } else if (isGeneratorFunction(this.children)) {
+        output.children = runComponentNow(elm, go(this.children));
+      } else {
+        throw new Error("Funnel-element invalid child object");
       }
     }
     this.parent.appendChild(elm);
