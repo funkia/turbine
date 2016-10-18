@@ -73,27 +73,27 @@ const behaviorProxyHandler = {
 };
 
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
-  constructor(private fn: (m: M) => Now<[M, O]>) {
+  constructor(
+    private fn: (m: M) => Now<[M, O]>,
+    private toViewBehaviorNames? : string[]
+  ) {
     super();
   };
   run(): [M, O] {
-    const placeholders = new Proxy({}, behaviorProxyHandler);
+    let pregenerated: M;
+    if (this.toViewBehaviorNames !== undefined) {
+      for (const name of this.toViewBehaviorNames) {
+        pregenerated[name] = placeholder();
+      }
+    }
+    const placeholders = pregenerated || new Proxy({}, behaviorProxyHandler);   
     const [behaviors, out] = this.fn(placeholders).run();
     // Tie the recursive knot
     for (const name in behaviors) {
-      placeholders[name].replaceWith(behaviors[name]);
+      (placeholders[name]).replaceWith(behaviors[name]);
     }
     return [behaviors, out];
   };
-}
-
-/**
- * Something resembling the monadic fixpoint combinatior for Now.
- */
-function mfixNow<M extends BehaviorObject, O>(
-  comp: (m: M) => Now<[M, O]>
-): Now<[M, O]> {
-  return new MfixNow(comp);
 }
 
 export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
@@ -104,11 +104,13 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
 
 export function component<M extends BehaviorObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<[M,O]>>),
-  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<V>>)
+  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<V>>),
+  toViewBehaviorNames?: string[]
 ) : Component<O> {
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
   const v = isGeneratorFunction(view) ? (m: M) => fgo(view)(m) : view;
-  return new Component<O>((parent: Node) => mfixNow<M, O>(
-    (bs) => v(bs).content(parent).chain(m)
+  return new Component<O>((parent: Node) => new MfixNow<M, O>(
+    (bs) => v(bs).content(parent).chain(m),
+    toViewBehaviorNames
   ).map(snd));
 }
