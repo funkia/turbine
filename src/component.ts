@@ -1,3 +1,4 @@
+import {fgo} from "jabz/monad";
 import {runNow, Now} from "hareactive/Now";
 import {Behavior, placeholder} from "hareactive/Behavior";
 import {Future} from "hareactive/Future";
@@ -95,14 +96,21 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   };
 }
 
+export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
+  return fn !== undefined
+    && fn.constructor !== undefined
+    && fn.constructor.name === "GeneratorFunction";
+}
+
 export function component<M extends BehaviorObject, V, O>(
-  model: (v: V) => Now<[M, O]>,
-  view:  (m: M) => Component<V>,
+  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<[M,O]>>),
+  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<V>>),
   toViewBehaviorNames?: string[]
 ) : Component<O> {
-  return new Component((parent: Node) => new MfixNow<M, O>(
-    (bs) => view(bs).content(parent).chain((v: V) => model(v)),
+  const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
+  const v = isGeneratorFunction(view) ? (m: M) => fgo(view)(m) : view;
+  return new Component<O>((parent: Node) => new MfixNow<M, O>(
+    (bs) => v(bs).content(parent).chain(m),
     toViewBehaviorNames
   ).map(snd));
 }
-
