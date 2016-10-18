@@ -1,5 +1,4 @@
 // import "@types/whatwg-fetch";
-import {go} from "jabz/monad";
 
 import {Behavior, stepper} from "hareactive/Behavior";
 import {Stream, snapshot, merge, mergeList, changes} from "hareactive/Stream";
@@ -37,7 +36,7 @@ type ViewOut = {
   zipInput: Stream<{}>
 };
 
-const model = ({zipCode, zipInput}: ViewOut) => go(function*(): Iterator<Now<any>> {
+function* model({zipCode, zipInput}: ViewOut): Iterator<Now<any>> {
   // A stream that occurs whenever the current zip code changes
   const zipCodeChange = changes(zipCode);
   // Split the zip code changes into those that represent valid zip
@@ -60,16 +59,16 @@ const model = ({zipCode, zipInput}: ViewOut) => go(function*(): Iterator<Now<any
     ])
   );
   return Now.of([{status}, {}]);
-});
+}
 
-const view = ({status}: ToView) => go(function*(): Iterator<Component<any>> {
+function* view({status}: ToView): Iterator<Component<any>> {
   yield span("Please type a valid US zip code: ");
   const {inputValue: zipCode, input: zipInput} =
     yield input({props: {placeholder: "Zip code"}});
   yield br;
   yield text(status);
   return Component.of({zipCode, zipInput});
-});
+}
 
 const main = component<ToView, ViewOut, {}>(model, view);
 
