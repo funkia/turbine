@@ -103,8 +103,8 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
 }
 
 export function component<M extends BehaviorObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<[M,O]>>),
-  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<V>>),
+  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
+  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<any>>),
   toViewBehaviorNames?: string[]
 ) : Component<O> {
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
