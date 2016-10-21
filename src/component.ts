@@ -86,7 +86,7 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
         pregenerated[name] = placeholder();
       }
     }
-    const placeholders = pregenerated || new Proxy({}, behaviorProxyHandler);   
+    const placeholders = pregenerated || new Proxy({}, behaviorProxyHandler);
     const [behaviors, out] = this.fn(placeholders).run();
     // Tie the recursive knot
     for (const name in behaviors) {
