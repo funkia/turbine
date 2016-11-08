@@ -2,7 +2,7 @@ import {go} from "jabz/monad";
 import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
-import {Component, runComponentNow, isGeneratorFunction} from "./component";
+import {Component, runComponentNow, isGeneratorFunction, viewObserve} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 
 export type Showable = string | number;
@@ -55,7 +55,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const styleProp in this.props.style) {
           const value = (<any>this).props.style[styleProp];
           if (isBehavior(value)) {
-            value.subscribe((newValue) => (<any>elm.style)[styleProp] = newValue);
+            viewObserve((newValue) => (<any>elm.style)[styleProp] = newValue, value);
           } else {
             (<any>elm.style)[styleProp] = value;
           }
@@ -66,7 +66,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const name in this.props.attribute) {
           const value = this.props.attribute[name];
           if (isBehavior(value)) {
-            value.subscribe((newValue) => elm.setAttribute(name, newValue.toString()));
+            viewObserve((newValue) => elm.setAttribute(name, newValue.toString()), value);
           } else {
             elm.setAttribute(name, value.toString());
           }
@@ -77,7 +77,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const name in this.props.props) {
           const value = this.props.props[name];
           if (isBehavior(value)) {
-            value.subscribe((newValue) => (<any>elm)[name] = newValue);
+            viewObserve((newValue) => (<any>elm)[name] = newValue, value);
           } else {
             (<any>elm)[name] = value;
           }

@@ -1,8 +1,9 @@
 import {Behavior, at, observe} from "hareactive/Behavior";
 import {Now} from "hareactive/Now";
 import {Stream} from "hareactive/Stream";
-import {Component} from "./component";
+import {Component, viewObserve} from "./component";
 import {e, Showable, CreateElementFunc} from "./dom-builder";
+import {CSSStyleType} from "./CSSStyleType";
 
 function id<A>(a: A): A { return a; };
 
@@ -29,21 +30,10 @@ export function text(tOrB: string|Behavior<Showable>): Component<{}> {
   if (typeof tOrB === "string") {
     elm.nodeValue = tOrB;
   } else {
-    observe(
-      (t) => elm.nodeValue = t.toString(),
-      () => {
-        const pull = () => {
-          elm.nodeValue = tOrB.pull().toString();
-          requestAnimationFrame(pull);
-        }
-        pull();
-      },
-      () => 1, // FIXME
-      tOrB
-    );
+    viewObserve((text) => elm.nodeValue = text.toString(), tOrB);
   }
   return new Component((parent: Node) => {
     parent.appendChild(elm);
     return Now.of({});
   });
-}
+};

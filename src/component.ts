@@ -1,6 +1,6 @@
 import {fgo} from "jabz/monad";
 import {runNow, Now} from "hareactive/Now";
-import {Behavior, placeholder} from "hareactive/Behavior";
+import {Behavior, placeholder, observe} from "hareactive/Behavior";
 import {Future} from "hareactive/Future";
 
 // Quick n' dirty proof of concept implementation
@@ -113,4 +113,24 @@ export function component<M extends BehaviorObject, V, O>(
     (bs) => v(bs).content(parent).chain(m),
     toViewBehaviorNames
   ).map(snd));
+}
+
+export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): void {
+  let isPulling = false;
+  observe(
+    update,
+    function beginPulling() {
+      isPulling = true;
+      function pull() {
+        update(behavior.pull());
+        if (isPulling) {
+          requestAnimationFrame(pull)
+        }
+      }
+    },
+    function endPulling() {
+      isPulling = false;
+    },
+    behavior
+  );
 }
