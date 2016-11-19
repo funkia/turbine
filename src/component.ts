@@ -1,6 +1,6 @@
 import {fgo} from "jabz/monad";
 import {runNow, Now} from "hareactive/Now";
-import {Behavior, placeholder, observe} from "hareactive/Behavior";
+import {Behavior, placeholder, observe, at, sink} from "hareactive/Behavior";
 import {Future} from "hareactive/Future";
 
 // Quick n' dirty proof of concept implementation
@@ -133,4 +133,27 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
     },
     behavior
   );
+}
+
+class SampleComponent<A> extends Now<Behavior<A>> {
+  constructor(
+    private parent: Node,
+    private bComponent: Behavior<Component<A>>
+  ) {super();}
+  run(): Behavior<A> {
+    let container = document.createElement("div");
+    const resultB = sink(runComponentNow(container, at(this.bComponent)));
+    this.parent.appendChild(container);
+    this.bComponent.subscribe((component) => {
+      const newContainer = document.createElement("div");
+      resultB.push(runComponentNow(newContainer, component));
+      this.parent.replaceChild(newContainer, container);
+      container = newContainer;
+    });
+    return resultB;
+  }
+}
+
+export function sampleComponent<A>(behavior: Behavior<Component<A>>) {
+  return new Component((p) => new SampleComponent(p, behavior));
 }
