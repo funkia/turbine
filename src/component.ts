@@ -142,14 +142,21 @@ class SampleComponent<A> extends Now<Behavior<A>> {
     private bComponent: Behavior<Component<A>>
   ) {super(); }
   run(): Behavior<A> {
-    let container = document.createElement("div");
-    const resultB = sink(runComponentNow(container, at(this.bComponent)));
-    this.parent.appendChild(container);
+    const start = document.createComment("Container start");
+    const end = document.createComment("Container end");
+    this.parent.appendChild(start);
+    const resultB = sink(runComponentNow(this.parent, at(this.bComponent)));
+    this.parent.appendChild(end);
     this.bComponent.subscribe((component) => {
-      const newContainer = document.createElement("div");
-      resultB.push(runComponentNow(newContainer, component));
-      this.parent.replaceChild(newContainer, container);
-      container = newContainer;
+      let i: Node = start.nextSibling;
+      while (i !== end) {
+        const j = i;
+        i = i.nextSibling;
+        this.parent.removeChild(j);
+      }
+      const fragment = document.createDocumentFragment();
+      resultB.push(runComponentNow(fragment, component));
+      this.parent.insertBefore(fragment, end);
     });
     return resultB;
   }
