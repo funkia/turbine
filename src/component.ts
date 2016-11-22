@@ -1,7 +1,6 @@
 import {fgo} from "jabz/monad";
-import {runNow, Now} from "hareactive/Now";
+import {Now} from "hareactive/Now";
 import {Behavior, placeholder, observe, at, sink} from "hareactive/Behavior";
-import {Future} from "hareactive/Future";
 
 // Quick n' dirty proof of concept implementation
 
@@ -55,16 +54,18 @@ export class Component<A> {
       return ms[0].chain((a: any) => ms[1].chain((b: any) => of(f(a, b))));
     case 3:
       return ms[0].chain((a: any) => ms[1].chain((b: any) => ms[2].chain((c: any) => of(f(a, b, c)))));
+    default:
+      throw new Error("To many arguments");
     }
   }
 }
 
 export interface BehaviorObject {
-  [a: string]: Behavior<any>
+  [a: string]: Behavior<any>;
 }
 
 const behaviorProxyHandler = {
-  get: function (target: any, name: string) {
+  get: function (target: any, name: string): Behavior<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }
@@ -75,7 +76,7 @@ const behaviorProxyHandler = {
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   constructor(
     private fn: (m: M) => Now<[M, O]>,
-    private toViewBehaviorNames? : string[]
+    private toViewBehaviorNames?: string[]
   ) {
     super();
   };
@@ -106,9 +107,9 @@ export function component<M extends BehaviorObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
   view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<any>>),
   toViewBehaviorNames?: string[]
-) : Component<O> {
+): Component<O> {
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
-  const v = isGeneratorFunction(view) ? (m: M) => fgo(view)(m) : view;
+  const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : view;
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
     (bs) => v(bs).content(parent).chain(m),
     toViewBehaviorNames
@@ -119,16 +120,16 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
   let isPulling = false;
   observe(
     update,
-    function beginPulling() {
+    () => {
       isPulling = true;
-      function pull() {
+      function pull(): void {
         update(behavior.pull());
         if (isPulling) {
-          requestAnimationFrame(pull)
+          requestAnimationFrame(pull);
         }
       }
     },
-    function endPulling() {
+    () => {
       isPulling = false;
     },
     behavior
@@ -139,7 +140,7 @@ class SampleComponent<A> extends Now<Behavior<A>> {
   constructor(
     private parent: Node,
     private bComponent: Behavior<Component<A>>
-  ) {super();}
+  ) {super(); }
   run(): Behavior<A> {
     let container = document.createElement("div");
     const resultB = sink(runComponentNow(container, at(this.bComponent)));
@@ -154,6 +155,6 @@ class SampleComponent<A> extends Now<Behavior<A>> {
   }
 }
 
-export function sampleComponent<A>(behavior: Behavior<Component<A>>) {
+export function sampleComponent<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>> {
   return new Component((p) => new SampleComponent(p, behavior));
 }

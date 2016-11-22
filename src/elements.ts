@@ -1,4 +1,4 @@
-import {Behavior, at, observe} from "hareactive/Behavior";
+import {Behavior} from "hareactive/Behavior";
 import {Now} from "hareactive/Now";
 import {Stream} from "hareactive/Stream";
 import {Component, viewObserve} from "./component";

@@ -86,10 +86,10 @@ class CreateDomNow<A> extends Now<A> {
 
       if (this.props.behaviors !== undefined) {
         for (const [evt, name, extractor, initial] of this.props.behaviors) {
-          let a : Behavior<any> = null;
+          let a: Behavior<any> = undefined;
           Object.defineProperty(output, name, {
             get: () => {
-              if (a === null) {
+              if (a === undefined) {
                 a = behaviorFromEvent(evt, initial, extractor, elm);
               }
               return a;
@@ -98,10 +98,10 @@ class CreateDomNow<A> extends Now<A> {
       }
       if (this.props.streams !== undefined) {
         for (const [evt, name, extractor] of this.props.streams) {
-          let a : Stream<any> = null;
+          let a: Stream<any> = undefined;
           Object.defineProperty(output, name, {
             get: () => {
-              if (a === null) {
+              if (a === undefined) {
                 a = streamFromEvent(evt, extractor, elm);
               }
               return a;
@@ -135,8 +135,8 @@ export function e<A>(tagName: string, props: Properties , children: Children ): 
 export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
   function createElement(): Component<A>;
   function createElement(props: Properties): Component<A>;
-  function createElement(children: Children): Component<A>;
-  function createElement(props: Properties, children: Children): Component<A>;
+  function createElement(aChildren: Children): Component<A>;
+  function createElement(props: Properties, bChildren: Children): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
     if (newChildrenOrUndefined === undefined && isChildren(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
