@@ -1,6 +1,8 @@
-import {fgo} from "jabz/monad";
+import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/Now";
-import {Behavior, placeholder, observe, at, sink} from "hareactive/Behavior";
+import {Behavior, placeholder, observe, at, sink, isBehavior} from "hareactive/Behavior";
+
+export type Showable = string | number;
 
 // Quick n' dirty proof of concept implementation
 
@@ -134,6 +136,44 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
     },
     behavior
   );
+}
+
+// Union of the types that can be used as a child. A child is either a
+// component or something that can be converted into a component.
+export type Child = Component<any> | Showable | Behavior<Showable>
+                  | (() => Iterator<Component<any>>);
+
+export function isChild(a: any): a is Child {
+  return a instanceof Component || typeof a === "string"
+    || isGeneratorFunction(a) || isBehavior(a);
+}
+
+export function text(tOrB: Showable | Behavior<Showable>): Component<{}> {
+  const elm = document.createTextNode("");
+  if (typeof tOrB === "string" || typeof tOrB === "number") {
+    elm.nodeValue = tOrB.toString();
+  } else {
+    viewObserve((text) => elm.nodeValue = text.toString(), tOrB);
+  }
+  return new Component((parent: Node) => {
+    parent.appendChild(elm);
+    return Now.of({});
+  });
+};
+
+export function normalizeChild<A>(child: Component<A>): Component<A>;
+export function normalizeChild<A>(child: Showable): Component<{}>;
+export function normalizeChild<A>(child: Behavior<Showable>): Component<{}>;
+export function normalizeChild<A>(child: () => Iterator<Component<any>>): Component<any>;
+export function normalizeChild<A>(child: Child): Component<any>;
+export function normalizeChild<A>(child: Child): Component<any> {
+  if (typeof child === "string" || typeof child === "number" || isBehavior(child)) {
+    return text(child);
+  } else if (isGeneratorFunction(child)) {
+    return go(child);
+  } else {
+    return child;
+  }
 }
 
 class SampleComponent<A> extends Now<Behavior<A>> {

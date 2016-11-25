@@ -2,10 +2,11 @@ import {go} from "jabz/monad";
 import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
-import {Component, runComponentNow, isGeneratorFunction, viewObserve} from "./component";
+import {
+  Component, runComponentNow, isGeneratorFunction,
+  viewObserve, Showable, Child, isChild, normalizeChild
+} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
-
-export type Showable = string | number;
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
@@ -22,18 +23,12 @@ export type Properties = {
   }
 };
 
-export type Children = Component<any> | string | (() => Iterator<Component<any>>);
-
-function isChildren(a: any): a is Children {
-  return a instanceof Component || typeof a === "string" || isGeneratorFunction(a);
-}
-
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
     private tagName: string,
     private props?: Properties,
-    private children?: Children
+    private children?: Child
   ) { super(); };
   run(): A {
     let output: any = {};
@@ -111,36 +106,28 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      if (typeof this.children === "string") {
-        elm.textContent = this.children;
-      } else if (this.children instanceof Component) {
-        output.children = runComponentNow(elm, this.children);
-      } else if (isGeneratorFunction(this.children)) {
-        output.children = runComponentNow(elm, go(this.children));
-      } else {
-        throw new Error("Funnel-element invalid child object");
-      }
+      output.children = runComponentNow(elm, normalizeChild(this.children));
     }
     this.parent.appendChild(elm);
     return output;
   }
 }
 
-export type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
+export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties , children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
-  function createElement(): Component<A>;
+export function e<A>(tagName: string, children: Child): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties, children: Child): CreateElementFunc<A>;
+export function e<A>(tagName: string, propsOrChildren?: Properties | Child, children?: Child): CreateElementFunc<A> {
+  function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
-  function createElement(aChildren: Children): Component<A>;
-  function createElement(props: Properties, bChildren: Children): Component<A>;
-  function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
-    if (newChildrenOrUndefined === undefined && isChildren(newPropsOrChildren)) {
+  function createElement(aChildren: Child): Component<A>;
+  function createElement(props: Properties, bChildren: Child): Component<A>;
+  function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
+    if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
-    } else if (isChildren(propsOrChildren)) {
+    } else if (isChild(propsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
     } else {
       const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
