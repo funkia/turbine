@@ -1,8 +1,14 @@
 import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/Now";
-import {Behavior, placeholder, observe, subscribe, at, sink, isBehavior} from "hareactive/Behavior";
+import {
+  Behavior, placeholder, observe, subscribe, at, sink, isBehavior
+} from "hareactive/Behavior";
 
 export type Showable = string | number;
+
+function isShowable(s: any): s is Showable {
+  return typeof s === "string" || typeof s === "number";
+}
 
 function id<A>(a: A): A { return a; };
 function snd<A, B>(a: [A, B]): B { return a[1]; }
@@ -56,6 +62,10 @@ export class Component<A> {
       throw new Error("To many arguments");
     }
   }
+}
+
+export function isComponent(c: any): c is Component<any> {
+  return c instanceof Component;
 }
 
 export interface BehaviorObject {
@@ -140,19 +150,12 @@ export type Child = Component<any> | Showable | Behavior<Showable>
                   | (() => Iterator<Component<any>>);
 
 export function isChild(a: any): a is Child {
-  return a instanceof Component || typeof a === "string"
-    || isGeneratorFunction(a) || isBehavior(a);
+  return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a);
 }
 
-export function text(tOrB: Showable | Behavior<Showable>): Component<{}> {
-  const elm = document.createTextNode("");
-  if (typeof tOrB === "string" || typeof tOrB === "number") {
-    elm.nodeValue = tOrB.toString();
-  } else {
-    viewObserve((text) => elm.nodeValue = text.toString(), tOrB);
-  }
+export function text(s: Showable): Component<{}> {
   return new Component((parent: Node) => {
-    parent.appendChild(elm);
+    parent.appendChild(document.createTextNode(s.toString()));
     return Now.of({});
   });
 };
@@ -163,12 +166,14 @@ export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
 export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
 export function toComponent<A>(child: Child): Component<any>;
 export function toComponent<A>(child: Child): Component<any> {
-  if (typeof child === "string" || typeof child === "number" || isBehavior(child)) {
-    return text(child);
+  if (isComponent(child)) {
+    return child;
+  } else if (isBehavior(child)) {
+    return dynamic(child);
   } else if (isGeneratorFunction(child)) {
     return go(child);
-  } else {
-    return child;
+  } else if (isShowable(child)) {
+    return text(child);
   }
 }
 
@@ -181,7 +186,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     const start = document.createComment("Container start");
     const end = document.createComment("Container end");
     this.parent.appendChild(start);
-    const initialComponent = toComponent(at(this.bChild));
+    const initialComponent = <Component<A>>toComponent(at(this.bChild));
     const resultB = sink(runComponentNow(this.parent, initialComponent));
     this.parent.appendChild(end);
     this.bChild.subscribe((component) => {
