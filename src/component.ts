@@ -1,15 +1,11 @@
 import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/Now";
-import {Behavior, placeholder, observe, at, sink, isBehavior} from "hareactive/Behavior";
+import {Behavior, placeholder, observe, subscribe, at, sink, isBehavior} from "hareactive/Behavior";
 
 export type Showable = string | number;
 
-// Quick n' dirty proof of concept implementation
-
 function id<A>(a: A): A { return a; };
 function snd<A, B>(a: [A, B]): B { return a[1]; }
-
-type CompVal<A> = [A, Node[]];
 
 /** Run component and the now-computation inside */
 export function runComponentNow<A>(parent: Node, c: Component<A>): A {
@@ -180,7 +176,7 @@ class SampleComponent<A> extends Now<Behavior<A>> {
   constructor(
     private parent: Node,
     private bComponent: Behavior<Component<A>>
-  ) {super(); }
+  ) { super(); }
   run(): Behavior<A> {
     const start = document.createComment("Container start");
     const end = document.createComment("Container end");
@@ -204,4 +200,59 @@ class SampleComponent<A> extends Now<Behavior<A>> {
 
 export function sampleComponent<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>> {
   return new Component((p) => new SampleComponent(p, behavior));
+}
+
+type ComponentStuff<A> = {
+  elm: Node, out: A
+}
+
+class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
+  constructor(
+    private parent: Node,
+    private getKey: (a: A) => number,
+    private compFn: (a: A) => Component<B>,
+    private list: Behavior<A[]>
+  ) { super(); }
+  run(): Behavior<B[]> {
+    // The reordering code below is neither pretty nor fast. But it at
+    // least avoids recreating elements and is quite simple.
+    const resultB = sink<B[]>([]);
+    const end = document.createComment("list end");
+    let keyToElm: {[key: string]: ComponentStuff<B>} = {};
+    this.parent.appendChild(end);
+    this.list.subscribe((newAs) => {
+      const newKeyToElm: {[key: string]: ComponentStuff<B>} = {};
+      const newArray: B[] = [];
+      // Re-add existing elements and new elements
+      for (const a of newAs) {
+        const key = this.getKey(a);
+        let stuff = keyToElm[key];
+        if (stuff === undefined) {
+          const fragment = document.createDocumentFragment();
+          const out = runComponentNow(fragment, this.compFn(a));
+          // Assumes component only adds a single element
+          stuff = {out, elm: fragment.firstChild};
+        }
+        this.parent.insertBefore(stuff.elm, end);
+        newArray.push(stuff.out);
+        newKeyToElm[key] = stuff;
+      }
+      // Remove elements that are no longer present
+      const oldKeys = Object.keys(keyToElm);
+      for (const key of oldKeys) {
+        if (newKeyToElm[key] === undefined) {
+          this.parent.removeChild(keyToElm[key].elm);
+        }
+      }
+      keyToElm = newKeyToElm;
+      resultB.push(newArray);
+    });
+    return resultB;
+  }
+}
+
+export function list<A>(
+  c: (a: A) => Component<any>, getKey: (a: A) => number, l: Behavior<A[]>
+): Component<{}> {
+  return new Component((p) => new ComponentListNow(p, getKey, c, l));
 }
