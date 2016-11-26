@@ -157,12 +157,12 @@ export function text(tOrB: Showable | Behavior<Showable>): Component<{}> {
   });
 };
 
-export function normalizeChild<A>(child: Component<A>): Component<A>;
-export function normalizeChild<A>(child: Showable): Component<{}>;
-export function normalizeChild<A>(child: Behavior<Showable>): Component<{}>;
-export function normalizeChild<A>(child: () => Iterator<Component<any>>): Component<any>;
-export function normalizeChild<A>(child: Child): Component<any>;
-export function normalizeChild<A>(child: Child): Component<any> {
+export function toComponent<A>(child: Component<A>): Component<A>;
+export function toComponent<A>(child: Showable): Component<{}>;
+export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
+export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
+export function toComponent<A>(child: Child): Component<any>;
+export function toComponent<A>(child: Child): Component<any> {
   if (typeof child === "string" || typeof child === "number" || isBehavior(child)) {
     return text(child);
   } else if (isGeneratorFunction(child)) {
@@ -172,18 +172,19 @@ export function normalizeChild<A>(child: Child): Component<any> {
   }
 }
 
-class SampleComponent<A> extends Now<Behavior<A>> {
+class DynamicComponent<A> extends Now<Behavior<A>> {
   constructor(
     private parent: Node,
-    private bComponent: Behavior<Component<A>>
+    private bChild: Behavior<Child>
   ) { super(); }
   run(): Behavior<A> {
     const start = document.createComment("Container start");
     const end = document.createComment("Container end");
     this.parent.appendChild(start);
-    const resultB = sink(runComponentNow(this.parent, at(this.bComponent)));
+    const initialComponent = toComponent(at(this.bChild));
+    const resultB = sink(runComponentNow(this.parent, initialComponent));
     this.parent.appendChild(end);
-    this.bComponent.subscribe((component) => {
+    this.bChild.subscribe((component) => {
       let i: Node = start.nextSibling;
       while (i !== end) {
         const j = i;
@@ -191,15 +192,17 @@ class SampleComponent<A> extends Now<Behavior<A>> {
         this.parent.removeChild(j);
       }
       const fragment = document.createDocumentFragment();
-      resultB.push(runComponentNow(fragment, component));
+      resultB.push(runComponentNow(fragment, toComponent(component)));
       this.parent.insertBefore(fragment, end);
     });
     return resultB;
   }
 }
 
-export function sampleComponent<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>> {
-  return new Component((p) => new SampleComponent(p, behavior));
+export function dynamic<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>>;
+export function dynamic<A>(behavior: Behavior<Child>): Component<any>;
+export function dynamic<A>(behavior: Behavior<Child>): Component<Behavior<A>> {
+  return new Component((p) => new DynamicComponent<A>(p, behavior));
 }
 
 type ComponentStuff<A> = {

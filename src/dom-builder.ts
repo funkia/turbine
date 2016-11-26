@@ -4,7 +4,7 @@ import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
 import {
   Component, runComponentNow, isGeneratorFunction,
-  viewObserve, Showable, Child, isChild, normalizeChild
+  viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 
@@ -106,7 +106,7 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      output.children = runComponentNow(elm, normalizeChild(this.children));
+      output.children = runComponentNow(elm, toComponent(this.children));
     }
     this.parent.appendChild(elm);
     return output;
