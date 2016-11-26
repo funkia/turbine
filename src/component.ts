@@ -11,6 +11,7 @@ function isShowable(s: any): s is Showable {
 }
 
 function id<A>(a: A): A { return a; };
+function fst<A, B>(a: [A, B]): A { return a[0]; }
 function snd<A, B>(a: [A, B]): B { return a[1]; }
 
 /** Run component and the now-computation inside */
@@ -186,21 +187,22 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     const start = document.createComment("Container start");
     const end = document.createComment("Container end");
     this.parent.appendChild(start);
-    const initialComponent = <Component<A>>toComponent(at(this.bChild));
-    const resultB = sink(runComponentNow(this.parent, initialComponent));
     this.parent.appendChild(end);
-    this.bChild.subscribe((component) => {
+    const performed = this.bChild.map((child) => {
+      const fragment = document.createDocumentFragment();
+      const a = runComponentNow(fragment, <Component<A>>toComponent(child));
+      return [a, fragment] as [A, DocumentFragment];
+    });
+    observe(([_, fragment]) => {
       let i: Node = start.nextSibling;
       while (i !== end) {
         const j = i;
         i = i.nextSibling;
         this.parent.removeChild(j);
       }
-      const fragment = document.createDocumentFragment();
-      resultB.push(runComponentNow(fragment, toComponent(component)));
       this.parent.insertBefore(fragment, end);
-    });
-    return resultB;
+    }, () => {}, () => {}, performed);
+    return performed.map(fst);
   }
 }
 

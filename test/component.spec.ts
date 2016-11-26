@@ -1,6 +1,6 @@
 import "mocha";
 import {assert} from "chai";
-import {Behavior, sink} from "hareactive/Behavior";
+import {Behavior, sink, placeholder} from "hareactive/Behavior";
 import {text, dynamic, runComponentNow, toComponent} from "../src/component";
 import {e} from "../src/dom-builder";
 
@@ -37,6 +37,14 @@ describe("component", () => {
       assert.strictEqual(div.textContent, "Hello");
       b.push("world");
       assert.strictEqual(div.textContent, "world");
+    });
+    it("works with placeholder behavior", () => {
+      const b = placeholder();
+      const div = document.createElement("div");
+      const component = dynamic(b);
+      runComponentNow(div, component);
+      b.replaceWith(sink("Hello"));
+      assert.strictEqual(div.textContent, "Hello");
     });
   });
 });
