@@ -1,9 +1,6 @@
 import "mocha";
 import {assert} from "chai";
-import {Behavior, sink} from "hareactive/Behavior";
-import {runComponentNow} from "../src/component";
-import {e} from "../src/dom-builder";
-import {text} from "../src/elements";
+import {runComponentNow, e} from "../src";
 
 describe("dom-builder: e()", () => {
 
@@ -112,7 +109,7 @@ describe("dom-builder: e()", () => {
 
     it("e(children)         fac(props) ", () => {
       const spanFac = e("span", "default text");
-      const spanC = spanFac({style:{
+      const spanC = spanFac({style: {
         background: "red"
       }});
       const div = document.createElement("div");
@@ -123,7 +120,7 @@ describe("dom-builder: e()", () => {
 
     it("e(children)         fac(props, children) ", () => {
       const spanFac = e("span", "default text");
-      const spanC = spanFac({style:{
+      const spanC = spanFac({style: {
         background: "red"
       }}, "override text");
       const div = document.createElement("div");
@@ -147,7 +144,7 @@ describe("dom-builder: e()", () => {
       const spanFac = e("span", {style: {
         background: "green"
       }});
-      const spanC = spanFac({style:{
+      const spanC = spanFac({style: {
         background: "red"
       }}, "text");
       const div = document.createElement("div");
@@ -160,7 +157,7 @@ describe("dom-builder: e()", () => {
       const spanFac = e("span", {style: {
         background: "green"
       }}, "default text");
-      const spanC = spanFac({style:{
+      const spanC = spanFac({style: {
         background: "red"
       }}, "override text");
       const div = document.createElement("div");

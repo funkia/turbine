@@ -4,6 +4,7 @@ import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
 import {Component, runComponentNow, isGeneratorFunction, viewObserve} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
+import {merge} from "./utils";
 
 export type Showable = string | number;
 
@@ -16,7 +17,7 @@ export type Properties = {
   style?: CSSStyleType,
   props?: {
     [name: string]: Showable | Behavior<Showable>;
-  }
+  },
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
   }
@@ -143,7 +144,7 @@ export function e<A>(tagName: string, propsOrChildren?: Properties | Children, c
     } else if (isChildren(propsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
     } else {
-      const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
+      const newProps = merge(propsOrChildren, newPropsOrChildren);
       return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
     }
   }
