@@ -66,7 +66,7 @@ function* view({status}: ToView): Iterator<Component<any>> {
   const {inputValue: zipCode, input: zipInput} =
     yield input({props: {placeholder: "Zip code"}});
   yield br;
-  yield text(status);
+  yield span(status);
   return Component.of({zipCode, zipInput});
 }
 

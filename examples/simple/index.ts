@@ -2,8 +2,8 @@ import {Behavior, stepper} from "hareactive/Behavior";
 import {Stream, snapshot} from "hareactive/Stream";
 import {Now} from "hareactive/Now";
 
-import {Component, component, runMain, list, e, elements} from "../../src";
-const {text, span, button, br, input, div} = elements;
+import {Component, component, runMain, list, e, text, dynamic, elements} from "../../src";
+const {span, button, br, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
@@ -41,11 +41,11 @@ const main = component<ToView, ViewOut, {}>(
     const {inputValue: emailB} = yield input();
     yield br;
     yield text("The address is ");
-    yield text(validB.map(t => t ? "valid" : "invalid"));
+    yield dynamic(validB.map(t => t ? "valid" : "invalid"));
     yield br;
     const {click: calcLength} = yield button("Calculate length");
     yield span(" The length of the email is ");
-    yield text(lengthB);
+    yield dynamic(lengthB);
     return Component.of({emailB, calcLength});
   }
 );

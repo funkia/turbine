@@ -2,11 +2,12 @@ import {go} from "jabz/monad";
 import {Now} from "hareactive/Now";
 import {Stream, empty} from "hareactive/Stream";
 import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
-import {Component, runComponentNow, isGeneratorFunction, viewObserve} from "./component";
+import {
+  Component, runComponentNow, isGeneratorFunction,
+  viewObserve, Showable, Child, isChild, toComponent
+} from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 import {merge} from "./utils";
-
-export type Showable = string | number;
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
@@ -23,18 +24,12 @@ export type Properties = {
   }
 };
 
-export type Children = Component<any> | string | (() => Iterator<Component<any>>);
-
-function isChildren(a: any): a is Children {
-  return a instanceof Component || typeof a === "string" || isGeneratorFunction(a);
-}
-
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
     private tagName: string,
     private props?: Properties,
-    private children?: Children
+    private children?: Child
   ) { super(); };
   run(): A {
     let output: any = {};
@@ -112,36 +107,28 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      if (typeof this.children === "string") {
-        elm.textContent = this.children;
-      } else if (this.children instanceof Component) {
-        output.children = runComponentNow(elm, this.children);
-      } else if (isGeneratorFunction(this.children)) {
-        output.children = runComponentNow(elm, go(this.children));
-      } else {
-        throw new Error("Funnel-element invalid child object");
-      }
+      output.children = runComponentNow(elm, toComponent(this.children));
     }
     this.parent.appendChild(elm);
     return output;
   }
 }
 
-export type CreateElementFunc<A> = (newPropsOrChildren?: Children | Properties, newChildren?: Properties) => Component<A>;
+export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties ): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties , children: Children ): CreateElementFunc<A>;
-export function e<A>(tagName: string, propsOrChildren?: Properties | Children, children?: Children ): CreateElementFunc<A> {
-  function createElement(): Component<A>;
+export function e<A>(tagName: string, children: Child): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
+export function e<A>(tagName: string, props: Properties, children: Child): CreateElementFunc<A>;
+export function e<A>(tagName: string, propsOrChildren?: Properties | Child, children?: Child): CreateElementFunc<A> {
+  function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
-  function createElement(aChildren: Children): Component<A>;
-  function createElement(props: Properties, bChildren: Children): Component<A>;
-  function createElement(newPropsOrChildren?: Properties | Children, newChildrenOrUndefined?: Children): Component<A> {
-    if (newChildrenOrUndefined === undefined && isChildren(newPropsOrChildren)) {
+  function createElement(aChildren: Child): Component<A>;
+  function createElement(props: Properties, bChildren: Child): Component<A>;
+  function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
+    if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
-    } else if (isChildren(propsOrChildren)) {
+    } else if (isChild(propsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
     } else {
       const newProps = merge(propsOrChildren, newPropsOrChildren);
@@ -172,59 +159,4 @@ function streamFromEvent<A>(
     s.push(extractor(ev));
   });
   return s;
-}
-
-type ComponentStuff<A> = {
-  elm: Node, out: A
-}
-
-class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
-  constructor(
-    private parent: Node,
-    private getKey: (a: A) => number,
-    private compFn: (a: A) => Component<B>,
-    private list: Behavior<A[]>
-  ) { super(); }
-  run(): Behavior<B[]> {
-    // The reordering code below is neither pretty nor fast. But it at
-    // least avoids recreating elements and is quite simple.
-    const resultB = sink<B[]>([]);
-    const end = document.createComment("list end");
-    let keyToElm: {[key: string]: ComponentStuff<B>} = {};
-    this.parent.appendChild(end);
-    subscribe((newAs) => {
-      const newKeyToElm: {[key: string]: ComponentStuff<B>} = {};
-      const newArray: B[] = [];
-      // Re-add existing elements and new elements
-      for (const a of newAs) {
-        const key = this.getKey(a);
-        let stuff = keyToElm[key];
-        if (stuff === undefined) {
-          const fragment = document.createDocumentFragment();
-          const out = runComponentNow(fragment, this.compFn(a));
-          // Assumes component only adds a single element
-          stuff = {out, elm: fragment.firstChild};
-        }
-        this.parent.insertBefore(stuff.elm, end);
-        newArray.push(stuff.out);
-        newKeyToElm[key] = stuff;
-      }
-      // Remove elements that are no longer present
-      const oldKeys = Object.keys(keyToElm);
-      for (const key of oldKeys) {
-        if (newKeyToElm[key] === undefined) {
-          this.parent.removeChild(keyToElm[key].elm);
-        }
-      }
-      keyToElm = newKeyToElm;
-      resultB.push(newArray);
-    }, this.list);
-    return resultB;
-  }
-}
-
-export function list<A>(
-  c: (a: A) => Component<any>, getKey: (a: A) => number, l: Behavior<A[]>
-): Component<{}> {
-  return new Component((p) => new ComponentListNow(p, getKey, c, l));
 }

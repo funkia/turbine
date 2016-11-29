@@ -1,8 +1,8 @@
 import {Behavior} from "hareactive/Behavior";
 import {Now} from "hareactive/Now";
 import {Stream} from "hareactive/Stream";
-import {Component, viewObserve} from "./component";
-import {e, Showable, CreateElementFunc} from "./dom-builder";
+import {Component, viewObserve, Showable} from "./component";
+import {e, CreateElementFunc} from "./dom-builder";
 import {CSSStyleType} from "./CSSStyleType";
 
 function id<A>(a: A): A { return a; };
@@ -25,15 +25,4 @@ export const button = e("button", { streams: [
   ["click", "click", id]
 ]});
 
-export function text(tOrB: string|Behavior<Showable>): Component<{}> {
-  const elm = document.createTextNode("");
-  if (typeof tOrB === "string") {
-    elm.nodeValue = tOrB;
-  } else {
-    viewObserve((text) => elm.nodeValue = text.toString(), tOrB);
-  }
-  return new Component((parent: Node) => {
-    parent.appendChild(elm);
-    return Now.of({});
-  });
-};
+export {text} from "./component";

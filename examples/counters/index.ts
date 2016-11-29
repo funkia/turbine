@@ -5,10 +5,9 @@ import {
 } from "hareactive/Stream";
 import {Now, sample} from "hareactive/Now";
 
-import {Component, component} from "../../src/component";
+import {Component, component, list, dynamic, text} from "../../src/component";
 import {runMain} from "../../src/bootstrap"
-import {list} from "../../src/dom-builder";
-import {span, input, br, text, button, div, h1} from "../../src/elements";
+import {span, input, br, button, div, h1} from "../../src/elements";
 
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
@@ -44,7 +43,7 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
   function* counterView({count}) {
     const {children: divStreams} = yield div(function*() {
       yield text("Counter ");
-      yield text(count);
+      yield dynamic(count);
       yield text(" ");
       const {click: incrementClick} = yield button(" + ");
       yield text(" ");

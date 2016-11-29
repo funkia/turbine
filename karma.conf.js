@@ -15,9 +15,7 @@ module.exports = function(config) {
         istanbul
       ]
     },
-    browsers: [
-      'PhantomJS'
-    ],
+    browsers: ['Chromium'],
     reporters: ['mocha', 'coverage'],
     coverageReporter: {
       type: 'json',
