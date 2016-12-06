@@ -184,24 +184,43 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     private bChild: Behavior<Child>
   ) { super(); }
   run(): Behavior<A> {
-    const start = document.createComment("Container start");
-    const end = document.createComment("Container end");
+    const start = document.createComment("Dynamic begin");
+    const end = document.createComment("Dynamic end");
     this.parent.appendChild(start);
     this.parent.appendChild(end);
+
+    let currentlyShowable: boolean;
+    let wasShowable = false;
     const performed = this.bChild.map((child) => {
+      currentlyShowable = isShowable(child);
+      if (currentlyShowable && wasShowable) {
+	return [undefined, child] as [A, Showable];;
+      }
       const fragment = document.createDocumentFragment();
       const a = runComponentNow(fragment, <Component<A>>toComponent(child));
       return [a, fragment] as [A, DocumentFragment];
     });
-    observe(([_, fragment]) => {
-      let i: Node = start.nextSibling;
-      while (i !== end) {
-        const j = i;
-        i = i.nextSibling;
-        this.parent.removeChild(j);
+
+    let showableNode: Node;
+    viewObserve(([_, node]) => {
+      if (currentlyShowable && wasShowable) {
+	showableNode.textContent = node.toString();
+      } else {
+	if (currentlyShowable) {
+	  showableNode = (<Node> node).firstChild;
+	  wasShowable = true;
+	} else {
+	  wasShowable = false;
+	}
+	let i: Node = start.nextSibling;
+	while (i !== end) {
+          const j = i;
+          i = i.nextSibling;
+          this.parent.removeChild(j);
+	}
+	this.parent.insertBefore((<Node> node), end);
       }
-      this.parent.insertBefore(fragment, end);
-    }, () => {}, () => {}, performed);
+    }, performed);
     return performed.map(fst);
   }
 }

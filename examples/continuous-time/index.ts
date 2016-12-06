@@ -2,10 +2,8 @@ import {Behavior, stepper, time} from "hareactive/Behavior";
 import {Stream, snapshot} from "hareactive/Stream";
 import {Now, sample} from "hareactive/Now";
 
-import {Component, component} from "../../src/component";
-import {runMain} from "../../src/bootstrap"
-import {list} from "../../src/dom-builder";
-import {span, input, br, text, button, div, h1} from "../../src/elements";
+import {Component, component, runMain, list, elements, dynamic} from "../../src";
+const {span, input, br, text, button, div, h1} = elements;
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
 
@@ -26,14 +24,14 @@ function* model({snapClick}): Iterator<Now<any>> {
 }
 
 function* view({time, message}): Iterator<Component<any>> {
-  yield text(time.map(formatTime));
+  yield dynamic(time.map(formatTime));
   yield br;
   const {click: snapClick} = yield button("Click to snap time");
   yield br;
-  yield text(message);
+  yield dynamic(message);
   return Component.of({snapClick});
 }
 
 const main = component<ToView, ViewOut, {}>(model, view);
 
-runMain("body", main);
+runMain("#mount", main);
