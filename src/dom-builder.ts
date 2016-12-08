@@ -7,6 +7,7 @@ import {
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
+import {merge} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
@@ -17,7 +18,7 @@ export type Properties = {
   style?: CSSStyleType,
   props?: {
     [name: string]: Showable | Behavior<Showable>;
-  }
+  },
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
   }
@@ -130,7 +131,7 @@ export function e<A>(tagName: string, propsOrChildren?: Properties | Child, chil
     } else if (isChild(propsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
     } else {
-      const newProps = Object.assign({}, propsOrChildren, newPropsOrChildren);
+      const newProps = merge(propsOrChildren, newPropsOrChildren);
       return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
     }
   }
