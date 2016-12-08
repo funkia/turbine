@@ -137,6 +137,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
           requestAnimationFrame(pull);
         }
       }
+      pull();
     },
     () => {
       isPulling = false;
@@ -194,7 +195,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     const performed = this.bChild.map((child) => {
       currentlyShowable = isShowable(child);
       if (currentlyShowable && wasShowable) {
-	return [undefined, child] as [A, Showable];;
+      	return [undefined, child] as [A, Showable];
       }
       const fragment = document.createDocumentFragment();
       const a = runComponentNow(fragment, <Component<A>>toComponent(child));
@@ -204,14 +205,14 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     let showableNode: Node;
     viewObserve(([_, node]) => {
       if (currentlyShowable && wasShowable) {
-	showableNode.textContent = node.toString();
+      	showableNode.nodeValue = node.toString();
       } else {
-	if (currentlyShowable) {
-	  showableNode = (<Node> node).firstChild;
-	  wasShowable = true;
-	} else {
-	  wasShowable = false;
-	}
+      	if (currentlyShowable) {
+      	  showableNode = (<Node> node).firstChild;
+      	  wasShowable = true;
+      	} else {
+      	  wasShowable = false;
+      	}
 	let i: Node = start.nextSibling;
 	while (i !== end) {
           const j = i;
