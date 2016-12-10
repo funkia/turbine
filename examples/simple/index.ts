@@ -1,6 +1,7 @@
-import {Behavior, stepper} from "hareactive/Behavior";
-import {Stream, snapshot} from "hareactive/Stream";
-import {Now} from "hareactive/Now";
+import {Behavior, stepper} from "hareactive/behavior";
+import {Stream, snapshot} from "hareactive/stream";
+import {Now} from "hareactive/now";
+import {sequence_} from "jabz/foldable";
 
 import {Component, component, runMain, list, e, text, dynamic, elements} from "../../src";
 const {span, button, br, input, div} = elements;

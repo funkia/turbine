@@ -1,8 +1,8 @@
 // import "@types/whatwg-fetch";
 
-import {Behavior, stepper} from "hareactive/Behavior";
-import {Stream, snapshot, merge, mergeList, changes} from "hareactive/Stream";
-import {Now, performStream} from "hareactive/Now";
+import {Behavior, stepper} from "hareactive/behavior";
+import {Stream, snapshot, merge, mergeList, changes} from "hareactive/stream";
+import {Now, performStream} from "hareactive/now";
 import {IO, withEffectsP} from "jabz/io";
 import {Either, left, right} from "jabz/either";
 

@@ -1,6 +1,6 @@
 import "mocha";
 import {assert} from "chai";
-import {Behavior, sink, placeholder} from "hareactive/Behavior";
+import {Behavior, sink, placeholder} from "hareactive/behavior";
 import {text, dynamic, runComponentNow, toComponent} from "../src/component";
 import {e} from "../src/dom-builder";
 

@@ -1,6 +1,6 @@
-import {Behavior} from "hareactive/Behavior";
-import {Now} from "hareactive/Now";
-import {Stream} from "hareactive/Stream";
+import {Behavior} from "hareactive/behavior";
+import {Now} from "hareactive/now";
+import {Stream} from "hareactive/stream";
 import {Component, viewObserve, Showable} from "./component";
 import {e, CreateElementFunc} from "./dom-builder";
 import {CSSStyleType} from "./CSSStyleType";

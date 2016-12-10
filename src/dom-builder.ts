@@ -1,7 +1,7 @@
 import {go} from "jabz/monad";
-import {Now} from "hareactive/Now";
-import {Stream, empty} from "hareactive/Stream";
-import {Behavior, sink, subscribe, isBehavior} from "hareactive/Behavior";
+import {Now} from "hareactive/now";
+import {Stream, empty} from "hareactive/stream";
+import {Behavior, sink, subscribe, isBehavior} from "hareactive/behavior";
 import {
   Component, runComponentNow, isGeneratorFunction,
   viewObserve, Showable, Child, isChild, toComponent

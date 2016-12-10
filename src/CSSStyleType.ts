@@ -1,4 +1,4 @@
-import {Behavior} from "hareactive/Behavior";
+import {Behavior} from "hareactive/behavior";
 
 export type StyleValue = string | Behavior<string>;
 

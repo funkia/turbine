@@ -1,6 +1,6 @@
-import {Behavior, stepper, time} from "hareactive/Behavior";
-import {Stream, snapshot} from "hareactive/Stream";
-import {Now, sample} from "hareactive/Now";
+import {Behavior, stepper, time} from "hareactive/behavior";
+import {Stream, snapshot} from "hareactive/stream";
+import {Now, sample} from "hareactive/now";
 
 import {Component, component, runMain, list, elements, dynamic} from "../../src";
 const {span, input, br, text, button, div, h1} = elements;

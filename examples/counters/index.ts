@@ -1,9 +1,9 @@
-import * as B from "hareactive/Behavior";
-import {Behavior, stepper, scan} from "hareactive/Behavior";
+import * as B from "hareactive/behavior";
+import {Behavior, stepper, scan} from "hareactive/behavior";
 import {
   Stream, merge, map, mergeList, switchStream, scanS
-} from "hareactive/Stream";
-import {Now, sample} from "hareactive/Now";
+} from "hareactive/stream";
+import {Now, sample} from "hareactive/now";
 
 import {Component, component, list, dynamic, text} from "../../src/component";
 import {runMain} from "../../src/bootstrap"

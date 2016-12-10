@@ -1,6 +1,6 @@
-import {Behavior, stepper} from "hareactive/Behavior";
-import {Stream, merge} from "hareactive/Stream";
-import {Now} from "hareactive/Now";
+import {Behavior, stepper} from "hareactive/behavior";
+import {Stream, merge} from "hareactive/stream";
+import {Now} from "hareactive/now";
 
 import {Component, component, runMain, elements} from "../../src";
 const {input, div, label} = elements;
