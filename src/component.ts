@@ -1,4 +1,5 @@
 import {Applicative} from "jabz/applicative";
+import {Foldable, sequence_} from "jabz/foldable";
 import {Monad, monad} from "jabz/monad";
 import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/now";
@@ -137,10 +138,14 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
 export type Child = Component<any> | Showable | Behavior<Showable>
-                  | (() => Iterator<Component<any>>);
+                  | (() => Iterator<Component<any>>) | ChildList;
+
+// A dummy interface is required since TypeScript doesn't handle recursive type aliases
+// See: https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
+export interface ChildList extends Array<Child> {}
 
 export function isChild(a: any): a is Child {
-  return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a);
+  return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a) || Array.isArray(a);
 }
 
 export function text(s: Showable): Component<{}> {
@@ -154,6 +159,7 @@ export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
 export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
+export function toComponent<A>(child: Array<Component<any>>): Component<{}>;
 export function toComponent<A>(child: Child): Component<any>;
 export function toComponent<A>(child: Child): Component<any> {
   if (isComponent(child)) {
@@ -164,6 +170,8 @@ export function toComponent<A>(child: Child): Component<any> {
     return go(child);
   } else if (isShowable(child)) {
     return text(child);
+  } else if (Array.isArray(child)) {
+    return sequence_(Component, child.map(toComponent));
   }
 }
 

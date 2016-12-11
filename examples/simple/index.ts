@@ -40,13 +40,12 @@ const main = component<ToView, ViewOut, {}>(
   function* view({validB, lengthB}): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
-    yield br;
-    yield text("The address is ");
-    yield dynamic(validB.map(t => t ? "valid" : "invalid"));
-    yield br;
+    yield div([``
+      text("The address is "),
+      dynamic(validB.map(t => t ? "valid" : "invalid"))
+    ]);
     const {click: calcLength} = yield button("Calculate length");
-    yield span(" The length of the email is ");
-    yield dynamic(lengthB);
+    yield div(["The length of the email is ", dynamic(lengthB)]);
     return Component.of({emailB, calcLength});
   }
 );

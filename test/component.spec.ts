@@ -3,17 +3,31 @@ import {assert} from "chai";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
 import {text, dynamic, runComponentNow, toComponent} from "../src/component";
 import {e} from "../src/dom-builder";
+import {span, div, button} from "../src/elements";
 
 describe("component", () => {
   describe("toComponent", () => {
     it("convert behavior of string to component", () => {
-      const div = document.createElement("div");
+      const divElm = document.createElement("div");
       const b = sink("Hello");
       const component = toComponent(b);
-      runComponentNow(div, component);
-      assert.strictEqual(div.textContent, "Hello");
+      runComponentNow(divElm, component);
+      assert.strictEqual(divElm.textContent, "Hello");
       b.push("world");
-      assert.strictEqual(div.textContent, "world");
+      assert.strictEqual(divElm.textContent, "world");
+    });
+    it("converts an array of components to component", () => {
+      const divElm = document.createElement("div");
+      runComponentNow(divElm, toComponent([
+        span("Hello"), div("There"), button("Click me")
+      ]));
+      assert.strictEqual(divElm.children.length, 3);
+      assert.strictEqual(divElm.children[0].tagName, 'SPAN');
+      assert.strictEqual(divElm.children[0].textContent, 'Hello');
+      assert.strictEqual(divElm.children[1].tagName, 'DIV');
+      assert.strictEqual(divElm.children[1].textContent, 'There');
+      assert.strictEqual(divElm.children[2].tagName, 'BUTTON');
+      assert.strictEqual(divElm.children[2].textContent, 'Click me');
     });
   });
   describe("text", () => {
