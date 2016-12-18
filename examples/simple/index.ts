@@ -29,7 +29,7 @@ type ViewOut = {
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circularly dependent.
 const main = component<ToView, ViewOut, {}>(
-  function* model({emailB, calcLength}): Iterator<Now<any>> {
+  function model({emailB, calcLength}): Now<any> {
     const validB = emailB.map(isValidEmail);
     // Whenever `calcLength` occurs we snapshots the value of `emailB`
     // and gets its length with `getLength`
@@ -40,13 +40,13 @@ const main = component<ToView, ViewOut, {}>(
   function* view({validB, lengthB}): Iterator<Component<any>> {
     yield span("Please enter an email address: ");
     const {inputValue: emailB} = yield input();
-    yield div([``
+    yield div([
       text("The address is "),
       dynamic(validB.map(t => t ? "valid" : "invalid"))
     ]);
     const {click: calcLength} = yield button("Calculate length");
     yield div(["The length of the email is ", dynamic(lengthB)]);
-    return Component.of({emailB, calcLength});
+    return {emailB, calcLength};
   }
 );
 

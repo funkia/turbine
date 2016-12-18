@@ -52,13 +52,16 @@ function* model({zipCode, zipInput}: ViewOut): Iterator<Now<any>> {
     mergeList([
       invalidZipCodeChange.mapTo("Not a valid zip code"),
       validZipCodeChange.mapTo("Loading ..."),
-      results.map((r) => r.match({
-        left: () => "Zip code does not exist",
-        right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
-      }))
+      results.map((r) => {
+        console.log(r);
+        return r.match({
+          left: () => "Zip code does not exist",
+          right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
+        })
+      })
     ])
   );
-  return Now.of([{status}, {}]);
+  return [{status}, {}];
 }
 
 function* view({status}: ToView): Iterator<Component<any>> {
@@ -67,7 +70,7 @@ function* view({status}: ToView): Iterator<Component<any>> {
     yield input({props: {placeholder: "Zip code"}});
   yield br;
   yield span(status);
-  return Component.of({zipCode, zipInput});
+  return {zipCode, zipInput};
 }
 
 const main = component<ToView, ViewOut, {}>(model, view);

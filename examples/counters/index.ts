@@ -38,7 +38,7 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
     const decrement = decrementClick.mapTo(-1);
     const deleteS = deleteClick.mapTo(id);
     const count = yield sample(scan(add, 0, merge(increment, decrement)));
-    return Now.of([{count}, {count, deleteS}]);
+    return [{count}, {count, deleteS}];
   },
   function* counterView({count}) {
     const {children: divStreams} = yield div(function*() {
@@ -51,9 +51,9 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       yield text(" ");
       const {click: deleteClick} = yield button("x");
       yield br;
-      return Component.of({incrementClick, decrementClick, deleteClick})
+      return {incrementClick, decrementClick, deleteClick};
     });
-    return Component.of(divStreams);
+    return divStreams;
   }
 );
 
@@ -78,17 +78,16 @@ function* mainModel({addCounter, listOut}: ToModel): Iterator<Now<any>> {
     merge(appendCounterFn, removeCounterIdFn);
   const counterIds =
     yield sample(scan(apply, [0,1,2], modifications));
-  return Now.of([{counterIds}, {}]);
+  return [{counterIds}, {}];
 }
 
 function* mainView({counterIds}: ToView): Iterator<Component<any>> {
   yield h1("Counters");
   const {click: addCounter} = yield button("Add counter")
-  yield text(" ");
   yield br;
   yield br;
   const listOut = yield list(counter, (n: number) => n, counterIds);
-  return Component.of({addCounter, listOut});
+  return {addCounter, listOut};
 }
 
 const main = component<ToView, ToModel, {}>(mainModel, mainView);

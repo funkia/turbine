@@ -18,7 +18,7 @@ type ViewOut = {
 const getValue = (ev: any) => ev.currentTarget.value;
 
 const main = component<ToView, ViewOut, {}>(
-  function* model({fahrenChange, celsiusChange}) {
+  function model({fahrenChange, celsiusChange}) {
     const fahrenNrChange = fahrenChange.map(parseFloat).filter(n => !isNaN(n));
     const celsiusNrChange = celsiusChange.map(parseFloat).filter(n => !isNaN(n));
     const celsius = stepper(0, merge(celsiusChange, fahrenNrChange.map(f => (f - 32) / 1.8)));
@@ -28,16 +28,16 @@ const main = component<ToView, ViewOut, {}>(
   function* view({celsius, fahren}) {
     const {children: {input: fahrenInput}} = yield div(function*() {
       yield label("Fahrenheit");
-      return input({props: {value: fahren}});
+      return yield input({props: {value: fahren}});
     });
     const {children: {input: celsiusInput}} = yield div(function*() {
       yield label("Celcious");
-      return input({props: {value: celsius}});
+      return yield input({props: {value: celsius}});
     });
-    return Component.of({
+    return {
       fahrenChange: fahrenInput.map(getValue),
       celsiusChange: celsiusInput.map(getValue)
-    });
+    };
   }
 );
 

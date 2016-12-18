@@ -16,7 +16,7 @@ type ViewOut = {
   snapClick: Stream<any>
 };
 
-function* model({snapClick}): Iterator<Now<any>> {
+function model({snapClick}): Now<any> {
   const msgFromClick =
     snapshot(time, snapClick).map((t) => "You last pressed the button at " + formatTime(t));
   const message = stepper("You've not clicked the button yet", msgFromClick);
@@ -29,7 +29,7 @@ function* view({time, message}): Iterator<Component<any>> {
   const {click: snapClick} = yield button("Click to snap time");
   yield br;
   yield dynamic(message);
-  return Component.of({snapClick});
+  return {snapClick};
 }
 
 const main = component<ToView, ViewOut, {}>(model, view);

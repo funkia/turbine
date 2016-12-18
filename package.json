@@ -25,7 +25,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "jabz": "^0.0.10",
+    "jabz": "^0.0.12",
     "hareactive": "^0.0.8"
   },
   "bugs": {
