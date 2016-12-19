@@ -52,6 +52,21 @@ describe("component", () => {
       b.push("world");
       assert.strictEqual(div.textContent, "world");
     });
+    it("handles behavior of component", () => {
+      const divElm = document.createElement("div");
+      const comp1 = div("Hello");
+      const comp2 = span("World");
+      const b = sink(comp1);
+      const component = dynamic(b);
+      runComponentNow(divElm, component);
+      assert.strictEqual(divElm.children.length, 1);
+      assert.strictEqual(divElm.children[0].tagName, "DIV");
+      assert.strictEqual(divElm.children[0].textContent, "Hello");
+      b.push(comp2);
+      assert.strictEqual(divElm.children.length, 1);
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "World");
+    });
     it("works with placeholder behavior", () => {
       const b = placeholder();
       const div = document.createElement("div");
