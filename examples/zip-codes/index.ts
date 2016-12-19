@@ -11,8 +11,8 @@ const {text, span, button, br, input, div} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
 
-const fetchJSON: (s: string) => IO<Either<String, any>> = withEffectsP((url: string) => {
-  return fetch(url).then((resp) => resp.ok ? resp.json().then(right) : left("Not found"));
+const fetchJSON = withEffectsP((url: string): Promise<ZipResult> => {
+  return fetch(url).then((resp) => resp.ok ? resp.json() : Promise.reject("Not found"));
 });
 
 const isValidZip = (s: string) => s.match(/^\d{5}$/) !== null;
