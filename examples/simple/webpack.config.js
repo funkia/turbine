@@ -7,17 +7,13 @@ module.exports = {
     filename: 'bundle.js'
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '']
+    extensions: [".ts", ".js", ""]
   },
-  plugins: [
-  ],
+  devtool: "#inline-source-map",
+  plugins: [],
   module: {
     loaders: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader!ts-loader'
-      }
+      {test: /\.ts$/, exclude: /node_modules/, loader: 'babel-loader!ts-loader'}
     ]
   },
   resolveLoader: {

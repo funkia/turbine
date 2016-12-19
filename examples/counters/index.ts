@@ -5,9 +5,8 @@ import {
 } from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
-import {Component, component, list, dynamic, text} from "../../src/component";
-import {runMain} from "../../src/bootstrap"
-import {span, input, br, button, div, h1} from "../../src/elements";
+import {Component, component, list, dynamic, text, runMain, elements} from "../../";
+const {span, input, br, button, div, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);

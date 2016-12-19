@@ -7,14 +7,13 @@ module.exports = {
     filename: 'bundle.js'
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '']
+    extensions: ['.ts', '.js', '']
   },
-  plugins: [
-  ],
+  plugins: [],
   module: {
     loaders: [
       {
-        test: /\.tsx?$/,
+        test: /\.ts$/,
         exclude: /node_modules/,
         loader: 'babel-loader!ts-loader'
       }

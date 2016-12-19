@@ -2,16 +2,16 @@
   "name": "@funkia/funnel",
   "version": "0.0.5",
   "description": "A functional frontend framework in Typescript",
-  "main": "dist/index.js",
-  "typings": "dist/index.d.ts",
+  "main": "dist/funnel.min.js",
+  "typings": "dist/defs/index.d.ts",
   "directories": {
     "dist": "dist"
   },
   "scripts": {
-    "prepublish": "npm run build",
-    "build": "./node_modules/.bin/tsc",
     "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-html -t html",
     "test-watch": "karma start karma-watch.conf.js",
+    "build": "./node_modules/.bin/webpack",
+    "dev": "./node_modules/.bin/webpack --progress --colors --watch",
     "codecov": "codecov -f generated/coverage-final.json"
   },
   "repository": {
@@ -49,11 +49,11 @@
     "karma-source-map-support": "^1.2.0",
     "mocha": "^3.1.0",
     "remap-istanbul": "^0.6.4",
+    "ts-loader": "^1.3.3",
     "tsify": "^1.0.7",
     "typescript": "^2.0.3",
-    "typings": "^1.0.4",
     "watchify": "^3.7.0",
-    "webpack": "^1.13.1"
+    "webpack": "^1.14.0"
   },
   "contributors": [
     {

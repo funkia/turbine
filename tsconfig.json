@@ -3,6 +3,7 @@
     "target": "es5",
     "module": "commonjs",
     "outDir": "dist",
+    "declarationDir": "./defs",
     "rootDir": "./src",
     "declaration": true,
     "noImplicitAny": true,

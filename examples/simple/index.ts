@@ -3,7 +3,7 @@ import {Stream, snapshot} from "hareactive/stream";
 import {Now} from "hareactive/now";
 import {sequence_} from "jabz/foldable";
 
-import {Component, component, runMain, list, e, text, dynamic, elements} from "../../src";
+import {Component, component, runMain, list, e, text, dynamic, elements} from "../../";
 const {span, button, br, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);

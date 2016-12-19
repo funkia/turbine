@@ -6,7 +6,7 @@ import {Now, performStream} from "hareactive/now";
 import {IO, withEffectsP} from "jabz/io";
 import {Either, left, right} from "jabz/either";
 
-import {Component, component, runMain, list, e, elements} from "../../src";
+import {Component, component, runMain, list, e, elements} from "../../";
 const {text, span, button, br, input, div} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
