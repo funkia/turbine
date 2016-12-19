@@ -2,7 +2,8 @@
   "name": "@funkia/funnel",
   "version": "0.0.5",
   "description": "A functional frontend framework in Typescript",
-  "main": "dist/funnel.min.js",
+  "main": "dist/cmjs/index.js",
+  "jsnext:main": "dist/es6/index.js",
   "typings": "dist/defs/index.d.ts",
   "directories": {
     "dist": "dist"
@@ -10,7 +11,10 @@
   "scripts": {
     "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-html -t html",
     "test-watch": "karma start karma-watch.conf.js",
-    "build": "./node_modules/.bin/webpack",
+    "build-web": "./node_modules/.bin/webpack",
+    "build-es6": "./node_modules/.bin/tsc -P tsconfig.json",
+    "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
+    "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "dev": "./node_modules/.bin/webpack --progress --colors --watch",
     "codecov": "codecov -f generated/coverage-final.json"
   },

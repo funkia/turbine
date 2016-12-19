@@ -25,6 +25,9 @@ var config = {
     root: path.resolve('./src'),
     extensions: ["", ".ts", ".js"]
   },
+  ts: {
+    configFileName: "./tsconfig-web.json"
+  },
   plugins: [
     new webpack.optimize.UglifyJsPlugin({ include: /\.min\.js$/, minimize: true})
   ]

@@ -1,0 +1,6 @@
+{
+  "extends": "./tsconfig-cmjs.json",
+  "compilerOptions": {
+    "declarationDir": "./defs"
+  }
+}
