@@ -1,6 +1,6 @@
 {
   "name": "@funkia/funnel",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
   "jsnext:main": "dist/es6/index.js",
@@ -9,14 +9,11 @@
     "dist": "dist"
   },
   "scripts": {
-    "test": "tsc -P ./tsconfig-test.json && karma start karma.conf.js && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-final.json && remap-istanbul -i ./generated/coverage-final.json -o ./generated/coverage-html -t html",
-    "test-watch": "karma start karma-watch.conf.js",
+    "test": "./node_modules/.bin/karma start karma-ts.conf.js",
     "build-web": "./node_modules/.bin/webpack",
     "build-es6": "./node_modules/.bin/tsc -P tsconfig.json",
     "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
-    "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
-    "dev": "./node_modules/.bin/webpack --progress --colors --watch",
-    "codecov": "codecov -f generated/coverage-final.json"
+    "build": "npm run build-web; npm run build-es6; npm run build-cmjs"
   },
   "repository": {
     "type": "git",
@@ -39,24 +36,15 @@
   "devDependencies": {
     "@types/chai": "^3.4.33",
     "@types/mocha": "^2.2.32",
-    "browserify": "^13.1.0",
-    "browserify-istanbul": "^2.0.0",
     "chai": "^3.5.0",
-    "codecov": "^1.0.1",
     "karma": "^1.3.0",
-    "karma-browserify": "^5.1.0",
     "karma-chrome-launcher": "^2.0.0",
-    "karma-coverage": "^1.1.1",
+    "karma-cli": "^1.0.1",
     "karma-mocha": "^1.2.0",
-    "karma-mocha-reporter": "^2.2.0",
-    "karma-phantomjs-launcher": "^1.0.2",
-    "karma-source-map-support": "^1.2.0",
+    "karma-typescript": "^2.1.5",
     "mocha": "^3.1.0",
-    "remap-istanbul": "^0.6.4",
     "ts-loader": "^1.3.3",
-    "tsify": "^1.0.7",
     "typescript": "^2.0.3",
-    "watchify": "^3.7.0",
     "webpack": "^1.14.0"
   },
   "contributors": [
