@@ -6,13 +6,13 @@ module.exports = function(config) {
       {pattern: "test/**/*.ts"}
     ],
     preprocessors: {
-      "**/*.ts": ["karma-typescript"]
+      "src/**/*.ts": ["karma-typescript"],
+      "test/**/*.ts": ["karma-typescript"]
     },
     reporters: ["progress", "karma-typescript"],
     browsers: ["Chrome"],
     karmaTypescriptConfig: {
-      tsconfig: "tsconfig-test.json",
-      include: ["src/**/*.ts", "test/**/*.ts"]
+      tsconfig: "tsconfig-test.json"
     }
   });
 };

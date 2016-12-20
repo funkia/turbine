@@ -1,8 +1,17 @@
 {
   "extends": "./tsconfig.json",
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
     "module": "commonjs",
-    "rootDir": "."
-  }
+    "outDir": "tmp",
+    "rootDir": ".",
+    "target": "ES5",
+    "types" : [
+      "mocha"
+    ]
+  },
+  "include": [
+    "src/**/*.ts",
+    "test/**/*.ts"
+  ]
 }

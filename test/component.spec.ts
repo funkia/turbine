@@ -1,4 +1,3 @@
-import "mocha";
 import {assert} from "chai";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
 import {text, dynamic, runComponentNow, toComponent, e, elements} from "../src";
