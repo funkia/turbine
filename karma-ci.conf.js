@@ -1,20 +1,43 @@
-var browsers = {                                 // 1
-  sl_chrome: {
-    base: 'SauceLabs',
-    browserName: 'chrome',
-    platform: 'Windows 7',
-    version: '35'
+const browsers = {
+  sl_chrome_35: {
+    base: "SauceLabs",
+    browserName: "chrome",
+    platform: "Windows 7",
+    version: "35"
   },
-  sl_firefox: {
-    base: 'SauceLabs',
-    browserName: 'firefox',
-    version: '50'
+  sl_firefox_50: {
+    base: "SauceLabs",
+    browserName: "firefox",
+    version: "50"
+  },
+  sl_firefox_45: {
+    base: "SauceLabs",
+    browserName: "firefox",
+    version: "45"
   },
   sl_ie_11: {
-    base: 'SauceLabs',
-    browserName: 'internet explorer',
-    platform: 'Windows 8.1',
-    version: '11'
+    base: "SauceLabs",
+    browserName: "internet explorer",
+    platform: "Windows 8.1",
+    version: "11"
+  },
+  sl_ie_10: {
+    base: "SauceLabs",
+    browserName: "internet explorer",
+    platform: "Windows 7",
+    version: "10"
+  },
+  sl_edge_13: {
+    base: "SauceLabs",
+    browserName: "MicrosoftEdge",
+    platform: "Windows 10",
+    version: "13.10586"
+  },
+  sl_safari: {
+    base: "SauceLabs",
+    browserName: "safari",
+    platform: "macOS 10.12",
+    version: "10.0"
   }
 };
 
@@ -29,9 +52,9 @@ module.exports = function(config) {
       "src/**/*.ts": ["karma-typescript"],
       "test/**/*.ts": ["karma-typescript"]
     },
-    reporters: ["mocha", "saucelabs", "karma-typescript"],
+    reporters: ["saucelabs", "karma-typescript"],
     sauceLabs: {
-      testName: 'Karma and Sauce Labs demo',
+      testName: "Funnel - Travis CI Karma",
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
       startConnect: false
     },

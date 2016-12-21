@@ -30,7 +30,7 @@ npm install --save jabz hareactive
 ## Contributing
 
 Run tests once with the below command. It will additionally generate
-an HTML coverage report in `./generated/coverage-html`.
+an HTML coverage report in `./coverage`.
 
 ```sh
 npm test
