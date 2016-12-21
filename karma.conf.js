@@ -10,11 +10,10 @@ module.exports = function(config) {
       "test/**/*.ts": ["karma-typescript"]
     },
     reporters: ["mocha", "karma-typescript"],
-    browsers: ["PhantomJS", "Chrome"],
+    browsers: ["PhantomJS"],
     karmaTypescriptConfig: {
       tsconfig: "tsconfig-test.json",
       reports: {
-	json: "coverage",
 	html: "coverage",
 	text: ""
       }
