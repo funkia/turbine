@@ -3,6 +3,9 @@
 # Funnel
 A functional reactive frontend framework for building webapplications.
 
+[![Build Status](https://travis-ci.org/Funkia/funnel.svg?branch=master)](https://travis-ci.org/Funkia/funnel)
+[![codecov](https://codecov.io/gh/Funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/Funkia/funnel)
+
 ## Buzzwords you might like:
 * Functional
 * Reactive
