@@ -1,9 +1,7 @@
-import "mocha";
 import {assert} from "chai";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
-import {text, dynamic, runComponentNow, toComponent} from "../src/component";
-import {e} from "../src/dom-builder";
-import {span, div, button} from "../src/elements";
+import {text, dynamic, runComponentNow, toComponent, e, elements} from "../src";
+const {span, div, button} = elements;
 
 describe("component", () => {
   describe("toComponent", () => {

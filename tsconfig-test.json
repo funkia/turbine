@@ -1,20 +1,17 @@
 {
+  "extends": "./tsconfig.json",
+  "compileOnSave": false,
   "compilerOptions": {
-    "target": "es5",
     "module": "commonjs",
-    "outDir": "./generated",
-    "rootDir": "./",
-    "declaration": true,
-    "noImplicitAny": true,
-    "sourceMap": true,
-    "experimentalDecorators": true,
-    "lib": ["dom", "es5", "es2015.core", "es2015.promise", "es2015.iterable", "es2015.proxy"]
+    "outDir": "tmp",
+    "rootDir": ".",
+    "target": "ES5",
+    "types" : [
+      "mocha"
+    ]
   },
   "include": [
     "src/**/*.ts",
     "test/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }

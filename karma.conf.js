@@ -1,29 +1,18 @@
 module.exports = function(config) {
-  var istanbul = require('browserify-istanbul');
   config.set({
-    frameworks: ['browserify', 'mocha'],
+    frameworks: ["mocha", "karma-typescript"],
     files: [
-      './generated/test/**/*.js',
-      './generated/src/**/*.js'
+      {pattern: "src/**/*.ts"},
+      {pattern: "test/**/*.ts"}
     ],
     preprocessors: {
-      './generated/test/**/*.js': ['browserify'],
-      './generated/src/**/*.js': ['browserify']
+      "src/**/*.ts": ["karma-typescript"],
+      "test/**/*.ts": ["karma-typescript"]
     },
-    browserify: {
-      transform: [
-        istanbul
-      ]
-    },
-    browsers: ['Chromium'],
-    reporters: ['mocha', 'coverage'],
-    coverageReporter: {
-      type: 'json',
-      dir: './generated',
-      subdir: function (browser) {
-        return browser.toLowerCase().split(/[ /-]/)[0];
-      }
-    },
-    singleRun: true
+    reporters: ["progress", "karma-typescript"],
+    browsers: ["Chrome"],
+    karmaTypescriptConfig: {
+      tsconfig: "tsconfig-test.json"
+    }
   });
 };
