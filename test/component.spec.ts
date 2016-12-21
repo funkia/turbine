@@ -1,9 +1,10 @@
 import {assert} from "chai";
+import {Now} from "hareactive/now";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
-import {text, dynamic, runComponentNow, toComponent, e, elements} from "../src";
+import {text, dynamic, runComponentNow, toComponent, component, e, elements} from "../src";
 const {span, div, button} = elements;
 
-describe("component", () => {
+describe("component specs", () => {
   describe("toComponent", () => {
     it("convert behavior of string to component", () => {
       const divElm = document.createElement("div");
@@ -74,4 +75,22 @@ describe("component", () => {
       assert.strictEqual(div.textContent, "Hello");
     });
   });
+  
+  describe("component", () => {
+    it("simpel component", () => {
+      const div = document.createElement("div");
+      const c = component(
+	function model() {
+	  return Now.of([]);
+	},
+	function view() {
+	  return span("World");
+	}
+      );
+      runComponentNow(div, c);
+      assert.strictEqual(div.children[0].tagName, "SPAN");
+      assert.strictEqual(div.children[0].textContent, "World");
+    });
+  });
 });
+
