@@ -88,6 +88,20 @@ describe("component specs", () => {
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "World");
     });
+
+    it("simpel span component", () => {
+      const c = component(
+	function model() {
+	  return Now.of([{}, {}]);
+	},
+	function view() {
+	  return span("World");
+	}
+      );
+      runComponentNow(divElm, c);
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "World");
+    });
   });
 });
 
