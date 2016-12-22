@@ -1,7 +1,7 @@
 import {Behavior} from "hareactive/behavior";
 import {Now} from "hareactive/now";
 import {Stream} from "hareactive/stream";
-import {Component, viewObserve, Showable} from "./component";
+import {Component, viewObserve, Showable, ChildList} from "./component";
 import {e, CreateElementFunc} from "./dom-builder";
 import {CSSStyleType} from "./CSSStyleType";
 
@@ -21,6 +21,9 @@ export const span = e("span");
 export const h1 = e("h1");
 export const div = e("div");
 export const label = e("label");
+export const ul = e("ul");
+export const li = e("li");
+export const section = e("section");
 export const button = e("button", { streams: [
   ["click", "click", id]
 ]});

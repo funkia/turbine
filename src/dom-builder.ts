@@ -34,15 +34,23 @@ class CreateDomNow<A> extends Now<A> {
   run(): A {
     let output: any = {};
 
-    const parsedTag = this.tagName.match(/[.#]?\w+/g);
+    const parsedTag = this.tagName.split(/(?=\.)|(?=#)|(?=\[)/);
     const elm = document.createElement(parsedTag[0]);
     for (let i = 1; i < parsedTag.length; i++) {
-      let classOrId = parsedTag[i];
-      let name = classOrId.substring(1, classOrId.length);
-      if (classOrId[0] === "#") {
-        elm.setAttribute("id", name);
-      } else if (classOrId[0] === ".") {
-        elm.classList.add(name);
+      const token = parsedTag[i];
+      switch (token[0]) {
+	case '#':
+        elm.id = token.slice(1);
+        break;
+      case '.':
+        elm.classList.add(token.slice(1));
+        break;
+      case '[':
+	const attr = token.slice(1,-1).split('=');
+        elm.setAttribute(attr[0], attr[1] || "");
+        break;
+      default:
+	throw new Error("Unknown symbol");
       }
     }
 
