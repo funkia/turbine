@@ -17,14 +17,22 @@ const ul = e("ul.filters")(function*() {
   yield filterItem("Completed");
 });
 const clearBtn = e("button.clear-completed")("Clear completed");
+const length = (list: any[]) => list.length;
+const isEmpty = (list: any[]) => list.length == 0;
 
+type toView = {
+  todosB: Behavior<string[]>
+}
 
-export const todoFooter = go(function*() {
-  const {children} = yield footer(function*() {
-    yield remainer(sink(2));
+export function todoFooterView({todosB}: toView) {
+  return footer({
+    class: {
+      hidden: todosB.map(isEmpty)
+    }
+  }, function*() {
+    yield remainer(todosB.map(length));
     yield ul;
     yield clearBtn;
     return {};
   });
-  return children
-});
+}
