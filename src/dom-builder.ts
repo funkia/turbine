@@ -21,6 +21,9 @@ export type Properties = {
   },
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
+  },
+  class?: {
+    [name: string]: boolean | Behavior<boolean>;
   }
 };
 
@@ -84,6 +87,16 @@ class CreateDomNow<A> extends Now<A> {
             viewObserve((newValue) => (<any>elm)[name] = newValue, value);
           } else {
             (<any>elm)[name] = value;
+          }
+        }
+      }
+      if (this.props.class !== undefined) {
+        for (const name in this.props.class) {
+          const value = this.props.class[name];
+          if (isBehavior(value)) {
+            viewObserve((newValue) => elm.classList.toggle(name, newValue), value);
+          } else {
+	    elm.classList.toggle(name, value);
           }
         }
       }
