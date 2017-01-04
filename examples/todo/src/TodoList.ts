@@ -30,13 +30,13 @@ const btn = e("button.destroy");
 
 const isEmpty = (list: any[]) => list.length == 0;
 
-type ItemToView = {
+export type Item = {
   taskName: string,
   isCompleteB: Behavior<boolean>,
   isEditingB: Behavior<boolean>
 };
 
-function itemView({taskName, isCompleteB, isEditingB}: ItemToView) {
+function itemView({taskName, isCompleteB, isEditingB}: Item) {
   return li({
     class: {
       completed: isCompleteB,
@@ -54,14 +54,10 @@ function itemView({taskName, isCompleteB, isEditingB}: ItemToView) {
   });
 }
 
-const arrayToLI = (list: string[]) => list.map((taskName) => itemView({
-  taskName,
-  isCompleteB: sink(false),
-  isEditingB: sink(false)
-}));
+const arrayToLI = (list: Item[]) => list.map(itemView);
 
 type ToView = {
-  todosB: Behavior<string[]>
+  todosB: Behavior<Item[]>
 };
 
 export default ({todosB}: ToView) => sectionMain({

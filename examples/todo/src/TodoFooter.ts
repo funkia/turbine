@@ -9,19 +9,23 @@ const {label, li, a} = elements;
 const footer = e("footer.footer");
 const strong = e("strong");
 const formatRemainer = (value: number) => `${value} item${(value == 1)?"":"s"} left`;
-const remainer = (remainingB: Behavior<number>) => e("span.todo-count")(strong(remainingB.map(formatRemainer)));
+const remainer = (remainingB: Behavior<number>) => e("span.todo-count", strong(remainingB.map(formatRemainer)))();
 const filterItem = (name: string) => li(a(name));
-const ul = e("ul.filters")(function*() {
+const ul = e("ul.filters", function*() {
   yield filterItem("All");
   yield filterItem("Active");
   yield filterItem("Completed");
-});
-const clearBtn = e("button.clear-completed")("Clear completed");
+})();
+const clearBtn = e("button.clear-completed", {
+  streams: [
+    ["click", "clickS", (evt) => 1]
+  ]
+}, "Clear completed")();
 const length = (list: any[]) => list.length;
 const isEmpty = (list: any[]) => list.length == 0;
 
 type toView = {
-  todosB: Behavior<string[]>
+  todosB: Behavior<any[]>
 }
 
 export function todoFooterView({todosB}: toView) {
