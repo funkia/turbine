@@ -119,21 +119,20 @@ class CreateDomNow<A> extends Now<A> {
 
 function parseCSSTagname(cssTagName: string): [string, Properties] {
   const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
-  const result: Properties = {
-    props: {},
-    class: {},
-    attribute: {}
-  };
+  const result: Properties = {};
   for (let i = 1; i < parsedTag.length; i++) {
     const token = parsedTag[i];
     switch (token[0]) {
     case '#':
+      result.props = result.props || {};
       result.props["id"] = token.slice(1);
       break;
     case '.':
+      result.class = result.class || {};
       result.class[token.slice(1)] = true;
       break;
     case '[':
+      result.attribute = result.attribute || {};
       const attr = token.slice(1,-1).split('=');
       result.attribute[attr[0]] = attr[1] || "";
       break;
