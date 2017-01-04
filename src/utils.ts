@@ -9,9 +9,14 @@ export function merge(...objects: any[]): any { // .length of function is 2
       const keys: string[] = Object.keys(nextSource);
       for (let i = 0; i < keys.length; i++) {
 	const nextKey = keys[i];
-	const nextItem = nextSource[nextKey]
-	if (isObject(nextItem)) {
-	  result[nextKey] = merge(result[nextKey], nextItem);
+	const nextItem = nextSource[nextKey];
+	if (isObject(nextSource[nextKey])) {
+	  const subKeys: string[] = Object.keys(nextSource[nextKey]);
+	  result[nextKey] = result[nextKey] || {};
+	  for (let j = 0; j < subKeys.length; j++) {
+	    const nextSubKey = subKeys[j];
+	    result[nextKey][nextSubKey] = nextItem[nextSubKey];
+	  }
 	} else {
 	  result[nextKey] = nextItem;
 	}

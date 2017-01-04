@@ -14,23 +14,28 @@ describe("utils: merge", () => {
     const ab = merge(a, b);
     assert.deepEqual(ab, {name: "Bob", age: 41});
   });
-
-  it("deep merging objects", () => {
-    const deepObj1 = {
-      user: {
-	name: "Alice",
-	age: 24
-      },
-      posts: []
+  it("merge two levels deep ", () => {
+    const a = {
+      name: "Alice",
+      friend: {
+	name: "john",
+	age: 70
+      }
     };
-    const deepObj2 = {
-      user: {
-	name: "Bob",
-	age: 41
-      },
-      posts: []
+    const b = {
+      name: "Bob",
+      age: 41,
+      friend: {name: "walter" }
     };
-    const result = merge(deepObj1, deepObj2);
-    assert.deepEqual(result, deepObj2);
+    const ab = merge(a, b);
+    assert.deepEqual(ab, {
+      name: "Bob",
+      age: 41,
+      friend: {
+	name: "walter",
+	age: 70
+      }
+    });
   });
+
 });
