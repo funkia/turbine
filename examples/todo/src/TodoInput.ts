@@ -1,40 +1,45 @@
-import {Behavior} from "hareactive/behavior";
-import {Stream, snapshot, filter} from "hareactive/stream";
+import {Behavior, stepper} from "hareactive/behavior";
+import {Stream, snapshot, filter, changes, merge} from "hareactive/stream";
 import {Now} from "hareactive/now";
+import {Properties} from "../../../src/dom-builder";
 
 import {runMain, Component, component, e} from "../../../src";
+import {input} from "../../../src/elements";
 
 const KEYCODE_ENTER = 13;
-const isEnterKey = (keycode: number) => keycode === KEYCODE_ENTER;
+const isEnterKey = (ev: any) => ev.keyCode === KEYCODE_ENTER;
 const isValidValue = (value: string) => value !== "";
 
 type FromView = {
   checkAllS: Stream<any>,
-  keyup: Stream<number>,
+  keyup: Stream<Event>,
   inputValue: Behavior<string>
-}
+};
+
+type ToView = {
+  clearedValue: Behavior<string>
+};
 
 type Out = {
   checkAllS: Stream<any>,
   enterTodoS: Stream<string>
 };
 
-const input = e("input.new-todo[autofocus][autocomplete=off][placeholder=What needs to be done?]", {
-  streams: [
-    ["keyup", "keyup", (evt: any) => evt.keyCode]
-  ],
-  behaviors: [
-    ["input", "inputValue", (evt: any) => evt.target.value, ""]
-  ]
-});
-
-export const todoInput = component<{}, FromView, Out>(
-  function model({keyup, inputValue}): Now<[{}, Out]> {
-    const enterS = keyup.filter(isEnterKey);
-    const enterTodoS = snapshot(inputValue, enterS).filter(isValidValue);
-    return Now.of([{}, {enterTodoS}]);
+export const todoInput = component<ToView, FromView, Out>(
+  ({keyup, inputValue}) => {
+    const enterPressed = keyup.filter(isEnterKey);
+    const enterTodoS = snapshot(inputValue, enterPressed).filter(isValidValue);
+    const clearedValue = stepper(
+      "", merge(changes(inputValue), enterPressed.mapTo(""))
+    );
+    return Now.of([{clearedValue}, {enterTodoS}]);
   },
-  function view() {
-    return input();
-  }
+  ({clearedValue}: ToView) =>
+    input({
+      class: "new-todo",
+      props: {value: clearedValue},
+      attribute: {
+        autofocus: "true", autocomplete: "off", placeholder: "What needs to bo done?"
+      }
+    })
 );

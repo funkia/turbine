@@ -12,6 +12,7 @@ export const input = e("input", {
     ["input", "inputValue", (evt: any) => evt.target.value, ""]
   ],
   streams: [
+    ["keyup", "keyup", id],
     ["input", "input", id]
   ]
 });
