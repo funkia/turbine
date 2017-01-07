@@ -5,7 +5,7 @@ import {
 } from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
-import {Component, component, list, dynamic, text, runMain, elements} from "../../";
+import {Component, component, list, dynamic, text, runMain, elements} from "../../src";
 const {span, input, br, button, div, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
@@ -40,7 +40,7 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
     return [{count}, {count, deleteS}];
   },
   function* counterView({count}) {
-    const {children: divStreams} = yield div(function*() {
+    return yield div(function*() {
       yield text("Counter ");
       yield dynamic(count);
       yield text(" ");
@@ -52,7 +52,6 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       yield br;
       return {incrementClick, decrementClick, deleteClick};
     });
-    return divStreams;
   }
 );
 
@@ -82,7 +81,7 @@ function* mainModel({addCounter, listOut}: ToModel): Iterator<Now<any>> {
 
 function* mainView({counterIds}: ToView): Iterator<Component<any>> {
   yield h1("Counters");
-  const {click: addCounter} = yield button("Add counter")
+  const {click: addCounter} = yield button("Add counter");
   yield br;
   yield br;
   const listOut = yield list(counter, (n: number) => n, counterIds);

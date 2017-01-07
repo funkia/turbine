@@ -46,22 +46,6 @@ describe("dom-builder: e()", () => {
 
   describe("children", () => {
 
-    it("default text", () => {
-      const spanFac = e("span", "default text");
-      const spanC = spanFac();
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "default text");
-    });
-
-    it("override text", () => {
-      const spanFac = e("span", "default text");
-      const spanC = spanFac("override text");
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "override text");
-    });
-
     it("nested", () => {
       const spanFac = e("span");
       const h1Fac = e("h1");
@@ -107,18 +91,17 @@ describe("dom-builder: e()", () => {
   describe("properties and children combinations", () => {
 
     it("e(children)         fac(props) ", () => {
-      const spanFac = e("span", "default text");
+      const spanFac = e("span");
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }});
       const div = document.createElement("div");
       runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "default text");
       assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
 
     it("e(children)         fac(props, children) ", () => {
-      const spanFac = e("span", "default text");
+      const spanFac = e("span");
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }}, "override text");
