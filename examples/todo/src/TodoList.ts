@@ -38,7 +38,7 @@ export type Item = {
 
 function itemView({taskName, isCompleteB, isEditingB}: Item) {
   return li({
-    class: {
+    classToggle: {
       completed: isCompleteB,
       editing: isEditingB
     }
@@ -61,7 +61,7 @@ type ToView = {
 };
 
 export default ({todosB}: ToView) => sectionMain({
-  class: {
+  classToggle: {
     hidden: todosB.map(isEmpty)
   }
 }, function*() {

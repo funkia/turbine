@@ -8,9 +8,10 @@ import {todoInput} from "./src/TodoInput";
 import todoList, {Item} from "./src/TodoList";
 import {todoFooterView} from "./src/TodoFooter";
 
+const concat = <A>(a: A[], b: A[]): A[] => [].concat(b, a);
+
 const sectionTodoApp = e("section.todoapp");
 const headerHeader = e("header.header");
-const concat = <A>(a: A[], b: A[]): A[] => [].concat(b, a);
 const toItem = (taskName: string) => ({
   taskName,
   isCompleteB: sink(false),
@@ -18,7 +19,7 @@ const toItem = (taskName: string) => ({
 });
 
 
-const footer = e("footer.info", function*() {
+const footer = e("footer.info")(function*() {
   yield p("Double-click to edit a todo");
   yield p("Written with Funnel");
   yield p("Part of TodoMVC");
@@ -48,7 +49,7 @@ function* view({todoItemListB}: ToView) {
     yield todoFooterView({todosB: todoItemListB});
     return {checkAllS, enterTodoS};
   });
-  yield footer();
+  yield footer;
   return children;
 }
 

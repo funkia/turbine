@@ -16,11 +16,13 @@ const ul = e("ul.filters", function*() {
   yield filterItem("Active");
   yield filterItem("Completed");
 })();
+
 const clearBtn = e("button.clear-completed", {
   streams: [
     ["click", "clickS", (evt) => 1]
   ]
-}, "Clear completed")();
+})("Clear completed");
+
 const length = (list: any[]) => list.length;
 const isEmpty = (list: any[]) => list.length == 0;
 
@@ -30,7 +32,7 @@ type toView = {
 
 export function todoFooterView({todosB}: toView) {
   return footer({
-    class: {
+    classToggle: {
       hidden: todosB.map(isEmpty)
     }
   }, function*() {

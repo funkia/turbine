@@ -19,7 +19,7 @@ type Out = {
   enterTodoS: Stream<string>
 };
 
-const input = e("input.new-todo[autofocus][autocomplete=off][placeholder=What needs to be done?]" , {
+const input = e("input.new-todo[autofocus][autocomplete=off][placeholder=What needs to be done?]", {
   streams: [
     ["keyup", "keyup", (evt: any) => evt.keyCode]
   ],
