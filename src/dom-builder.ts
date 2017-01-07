@@ -23,7 +23,8 @@ export type Properties = {
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
   },
-  class?: {
+  class?: string,
+  classToggle?: {
     [name: string]: boolean | Behavior<boolean>;
   }
 };
@@ -73,8 +74,14 @@ class CreateDomNow<A> extends Now<A> {
         }
       }
       if (this.props.class !== undefined) {
-        for (const name in this.props.class) {
-          const value = this.props.class[name];
+        const classes = this.props.class.split(" ");
+        for (const name of classes) {
+          elm.classList.add(name);
+        }
+      }
+      if (this.props.classToggle !== undefined) {
+        for (const name in this.props.classToggle) {
+          const value = this.props.classToggle[name];
           if (isBehavior(value)) {
             viewObserve((newValue) => elm.classList.toggle(name, newValue), value);
           } else {
@@ -134,8 +141,8 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
       result.props["id"] = token.slice(1);
       break;
     case '.':
-      result.class = result.class || {};
-      result.class[token.slice(1)] = true;
+      result.classToggle = result.classToggle || {};
+      result.classToggle[token.slice(1)] = true;
       break;
     case '[':
       result.attribute = result.attribute || {};
@@ -161,7 +168,7 @@ export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc
   function createElement(props: Properties, bChildren: Child): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<A>(p, tagName, props, newPropsOrChildren));
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, props, newPropsOrChildren));
     } else {
       const newProps = merge(props, newPropsOrChildren);
       return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined));
