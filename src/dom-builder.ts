@@ -13,6 +13,7 @@ export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 
 export type Properties = {
+  wrapper?: boolean,
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
@@ -109,7 +110,12 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      output.children = runComponentNow(elm, toComponent(this.children));
+      const childOutput = runComponentNow(elm, toComponent(this.children));
+      if (this.props.wrapper === true) {
+        output = childOutput;
+      } else {
+        output.children = childOutput;
+      }
     }
     this.parent.appendChild(elm);
     return output;
@@ -145,28 +151,20 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
 
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
-export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, children: Child): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties, children: Child): CreateElementFunc<A>;
-export function e<A>(tagName: string, propsOrChildren?: Properties | Child, children?: Child): CreateElementFunc<A> {
-  
+
+export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-    
+  props = merge(props, tagProps);
   function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
-  function createElement(aChildren: Child): Component<A>;
+  function createElement(child: Child): Component<A>;
   function createElement(props: Properties, bChildren: Child): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      const newProps = merge(tagProps,  propsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newPropsOrChildren));
-    } else if (isChild(propsOrChildren)) {
-      const newProps = merge(tagProps, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || propsOrChildren));
+      return new Component((p) => new CreateDomNow<A>(p, tagName, props, newPropsOrChildren));
     } else {
-      const newProps = merge(tagProps, propsOrChildren, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || children));
+      const newProps = merge(props, newPropsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
   return createElement;

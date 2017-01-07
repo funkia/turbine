@@ -60,6 +60,7 @@ module.exports = function(config) {
     },
     browsers: Object.keys(browsers),
     customLaunchers: browsers,
+    concurrency: 5,
     karmaTypescriptConfig: {
       tsconfig: "tsconfig-test.json",
       reports: {
