@@ -35,6 +35,14 @@ describe("dom-builder: e()", () => {
     assert.strictEqual(div.children[0].classList.toString(), "someClass otherClass");
   });
 
+  it("adds static classes", () => {
+    const divElm = document.createElement("div");
+    runComponentNow(divElm, e("div")({class: "foo bar baz"}));
+    assert(divElm.children[0].classList.contains("foo"));
+    assert(divElm.children[0].classList.contains("bar"));
+    assert(divElm.children[0].classList.contains("baz"));
+  });
+
   it("with id", () => {
     const spanFac = e("span#someId");
     const spanC = spanFac();
