@@ -9,14 +9,13 @@ const {div, li, input, label, ul, section, button, checkbox} = elements;
 const isEmpty = (list: any[]) => list.length == 0;
 
 type ToView = {
-  todosB: Behavior<Item[]>,
   todoNames: Behavior<string[]>
 };
 
-export default ({todosB, todoNames}: ToView) => section({
+export default ({todoNames}: ToView) => section({
   class: "main",
   classToggle: {
-    hidden: todosB.map(isEmpty)
+    hidden: todoNames.map(isEmpty)
   }
 }, function*() {
   yield checkbox({class: "toggle-all"});

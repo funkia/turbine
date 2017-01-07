@@ -26,24 +26,21 @@ type FromView = {
 
 function* model({enterTodoS}: FromView) {
   const todoNames = yield sample(scan(concat, [], enterTodoS));
-  const todoItemListB: Behavior<Item[]> = todoNames.map((list: string[]) => list.map(toItem));
-
-  return [{todoNames, todoItemListB}, {}];
+  return [{todoNames}, {}];
 }
 
 type ToView = {
-  todoItemListB: Behavior<Item[]>,
   todoNames: Behavior<string[]>
 };
 
-function* view({todoItemListB, todoNames}: ToView) {
+function* view({todoNames}: ToView) {
   const {children} = yield sectionTodoApp(function* () {
     const {checkAllS, enterTodoS} = yield header({class: "header"}, function* () {
       yield h1("todos");
       return yield todoInput;
     });
-    yield todoList({todosB: todoItemListB, todoNames});
-    yield todoFooterView({todosB: todoItemListB});
+    yield todoList({todoNames});
+    yield todoFooterView({todosB: todoNames});
     return {checkAllS, enterTodoS};
   });
   yield todoFooter;
