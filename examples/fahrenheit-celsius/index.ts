@@ -2,7 +2,7 @@ import {Behavior, stepper} from "hareactive/behavior";
 import {Stream, merge} from "hareactive/stream";
 import {Now} from "hareactive/now";
 
-import {Component, component, runMain, elements} from "../../";
+import {Component, component, runMain, elements} from "../../src";
 const {input, div, label} = elements;
 
 type ToView = {
@@ -26,11 +26,11 @@ const main = component<ToView, ViewOut, {}>(
     return Now.of([{celsius, fahren}, {}]);
   },
   function* view({celsius, fahren}: ToView) {
-    const {children: {input: fahrenInput}} = yield div(function*() {
+    const {input: fahrenInput} = yield div(function*() {
       yield label("Fahrenheit");
       return yield input({props: {value: fahren}});
     });
-    const {children: {input: celsiusInput}} = yield div(function*() {
+    const {input: celsiusInput} = yield div(function*() {
       yield label("Celcious");
       return yield input({props: {value: celsius}});
     });

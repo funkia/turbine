@@ -13,6 +13,7 @@ export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
 
 export type Properties = {
+  wrapper?: boolean,
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
@@ -109,7 +110,12 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      output.children = runComponentNow(elm, toComponent(this.children));
+      const childOutput = runComponentNow(elm, toComponent(this.children));
+      if (this.props.wrapper === true) {
+        output = childOutput;
+      } else {
+        output.children = childOutput;
+      }
     }
     this.parent.appendChild(elm);
     return output;

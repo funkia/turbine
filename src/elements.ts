@@ -17,16 +17,16 @@ export const input = e("input", {
 });
 
 export const br      = e("br")();
-export const span    = e("span");
+export const span    = e("span", {wrapper: true});
+export const div     = e("div", {wrapper: true});
+export const p       = e("p", {wrapper: true});
 export const h1      = e("h1");
-export const div     = e("div");
 export const label   = e("label");
 export const ul      = e("ul");
 export const li      = e("li");
 export const a       = e("a");
-export const p       = e("p");
 export const section = e("section");
-export const button  = e("button", { streams: [
+export const button  = e("button", {streams: [
   ["click", "click", id]
 ]});
 
