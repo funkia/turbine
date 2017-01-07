@@ -151,28 +151,17 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
 
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
-export function e<A>(tagName: string): CreateElementFunc<A>;
-export function e<A>(tagName: string, children: Child): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
-export function e<A>(tagName: string, props: Properties, children: Child): CreateElementFunc<A>;
-export function e<A>(tagName: string, propsOrChildren?: Properties | Child, children?: Child): CreateElementFunc<A> {
-  
-  const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-    
+export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
   function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
-  function createElement(aChildren: Child): Component<A>;
+  function createElement(child: Child): Component<A>;
   function createElement(props: Properties, bChildren: Child): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      const newProps = merge(tagProps,  propsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newPropsOrChildren));
-    } else if (isChild(propsOrChildren)) {
-      const newProps = merge(tagProps, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || propsOrChildren));
+      return new Component((p) => new CreateDomNow<A>(p, tagName, props, newPropsOrChildren));
     } else {
-      const newProps = merge(tagProps, propsOrChildren, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || children));
+      const newProps = merge(props, newPropsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined));
     }
   }
   return createElement;
