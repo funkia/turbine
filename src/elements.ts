@@ -16,6 +16,12 @@ export const input = e("input", {
     ["input", "input", id]
   ]
 });
+export const checkbox = e("input[type=checkbox]", {
+  behaviors: [
+    ["change", "checked", (evt: any) => evt.target.checked, false]
+  ]
+});
+
 
 export const br      = e("br")();
 export const span    = e("span", {wrapper: true});

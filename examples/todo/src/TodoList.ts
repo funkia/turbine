@@ -2,29 +2,8 @@ import {Behavior, stepper, scan, sink} from "hareactive/behavior";
 import {Stream, snapshot, filter} from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
-import {runMain, Component, component, dynamic, e, elements} from "../../../src";
-const {div, li, input, label} = elements;
-
-const sectionMain = e("section.main");
-const checkboxAll = e("input.toggle-all[type=checkbox]", {
-  behaviors: [
-    ["change", "checked", (evt) => {
-      console.log(evt)
-      return 1;
-    }, 0]
-  ]
-});
-const checkbox = e("input.toggle[type=checkbox]", {
-  behaviors: [
-    ["change", "checked", (evt) => {
-      console.log(evt)
-      return 1;
-    }, 0]
-  ]
-});
-
-const ul = e("ul.todo-list");
-const btn = e("button.destroy");
+import {runMain, Component, component, dynamic, elements} from "../../../src";
+const {div, li, input, label, ul, section, button, checkbox} = elements;
 
 const isEmpty = (list: any[]) => list.length == 0;
 
@@ -40,19 +19,19 @@ export const toItem = (taskName: string): Item => ({
   isEditingB: sink(false)
 });
 
-function itemView({taskName, isCompleteB, isEditingB}: Item) {
+function itemView({taskName, isCompleteB: completed, isEditingB: editing}: Item) {
   return li({
     class: "todo",
-    classToggle: {completed: isCompleteB, editing: isEditingB}
+    classToggle: {completed, editing}
   }, function*() {
-    const {children} = yield div({class: "view"}, function*() {
-      const checked = yield checkbox();
+    yield div({class: "view"}, function*() {
+      const checked = yield checkbox({class: "toggle"});
       yield label(taskName);
-      yield btn();
+      yield button({class: "destroy"});
       return {checked};
     });
     yield input({class: "edit"});
-    return children;
+    return {};
   });
 }
 
@@ -62,11 +41,12 @@ type ToView = {
   todosB: Behavior<Item[]>
 };
 
-export default ({todosB}: ToView) => sectionMain({
+export default ({todosB}: ToView) => section({
+  class: "main",
   classToggle: {
     hidden: todosB.map(isEmpty)
   }
 }, function*() {
-  yield checkboxAll();
-  return yield ul(dynamic(todosB.map(arrayToLI)));
+  yield checkbox({class: "toggle-all"});
+  return yield ul({class: "todo-list"}, dynamic(todosB.map(arrayToLI)));
 });
