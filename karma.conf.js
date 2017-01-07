@@ -9,10 +9,14 @@ module.exports = function(config) {
       "src/**/*.ts": ["karma-typescript"],
       "test/**/*.ts": ["karma-typescript"]
     },
-    reporters: ["progress", "karma-typescript"],
-    browsers: ["Chrome"],
+    reporters: ["mocha", "karma-typescript"],
+    browsers: ["PhantomJS"],
     karmaTypescriptConfig: {
-      tsconfig: "tsconfig-test.json"
+      tsconfig: "tsconfig-test.json",
+      reports: {
+	html: "coverage",
+	text: ""
+      }
     }
   });
 };

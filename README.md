@@ -3,6 +3,10 @@
 # Funnel
 A functional reactive frontend framework for building webapplications.
 
+[![Build Status](https://travis-ci.org/Funkia/funnel.svg?branch=master)](https://travis-ci.org/Funkia/funnel)
+[![codecov](https://codecov.io/gh/Funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/Funkia/funnel)
+
+[![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 ## Buzzwords you might like:
 * Functional
 * Reactive
@@ -26,7 +30,7 @@ npm install --save jabz hareactive
 ## Contributing
 
 Run tests once with the below command. It will additionally generate
-an HTML coverage report in `./generated/coverage-html`.
+an HTML coverage report in `./coverage`.
 
 ```sh
 npm test

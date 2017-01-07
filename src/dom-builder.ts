@@ -21,6 +21,9 @@ export type Properties = {
   },
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
+  },
+  class?: {
+    [name: string]: boolean | Behavior<boolean>;
   }
 };
 
@@ -33,18 +36,7 @@ class CreateDomNow<A> extends Now<A> {
   ) { super(); };
   run(): A {
     let output: any = {};
-
-    const parsedTag = this.tagName.match(/[.#]?\w+/g);
-    const elm = document.createElement(parsedTag[0]);
-    for (let i = 1; i < parsedTag.length; i++) {
-      let classOrId = parsedTag[i];
-      let name = classOrId.substring(1, classOrId.length);
-      if (classOrId[0] === "#") {
-        elm.setAttribute("id", name);
-      } else if (classOrId[0] === ".") {
-        elm.classList.add(name);
-      }
-    }
+    const elm = document.createElement(this.tagName);
 
     if (this.props !== undefined) {
       if (this.props.style !== undefined) {
@@ -76,6 +68,16 @@ class CreateDomNow<A> extends Now<A> {
             viewObserve((newValue) => (<any>elm)[name] = newValue, value);
           } else {
             (<any>elm)[name] = value;
+          }
+        }
+      }
+      if (this.props.class !== undefined) {
+        for (const name in this.props.class) {
+          const value = this.props.class[name];
+          if (isBehavior(value)) {
+            viewObserve((newValue) => elm.classList.toggle(name, newValue), value);
+          } else {
+	    elm.classList.toggle(name, value);
           }
         }
       }
@@ -114,6 +116,33 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
+
+function parseCSSTagname(cssTagName: string): [string, Properties] {
+  const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
+  const result: Properties = {};
+  for (let i = 1; i < parsedTag.length; i++) {
+    const token = parsedTag[i];
+    switch (token[0]) {
+    case '#':
+      result.props = result.props || {};
+      result.props["id"] = token.slice(1);
+      break;
+    case '.':
+      result.class = result.class || {};
+      result.class[token.slice(1)] = true;
+      break;
+    case '[':
+      result.attribute = result.attribute || {};
+      const attr = token.slice(1,-1).split('=');
+      result.attribute[attr[0]] = attr[1] || "";
+      break;
+    default:
+      throw new Error("Unknown symbol");
+    }
+  }
+  return [parsedTag[0], result];
+}
+
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string): CreateElementFunc<A>;
@@ -121,18 +150,23 @@ export function e<A>(tagName: string, children: Child): CreateElementFunc<A>;
 export function e<A>(tagName: string, props: Properties): CreateElementFunc<A>;
 export function e<A>(tagName: string, props: Properties, children: Child): CreateElementFunc<A>;
 export function e<A>(tagName: string, propsOrChildren?: Properties | Child, children?: Child): CreateElementFunc<A> {
+  
+  const [parsedTagName, tagProps] = parseCSSTagname(tagName);
+    
   function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
   function createElement(aChildren: Child): Component<A>;
   function createElement(props: Properties, bChildren: Child): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<A>(p, tagName, propsOrChildren, newPropsOrChildren));
+      const newProps = merge(tagProps,  propsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newPropsOrChildren));
     } else if (isChild(propsOrChildren)) {
-      return new Component((p) => new CreateDomNow<A>(p, tagName, newPropsOrChildren, newChildrenOrUndefined || propsOrChildren));
+      const newProps = merge(tagProps, newPropsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || propsOrChildren));
     } else {
-      const newProps = merge(propsOrChildren, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined || children));
+      const newProps = merge(tagProps, propsOrChildren, newPropsOrChildren);
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined || children));
     }
   }
   return createElement;

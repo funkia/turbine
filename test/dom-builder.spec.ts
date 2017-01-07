@@ -78,13 +78,13 @@ describe("dom-builder: e()", () => {
     it("default style", () => {
       const spanFac = e("span", {
         style: {
-          background: "red"
+          backgroundColor: "red"
         }
       });
       const spanC = spanFac();
       const div = document.createElement("div");
       runComponentNow(div, spanC);
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "red");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
 
     it("override style", () => {
@@ -95,12 +95,12 @@ describe("dom-builder: e()", () => {
       });
       const spanC = spanFac({
         style: {
-          background: "green"
+          backgroundColor: "green"
         }
       });
       const div = document.createElement("div");
       runComponentNow(div, spanC);
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "green");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "green");
     });
   });
 
@@ -109,60 +109,60 @@ describe("dom-builder: e()", () => {
     it("e(children)         fac(props) ", () => {
       const spanFac = e("span", "default text");
       const spanC = spanFac({style: {
-        background: "red"
+        backgroundColor: "red"
       }});
       const div = document.createElement("div");
       runComponentNow(div, spanC);
       assert.strictEqual(div.children[0].textContent, "default text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "red");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
 
     it("e(children)         fac(props, children) ", () => {
       const spanFac = e("span", "default text");
       const spanC = spanFac({style: {
-        background: "red"
+        backgroundColor: "red"
       }}, "override text");
       const div = document.createElement("div");
       runComponentNow(div, spanC);
       assert.strictEqual(div.children[0].textContent, "override text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "red");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
 
     it("e(props)            fac(children) ", () => {
       const spanFac = e("span", {style: {
-        background: "green"
+        backgroundColor: "green"
       }});
       const spanC = spanFac("text");
       const div = document.createElement("div");
       runComponentNow(div, spanC);
       assert.strictEqual(div.children[0].textContent, "text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "green");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "green");
     });
 
     it("e(props)            fac(props, children) ", () => {
       const spanFac = e("span", {style: {
-        background: "green"
+        backgroundColor: "green"
       }});
       const spanC = spanFac({style: {
-        background: "red"
+        backgroundColor: "red"
       }}, "text");
       const div = document.createElement("div");
       runComponentNow(div, spanC);
       assert.strictEqual(div.children[0].textContent, "text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "red");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
 
     it("e(props, children)  fac(props, children) ", () => {
       const spanFac = e("span", {style: {
-        background: "green"
+        backgroundColor: "green"
       }}, "default text");
       const spanC = spanFac({style: {
-        background: "red"
+        backgroundColor: "red"
       }}, "override text");
       const div = document.createElement("div");
       runComponentNow(div, spanC);
       assert.strictEqual(div.children[0].textContent, "override text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.background, "red");
+      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
     });
   });
 });

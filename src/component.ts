@@ -79,13 +79,17 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
     super();
   };
   run(): [M, O] {
-    let pregenerated: M;
-    if (this.toViewBehaviorNames !== undefined) {
-      for (const name of this.toViewBehaviorNames) {
-        pregenerated[name] = placeholder();
+    let placeholders: any;
+    if ("Proxy" in window) {
+      placeholders = new Proxy({}, behaviorProxyHandler);
+    } else {
+      placeholders = {};
+      if (this.toViewBehaviorNames !== undefined) {
+	for (const name of this.toViewBehaviorNames) {
+          placeholders[name] = placeholder();
+	}
       }
     }
-    const placeholders = pregenerated || new Proxy({}, behaviorProxyHandler);
     const [behaviors, out] = this.fn(placeholders).run();
     // Tie the recursive knot
     for (const name in behaviors) {

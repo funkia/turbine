@@ -1,12 +1,17 @@
 import {assert} from "chai";
+import {Now} from "hareactive/now";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
-import {text, dynamic, runComponentNow, toComponent, e, elements} from "../src";
+import {text, dynamic, runComponentNow, toComponent, component, e, elements} from "../src";
 const {span, div, button} = elements;
 
-describe("component", () => {
+let divElm: HTMLDivElement;
+beforeEach(() => {
+  divElm = document.createElement("div");
+});
+
+describe("component specs", () => {
   describe("toComponent", () => {
     it("convert behavior of string to component", () => {
-      const divElm = document.createElement("div");
       const b = sink("Hello");
       const component = toComponent(b);
       runComponentNow(divElm, component);
@@ -15,13 +20,12 @@ describe("component", () => {
       assert.strictEqual(divElm.textContent, "world");
     });
     it("converts an array of components to component", () => {
-      const divElm = document.createElement("div");
       runComponentNow(divElm, toComponent([
         span("Hello"), div("There"), button("Click me")
       ]));
       assert.strictEqual(divElm.children.length, 3);
-      assert.strictEqual(divElm.children[0].tagName, 'SPAN');
-      assert.strictEqual(divElm.children[0].textContent, 'Hello');
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "Hello");
       assert.strictEqual(divElm.children[1].tagName, 'DIV');
       assert.strictEqual(divElm.children[1].textContent, 'There');
       assert.strictEqual(divElm.children[2].tagName, 'BUTTON');
@@ -30,28 +34,24 @@ describe("component", () => {
   });
   describe("text", () => {
     it("converts string to component", () => {
-      const div = document.createElement("div");
-      runComponentNow(div, text("Hello, dom!"));
-      assert.strictEqual(div.textContent, "Hello, dom!");
+      runComponentNow(divElm, text("Hello, dom!"));
+      assert.strictEqual(divElm.textContent, "Hello, dom!");
     });
     it("converts number to component", () => {
-      const div = document.createElement("div");
-      runComponentNow(div, text(200));
-      assert.strictEqual(div.textContent, "200");
+      runComponentNow(divElm, text(200));
+      assert.strictEqual(divElm.textContent, "200");
     });
   });
   describe("dynamic", () => {
     it("handles behavior of strings", () => {
-      const div = document.createElement("div");
       const b = sink("Hello");
       const component = dynamic(b);
-      runComponentNow(div, component);
-      assert.strictEqual(div.textContent, "Hello");
+      runComponentNow(divElm, component);
+      assert.strictEqual(divElm.textContent, "Hello");
       b.push("world");
-      assert.strictEqual(div.textContent, "world");
+      assert.strictEqual(divElm.textContent, "world");
     });
     it("handles behavior of component", () => {
-      const divElm = document.createElement("div");
       const comp1 = div("Hello");
       const comp2 = span("World");
       const b = sink(comp1);
@@ -67,11 +67,41 @@ describe("component", () => {
     });
     it("works with placeholder behavior", () => {
       const b = placeholder();
-      const div = document.createElement("div");
       const component = dynamic(b);
-      runComponentNow(div, component);
+      runComponentNow(divElm, component);
       b.replaceWith(sink("Hello"));
-      assert.strictEqual(div.textContent, "Hello");
+      assert.strictEqual(divElm.textContent, "Hello");
+    });
+  });
+
+  describe("component", () => {
+    it("simpel span component", () => {
+      const c = component(
+	function model() {
+	  return Now.of([{}, {}]);
+	},
+	function view() {
+	  return span("World");
+	}
+      );
+      runComponentNow(divElm, c);
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "World");
+    });
+
+    it("simpel span component", () => {
+      const c = component(
+	function model() {
+	  return Now.of([{}, {}]);
+	},
+	function view() {
+	  return span("World");
+	}
+      );
+      runComponentNow(divElm, c);
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "World");
     });
   });
 });
+
