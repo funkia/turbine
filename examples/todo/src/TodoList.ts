@@ -3,7 +3,7 @@ import {Stream, snapshot, filter} from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
 import {runMain, Component, component, dynamic, e, elements} from "../../../src";
-const {label} = elements;
+const {div, li, input, label} = elements;
 
 const sectionMain = e("section.main");
 const checkboxAll = e("input.toggle-all[type=checkbox]", {
@@ -22,10 +22,8 @@ const checkbox = e("input.toggle[type=checkbox]", {
     }, 0]
   ]
 });
-const inputEdit = e("input.edit");
+
 const ul = e("ul.todo-list");
-const li = e("li.todo");
-const div = e("div.view");
 const btn = e("button.destroy");
 
 const isEmpty = (list: any[]) => list.length == 0;
@@ -36,20 +34,24 @@ export type Item = {
   isEditingB: Behavior<boolean>
 };
 
+export const toItem = (taskName: string): Item => ({
+  taskName,
+  isCompleteB: sink(false),
+  isEditingB: sink(false)
+});
+
 function itemView({taskName, isCompleteB, isEditingB}: Item) {
   return li({
-    classToggle: {
-      completed: isCompleteB,
-      editing: isEditingB
-    }
+    class: "todo",
+    classToggle: {completed: isCompleteB, editing: isEditingB}
   }, function*() {
-    const {children} = yield div(function*() {
+    const {children} = yield div({class: "view"}, function*() {
       const checked = yield checkbox();
       yield label(taskName);
       yield btn();
       return {checked};
     });
-    yield inputEdit();
+    yield input({class: "edit"});
     return children;
   });
 }

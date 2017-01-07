@@ -29,6 +29,7 @@ export const section = e("section");
 export const button  = e("button", {streams: [
   ["click", "click", id]
 ]});
-export const footer = e("footer");
+export const header = e("header", {wrapper: true});
+export const footer = e("footer", {wrapper: true});
 
 export {text} from "./component";
