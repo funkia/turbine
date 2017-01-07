@@ -152,6 +152,8 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
 export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
+  const [parsedTagName, tagProps] = parseCSSTagname(tagName);
+  props = merge(props, tagProps);
   function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
   function createElement(child: Child): Component<A>;
@@ -161,7 +163,7 @@ export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc
       return new Component((p) => new CreateDomNow<A>(p, tagName, props, newPropsOrChildren));
     } else {
       const newProps = merge(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, tagName, newProps, newChildrenOrUndefined));
+      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
   return createElement;
