@@ -1,3 +1,4 @@
+import {sequence} from "jabz/traversable";
 import {go} from "jabz/monad";
 import {Behavior, stepper, scan, sink} from "hareactive/behavior";
 import {Stream, snapshot, filter} from "hareactive/stream";
@@ -5,6 +6,9 @@ import {Now, sample} from "hareactive/now";
 
 import {runMain, Component, component, dynamic, e, elements} from "../../../src";
 const {span, button, label, ul, li, a, footer} = elements;
+
+import {Item} from "./TodoList";
+
 
 const strong = e("strong");
 const formatRemainer = (value: number) => `${value} item${(value == 1)?"":"s"} left`;
@@ -15,7 +19,7 @@ const length = (list: any[]) => list.length;
 const isEmpty = (list: any[]) => list.length == 0;
 
 type toView = {
-  todosB: Behavior<any[]>
+  todosB: Behavior<Item[]>
 };
 
 export function todoFooterView({todosB}: toView) {

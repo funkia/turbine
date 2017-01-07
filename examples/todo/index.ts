@@ -5,7 +5,8 @@ import {runMain, component, e, elements} from "../../src";
 const {h1, p, header, footer} = elements;
 
 import {todoInput} from "./src/TodoInput";
-import todoList, {Item, toItem} from "./src/TodoList";
+import todoList from "./src/TodoList";
+import {Item, toItem} from "./src/Item";
 import {todoFooterView} from "./src/TodoFooter";
 
 const concat = <A>(a: A[], b: A[]): A[] => [].concat(b, a);
@@ -24,22 +25,24 @@ type FromView = {
 };
 
 function* model({enterTodoS}: FromView) {
-  const todoListB = yield sample(scan(concat, [], enterTodoS));
-  const todoItemListB = todoListB.map((list: string[]) => list.map(toItem));
-  return [{todoItemListB}, {}];
+  const todoNames = yield sample(scan(concat, [], enterTodoS));
+  const todoItemListB: Behavior<Item[]> = todoNames.map((list: string[]) => list.map(toItem));
+
+  return [{todoNames, todoItemListB}, {}];
 }
 
 type ToView = {
-  todoItemListB: Behavior<Item[]>
+  todoItemListB: Behavior<Item[]>,
+  todoNames: Behavior<string[]>
 };
 
-function* view({todoItemListB}: ToView) {
+function* view({todoItemListB, todoNames}: ToView) {
   const {children} = yield sectionTodoApp(function* () {
     const {checkAllS, enterTodoS} = yield header({class: "header"}, function* () {
       yield h1("todos");
       return yield todoInput;
     });
-    yield todoList({todosB: todoItemListB});
+    yield todoList({todosB: todoItemListB, todoNames});
     yield todoFooterView({todosB: todoItemListB});
     return {checkAllS, enterTodoS};
   });
