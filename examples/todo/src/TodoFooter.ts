@@ -4,41 +4,32 @@ import {Stream, snapshot, filter} from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
 import {runMain, Component, component, dynamic, e, elements} from "../../../src";
-const {label, li, a} = elements;
+const {span, button, label, ul, li, a, footer} = elements;
 
-const footer = e("footer.footer");
 const strong = e("strong");
 const formatRemainer = (value: number) => `${value} item${(value == 1)?"":"s"} left`;
-const remainer = (remainingB: Behavior<number>) => e("span.todo-count", strong(remainingB.map(formatRemainer)))();
-const filterItem = (name: string) => li(a(name));
-const ul = e("ul.filters", function*() {
-  yield filterItem("All");
-  yield filterItem("Active");
-  yield filterItem("Completed");
-})();
 
-const clearBtn = e("button.clear-completed", {
-  streams: [
-    ["click", "clickS", (evt) => 1]
-  ]
-})("Clear completed");
+const filterItem = (name: string) => li(a(name));
 
 const length = (list: any[]) => list.length;
 const isEmpty = (list: any[]) => list.length == 0;
 
 type toView = {
   todosB: Behavior<any[]>
-}
+};
 
 export function todoFooterView({todosB}: toView) {
+  const hidden = todosB.map(isEmpty);
   return footer({
-    classToggle: {
-      hidden: todosB.map(isEmpty)
-    }
+    class: "footer", classToggle: {hidden}
   }, function*() {
-    yield remainer(todosB.map(length));
-    yield ul;
-    yield clearBtn;
+    yield span({class: "todo-count"}, strong(todosB.map(length).map(formatRemainer)));
+    yield ul({class: "filters"}, function*() {
+      yield filterItem("All");
+      yield filterItem("Active");
+      yield filterItem("Completed");
+    });
+    const {click} = yield button({class: "clear-completed"}, "Clear completed");
     return {};
   });
 }
