@@ -2,8 +2,8 @@ import {Behavior, stepper, scan, sink} from "hareactive/behavior";
 import {Stream, snapshot, filter} from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 
-import {runMain, Component, component, dynamic, e, elements} from "../../../src";
-const {div, li, input, label} = elements;
+import {Component, component, elements} from "../../../src";
+const {div, li, input, label, button, checkbox} = elements;
 
 export type Item = {
   taskName: Behavior<string>,
@@ -17,30 +17,20 @@ export const toItem = (taskName: Behavior<string>): Item => ({
   isEditingB: sink(false)
 });
 
-const checkbox = e("input.toggle[type=checkbox]", {
-  behaviors: [
-    ["change", "checked", (evt) => {
-      return evt.target.checked;
-    }, false]
-  ]
-});
-
-const btn = e("button.destroy");
-
 export function view({taskName, isCompleteB, isEditingB}: Item) {
   return li({
     wrapper: true,
     class: "todo",
     classToggle: {completed: isCompleteB, editing: isEditingB}
   }, function*() {
-    const {checked} = yield div({class: "view"}, function*() {
-      const {checked} = yield checkbox();
+    const children = yield div({class: "view"}, function*() {
+      const {checked} = yield checkbox({class: "toggle"});
       yield label(taskName);
-      yield btn();
-      return {checked};
+      const {click: destroyS} = yield button({class: "destroy"});
+      return {checked, destroyS};
     });
-    yield input({class: "edit"});
-    return {checked};
+    const {editName} = yield input({class: "edit"});
+    return {editName, children};
   });
 }
 

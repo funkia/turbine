@@ -21,18 +21,17 @@ type ToView = {
 };
 
 type Out = {
-  checkAllS: Stream<any>,
   enterTodoS: Stream<string>
 };
 
-export const todoInput = component<ToView, FromView, {}>(
+export const todoInput = component<ToView, FromView, Out>(
   ({keyup, inputValue}) => {
     const enterPressed = keyup.filter(isEnterKey);
     const enterTodoS = snapshot(inputValue, enterPressed).filter(isValidValue);
     const clearedValue = stepper(
       "", merge(changes(inputValue), enterPressed.mapTo(""))
     );
-    return Now.of([{clearedValue}, {}] as [ToView, {}]);
+    return Now.of([{clearedValue}, {enterTodoS}]);
   },
   ({clearedValue}: ToView) =>
     input({

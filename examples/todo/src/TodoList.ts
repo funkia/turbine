@@ -3,13 +3,13 @@ import {Stream, snapshot, filter} from "hareactive/stream";
 import {Now, sample} from "hareactive/now";
 import {Item, item} from "./Item";
 
-import {runMain, Component, component, dynamic, list, elements} from "../../../src";
-const {div, li, input, label, ul, section, button, checkbox} = elements;
+import {Component, list, elements} from "../../../src";
+const {ul, checkbox, section} = elements;
 
 const isEmpty = (list: any[]) => list.length == 0;
 
 type ToView = {
-  todoNames: Behavior<string[]>
+  todoNames: Behavior<string[]>;
 };
 
 export default ({todoNames}: ToView) => section({
