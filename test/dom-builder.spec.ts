@@ -146,7 +146,7 @@ describe("dom-builder: e()", () => {
     it("e(props, children)  fac(props, children) ", () => {
       const spanFac = e("span", {style: {
         backgroundColor: "green"
-      }}, "default text");
+      }});
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }}, "override text");

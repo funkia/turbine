@@ -1,12 +1,12 @@
 // import "@types/whatwg-fetch";
 
-import {Behavior, stepper} from "hareactive/behavior";
-import {Stream, snapshot, merge, mergeList, changes} from "hareactive/stream";
-import {Now, performStream} from "hareactive/now";
+import {
+  Behavior, Stream, Now, performStream, stepper, snapshot, combineList, changes
+} from "hareactive";
 import {IO, withEffectsP} from "jabz/io";
 import {Either, left, right} from "jabz/either";
 
-import {Component, component, runMain, list, e, elements} from "../../";
+import {Component, component, runMain, list, e, elements} from "../../src/index";
 const {text, span, button, br, input, div} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
@@ -49,7 +49,7 @@ function* model({zipCode, zipInput}: ViewOut): Iterator<Now<any>> {
   const results: Stream<Either<string, ZipResult>> = yield performStream(requests);
   const status = stepper(
     "",
-    mergeList([
+    combineList([
       invalidZipCodeChange.mapTo("Not a valid zip code"),
       validZipCodeChange.mapTo("Loading ..."),
       results.map((r) => {

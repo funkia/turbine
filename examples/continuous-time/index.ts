@@ -1,9 +1,9 @@
-import {Behavior, stepper, time} from "hareactive/behavior";
-import {Stream, snapshot} from "hareactive/stream";
-import {Now, sample} from "hareactive/now";
+import {
+  Behavior, stepper, time, Stream, snapshot, Now, sample, map
+} from "hareactive";
 
-import {Component, component, runMain, list, elements, dynamic} from "../../";
-const {span, input, br, text, button, div, h1} = elements;
+import {Component, component, runMain, list, elements, dynamic} from "../../src/index";
+const {input, p, button, div, h1} = elements;
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
 
@@ -17,18 +17,19 @@ type ViewOut = {
 };
 
 function model({snapClick}: ViewOut): Now<any> {
-  const msgFromClick =
-    snapshot(time, snapClick).map((t) => "You last pressed the button at " + formatTime(t));
+  const msgFromClick = map(
+    (t) => "You last pressed the button at " + formatTime(t),
+    snapshot(time, snapClick)
+  );
   const message = stepper("You've not clicked the button yet", msgFromClick);
   return Now.of([{time, message}, {}]);
 }
 
 function* view({time, message}: ToView): Iterator<Component<any>> {
-  yield dynamic(time.map(formatTime));
-  yield br;
-  const {click: snapClick} = yield button("Click to snap time");
-  yield br;
-  yield dynamic(message);
+  yield h1("Continuous time example");
+  yield p(dynamic(map(formatTime, time)));
+  const {click: snapClick} = yield p(button("Click to snap time"));
+  yield p(dynamic(message));
   return {snapClick};
 }
 

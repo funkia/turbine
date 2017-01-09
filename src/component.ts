@@ -4,7 +4,7 @@ import {Monad, monad} from "jabz/monad";
 import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/now";
 import {
-  Behavior, placeholder, observe, subscribe, at, sink, isBehavior
+  Behavior, placeholder, observe, at, sink, isBehavior
 } from "hareactive/behavior";
 
 export type Showable = string | number;

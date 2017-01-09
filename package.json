@@ -30,7 +30,7 @@
   "license": "MIT",
   "peerDependencies": {
     "jabz": "^0.0.12",
-    "hareactive": "^0.0.8"
+    "hareactive": "^0.0.9"
   },
   "bugs": {
     "url": "https://github.com/Funkia/funnel/issues"
