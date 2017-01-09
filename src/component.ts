@@ -146,7 +146,8 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 export type Child = Component<any> | Showable | Behavior<Showable>
                   | (() => Iterator<Component<any>>) | ChildList;
 
-// A dummy interface is required since TypeScript doesn't handle recursive type aliases
+// A dummy interface is required since TypeScript doesn't handle
+// recursive type aliases
 // See: https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
 export interface ChildList extends Array<Child> {}
 
@@ -160,8 +161,6 @@ export function text(s: Showable): Component<{}> {
     return Now.of({});
   });
 };
-
-const merger = (prev: Object, next: Object) => merge(prev, next);
 
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
@@ -179,7 +178,7 @@ export function toComponent<A>(child: Child): Component<any> {
   } else if (isShowable(child)) {
     return text(child);
   } else if (Array.isArray(child)) {
-    return <Component<A>> sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merger, {}));
+    return <Component<A>> sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merge, {}));
   }
 }
 

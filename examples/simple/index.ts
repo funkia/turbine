@@ -3,7 +3,7 @@ import {Stream, snapshot} from "hareactive/stream";
 import {Now} from "hareactive/now";
 import {sequence_} from "jabz/foldable";
 
-import {Component, component, runMain, list, e, text, dynamic, elements} from "../../src";
+import {Component, component, runMain, list, e, text, elements} from "../../src";
 const {span, button, br, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -29,10 +29,8 @@ type ViewOut = {
 // `view` function. `component` hooks these up in a feedback loop so
 // that `model` and `view` are circularly dependent.
 const main = component<ToView, ViewOut, {}>(
-  function model(res): Now<any> {
-    const {emailB, calcLength} = res;
-
-    const validB = res.inputValue.map(isValidEmail);
+  function model({emailB, calcLength}): Now<any> {
+    const validB = emailB.map(isValidEmail);
     // Whenever `calcLength` occurs we snapshots the value of `emailB`
     // and gets its length with `getLength`
     const lengthUpdate = snapshot(emailB, calcLength).map(getLength);
@@ -42,15 +40,14 @@ const main = component<ToView, ViewOut, {}>(
   function view({validB, lengthB}) {
     return [
       span("Please enter an email address: "),
-      input(), //.map(({inputValue: emailB}) => ({emailB})),
+      input().map(({inputValue: emailB}) => ({emailB})),
       div([
 	"The address is ",
-	dynamic(validB.map(t => t ? "valid" : "invalid"))
+	validB.map(t => t ? "valid" : "invalid")
       ]),
-      button("Calculate length"), //.map(({click: calcLength}) => ({calcLength})),
+      button("Calculate length").map(({click: calcLength}) => ({calcLength})),
       div([
-	"The length of the email is ",
-	dynamic(lengthB)
+	"The length of the email is ", lengthB
       ])
     ];
   }

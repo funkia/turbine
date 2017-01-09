@@ -7,7 +7,7 @@ import {
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
-import {merge} from "./utils";
+import {mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
@@ -163,7 +163,7 @@ export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, new
 
 export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-  props = merge(props, tagProps);
+  props = mergeDeep(props, tagProps);
   function createElement(): Component<any>;
   function createElement(props: Properties): Component<A>;
   function createElement(child: Child): Component<A>;
@@ -172,7 +172,7 @@ export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, parsedTagName, props, newPropsOrChildren));
     } else {
-      const newProps = merge(props, newPropsOrChildren);
+      const newProps = mergeDeep(props, newPropsOrChildren);
       return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
