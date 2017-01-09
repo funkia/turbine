@@ -2,7 +2,7 @@ import {assert} from "chai";
 import {Now} from "hareactive/now";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
 import {text, dynamic, runComponentNow, toComponent, component, e, elements} from "../src";
-const {span, div, button} = elements;
+const {span, div, button, input} = elements;
 
 let divElm: HTMLDivElement;
 beforeEach(() => {
@@ -20,9 +20,10 @@ describe("component specs", () => {
       assert.strictEqual(divElm.textContent, "world");
     });
     it("converts an array of components to component", () => {
-      runComponentNow(divElm, toComponent([
+      const result = runComponentNow(divElm, toComponent([
         span("Hello"), div("There"), button("Click me")
       ]));
+      assert.property(result, "click");
       assert.strictEqual(divElm.children.length, 3);
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "Hello");
@@ -101,6 +102,24 @@ describe("component specs", () => {
       runComponentNow(divElm, c);
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "World");
+    });
+
+    it("view is function returning array of components", () => {
+      let fromView; 
+
+      const c = component(
+	function model(args) {
+	  fromView = args;
+	  return Now.of([{}, {}]);
+	}, () => [
+	  span("Hello"),
+	  input()
+	]);
+
+      runComponentNow(divElm, c);
+      assert.strictEqual(divElm.children[0].tagName, "SPAN");
+      assert.strictEqual(divElm.children[0].textContent, "Hello");
+      assert.property(fromView, "inputValue");
     });
   });
 });

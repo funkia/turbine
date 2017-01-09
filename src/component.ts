@@ -1,11 +1,13 @@
 import {Applicative} from "jabz/applicative";
-import {Foldable, sequence_} from "jabz/foldable";
+import {Traversable, sequence} from "jabz/traversable";
 import {Monad, monad} from "jabz/monad";
 import {go, fgo} from "jabz/monad";
 import {Now} from "hareactive/now";
 import {
   Behavior, placeholder, observe, at, sink, isBehavior
 } from "hareactive/behavior";
+
+import {merge} from "./utils";
 
 export type Showable = string | number;
 
@@ -107,11 +109,11 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
 
 export function component<M extends BehaviorObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
-  view:  ((m: M) => Component<V>) | ((m: M) => Iterator<Component<any>>),
+  view:  ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
   toViewBehaviorNames?: string[]
 ): Component<O> {
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
-  const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : view;
+  const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
     (bs) => v(bs).content(parent).chain(m),
     toViewBehaviorNames
@@ -159,6 +161,8 @@ export function text(s: Showable): Component<{}> {
   });
 };
 
+const merger = (prev: Object, next: Object) => merge(prev, next);
+
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
@@ -175,7 +179,7 @@ export function toComponent<A>(child: Child): Component<any> {
   } else if (isShowable(child)) {
     return text(child);
   } else if (Array.isArray(child)) {
-    return sequence_(Component, child.map(toComponent));
+    return <Component<A>> sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merger, {}));
   }
 }
 

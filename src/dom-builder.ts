@@ -94,6 +94,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const [evt, name, extractor, initial] of this.props.behaviors) {
           let a: Behavior<any> = undefined;
           Object.defineProperty(output, name, {
+	    enumerable: true,
             get: () => {
               if (a === undefined) {
                 a = behaviorFromEvent(evt, initial, extractor, elm);
@@ -106,6 +107,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const [evt, name, extractor] of this.props.streams) {
           let a: Stream<any> = undefined;
           Object.defineProperty(output, name, {
+	    enumerable: true,
             get: () => {
               if (a === undefined) {
                 a = streamFromEvent(evt, extractor, elm);
