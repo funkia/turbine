@@ -40,12 +40,12 @@ const main = component<ToView, ViewOut, {}>(
   function view({validB, lengthB}) {
     return [
       span("Please enter an email address: "),
-      input().map(({inputValue: emailB}) => ({emailB})),
+      input({name: {inputValue: "emailB"}}),
       div([
 	"The address is ",
 	validB.map(t => t ? "valid" : "invalid")
       ]),
-      button("Calculate length").map(({click: calcLength}) => ({calcLength})),
+      button({name: {click: "calcLength"}}, "Calculate length"),
       div([
 	"The length of the email is ", lengthB
       ])

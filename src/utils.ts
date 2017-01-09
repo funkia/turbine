@@ -36,3 +36,14 @@ export function mergeDeep(...objects: any[]): any { // .length of function is 2
   }
   return result;
 };
+
+// Note this function mutates `source`
+export function rename(
+  source: {[key: string]: any},
+  renames: {[name: string]: string}
+): void {
+  for (const name in renames) {
+    const newName = renames[name];
+    source[newName] = source[name];
+  }
+}

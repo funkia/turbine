@@ -1,5 +1,9 @@
 import {assert} from "chai";
+
+import {isStream} from "hareactive";
+
 import {runComponentNow, e} from "../src";
+import {button} from "../src/elements";
 
 describe("dom-builder: e()", () => {
 
@@ -50,6 +54,14 @@ describe("dom-builder: e()", () => {
     runComponentNow(div, spanC);
     assert.strictEqual(div.children[0].tagName, "SPAN", "Wrong element was attached");
     assert.strictEqual(div.children[0].id, "someId");
+  });
+
+  it("can rename output", () => {
+    const divElm = document.createElement("div");
+    const result = runComponentNow(
+      divElm, button({name: {click: "foobar"}}, "Click")
+    );
+    assert(isStream(result.foobar));
   });
 
   describe("children", () => {

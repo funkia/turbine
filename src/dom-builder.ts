@@ -7,7 +7,7 @@ import {
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
-import {mergeDeep} from "./utils";
+import {rename, mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
@@ -23,6 +23,7 @@ export type Properties = {
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
   },
+  name?: {[name: string]: string},
   class?: string,
   classToggle?: {
     [name: string]: boolean | Behavior<boolean>;
@@ -125,6 +126,9 @@ class CreateDomNow<A> extends Now<A> {
       } else {
         output.children = childOutput;
       }
+    }
+    if (this.props.name !== undefined) {
+      rename(output, this.props.name);
     }
     this.parent.appendChild(elm);
     return output;
