@@ -92,8 +92,9 @@ class CreateDomNow<A> extends Now<A> {
       }
 
       if (this.props.behaviors !== undefined) {
-        for (const [evt, name, extractor, initial] of this.props.behaviors) {
+        for (const [evt, name, extractor, initialFn] of this.props.behaviors) {
           let a: Behavior<any> = undefined;
+          const initial = initialFn(elm);
           Object.defineProperty(output, name, {
 	    enumerable: true,
             get: () => {

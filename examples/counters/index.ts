@@ -11,7 +11,6 @@ const {span, input, ul, li, p, br, button, div, h1} = elements;
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
-const getter = (prop: string) => (obj: Object) => obj[prop];
 
 // Counter
 

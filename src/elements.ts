@@ -9,16 +9,17 @@ function id<A>(a: A): A { return a; };
 
 export const input = e("input", {
   behaviors: [
-    ["input", "inputValue", (evt: any) => evt.target.value, ""]
+    ["input", "inputValue", (evt: any) => evt.target.value, ({value}) => value]
   ],
   streams: [
     ["keyup", "keyup", id],
-    ["input", "input", id]
+    ["input", "input", id],
+    ["blur", "blur", id]
   ]
 });
 export const checkbox = e("input[type=checkbox]", {
   behaviors: [
-    ["change", "checked", (evt: any) => evt.target.checked, false]
+    ["change", "checked", (evt: any) => evt.target.checked, ({checked}) => checked]
   ]
 });
 export const button  = e("button", {
@@ -31,7 +32,9 @@ export const span    = e("span", {wrapper: true});
 export const div     = e("div", {wrapper: true});
 export const p       = e("p", {wrapper: true});
 export const h1      = e("h1");
-export const label   = e("label");
+export const label   = e("label", {
+  streams: [["dblclick", "dblclick", id]]
+});
 export const ul      = e("ul", {wrapper: true});
 export const li      = e("li", {wrapper: true});
 export const a       = e("a");
