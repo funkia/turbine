@@ -1,6 +1,8 @@
-import {Behavior, stepper, scan, sink} from "hareactive/behavior";
-import {Stream, snapshot, filter} from "hareactive/stream";
-import {Now, sample} from "hareactive/now";
+import {
+  Behavior, stepper, scan, sink,
+  Stream, snapshot, filter,
+  Now, sample
+} from "hareactive";
 import {Item, item} from "./Item";
 
 import {Component, list, elements} from "../../../src";
@@ -12,12 +14,14 @@ type ToView = {
   todoNames: Behavior<string[]>;
 };
 
-export default ({todoNames}: ToView) => section({
-  class: "main",
-  classToggle: {
-    hidden: todoNames.map(isEmpty)
-  }
-}, function*() {
-  yield checkbox({class: "toggle-all"});
-  return yield ul({class: "todo-list"}, list(item, (a: any) => a, todoNames));
-});
+export default ({todoNames}: ToView) => {
+  return section ({
+    class: "main",
+    classToggle: {
+      hidden: todoNames.map(isEmpty)
+    }
+  }, [
+    checkbox({class: "toggle-all"}),
+    ul({class: "todo-list"}, list(item, (a: string, index: number) => a + index, todoNames))
+  ]);
+}

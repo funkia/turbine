@@ -1,7 +1,8 @@
 import {
-  Behavior, stepper, scan, sink, Stream, snapshot, filter, map
+  Behavior, stepper, scan, sink,
+  Stream, snapshot, filter, map,
+  Now, sample
 } from "hareactive";
-import {Now, sample} from "hareactive/now";
 
 import {Component, component, elements} from "../../../src";
 const {div, li, input, label, button, checkbox} = elements;
@@ -20,15 +21,16 @@ export const toItem = (taskName: Behavior<string>): Item => ({
 
 export function item(name: string): Component<{}> {
   return component(
-    function itemModel({checked, taskName, startEditing, stopEditing}) {
-      startEditing.map((l) => console.log(l));
+    function itemModel({checked, taskName, startEditing, stopEditing, destroyS}) {
       const editing = stepper(false, startEditing.mapTo(true).combine(stopEditing.mapTo(false)));
       const item = toItem(Behavior.of(name));
       return Now.of([{
         taskName,
         isCompleteB: checked,
         isEditing: editing
-      }, {}])
+      }, {
+	destroyS
+      }])
     },
     function itemView({taskName, isCompleteB, isEditing}: Item) {
       return li({

@@ -137,7 +137,7 @@ export function component<M extends BehaviorObject, V, O>(
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
   const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
-    (bs) => v(bs).content(parent).map((o) => addErrorHandler(modelName, viewName, o)).chain(m),
+    (bs) => v(bs).content(parent).map((o: any) => addErrorHandler(modelName, viewName, o)).chain(m),
     toViewBehaviorNames
   ).map(snd));
 }
@@ -264,7 +264,7 @@ type ComponentStuff<A> = {
 class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
   constructor(
     private parent: Node,
-    private getKey: (a: A) => number,
+    private getKey: (a: A, index: number) => string,
     private compFn: (a: A) => Component<B>,
     private list: Behavior<A[]>
   ) { super(); }
@@ -279,8 +279,10 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
       const newKeyToElm: {[key: string]: ComponentStuff<B>} = {};
       const newArray: B[] = [];
       // Re-add existing elements and new elements
-      for (const a of newAs) {
-        const key = this.getKey(a);
+      
+      for (let i = 0; i < newAs.length; i++) {
+	const a = newAs[i];
+        const key = this.getKey(a, i);
         let stuff = keyToElm[key];
         if (stuff === undefined) {
           const fragment = document.createDocumentFragment();
@@ -307,7 +309,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
 }
 
 export function list<A>(
-  c: (a: A) => Component<any>, getKey: (a: A) => number, l: Behavior<A[]>
+  c: (a: A) => Component<any>, getKey: (a: A, index: number) => string, l: Behavior<A[]>
 ): Component<{}> {
   return new Component((p) => new ComponentListNow(p, getKey, c, l));
 }
