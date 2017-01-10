@@ -9,7 +9,7 @@ function id<A>(a: A): A { return a; };
 
 export const input = e("input", {
   behaviors: [
-    ["input", "inputValue", (evt: any) => evt.target.value, ({value}) => value]
+    ["input", "inputValue", (evt: any) => evt.target.value, ({value}: HTMLInputElement) => value]
   ],
   streams: [
     ["keyup", "keyup", id],
@@ -19,7 +19,7 @@ export const input = e("input", {
 });
 export const checkbox = e("input[type=checkbox]", {
   behaviors: [
-    ["change", "checked", (evt: any) => evt.target.checked, ({checked}) => checked]
+    ["change", "checked", (evt: any) => evt.target.checked, ({checked}: HTMLInputElement) => checked]
   ]
 });
 export const button  = e("button", {

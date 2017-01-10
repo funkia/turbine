@@ -9,39 +9,53 @@ const {div, li, input, label, button, checkbox} = elements;
 
 export type Item = {
   taskName: Behavior<string>,
-  isCompleteB: Behavior<boolean>,
+  isComplete: Behavior<boolean>,
   isEditing: Behavior<boolean>
 };
 
 export const toItem = (taskName: Behavior<string>): Item => ({
   taskName,
-  isCompleteB: sink(false),
+  isComplete: sink(false),
   isEditing: sink(false)
 });
 
+type FromView = {
+  checked: Behavior<boolean>,
+  taskName: Behavior<string>,
+  startEditing: Stream<any>,
+  stopEditing: Stream<any>,
+  destroyItem: Stream<number>
+};
+
+type ToView = Item;
+
+type Out = {
+  destroyItem: Stream<number>
+};
+
 export function item(name: string): Component<{}> {
   return component(
-    function itemModel({checked, taskName, startEditing, stopEditing, destroyS}) {
+    function itemModel({checked, taskName, startEditing, stopEditing, destroyItem}: FromView) {
       const editing = stepper(false, startEditing.mapTo(true).combine(stopEditing.mapTo(false)));
       const item = toItem(Behavior.of(name));
       return Now.of([{
         taskName,
-        isCompleteB: checked,
+        isComplete: checked,
         isEditing: editing
       }, {
-	destroyS
-      }])
+	destroyItem
+      }] as [ToView, Out]);
     },
-    function itemView({taskName, isCompleteB, isEditing}: Item) {
+    function itemView({taskName, isComplete, isEditing}: Item) {
       return li({
         wrapper: true,
         class: "todo",
-        classToggle: {completed: isCompleteB, editing: isEditing}
+        classToggle: {completed: isComplete, editing: isEditing}
       }, [
         div({class: "view"}, [
           checkbox({class: "toggle", name: {checked: "completed"}}),
           label({name: {dblclick: "startEditing"}}, taskName),
-          button({class: "destroy", name: {click: "destroyS"}}),
+          button({class: "destroy", name: {click: "destroyItem"}})
         ]),
         input({
           class: "edit", props: {value: name},

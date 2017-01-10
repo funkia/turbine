@@ -10,7 +10,7 @@ import {CSSStyleType} from "./CSSStyleType";
 import {rename, mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A]
-export type BehaviorDescription<A> = [string, string, (evt: any) => A, A];
+export type BehaviorDescription<A> = [string, string, (evt: any) => A, (elm: HTMLElement) => A];
 
 export type Properties = {
   wrapper?: boolean,
