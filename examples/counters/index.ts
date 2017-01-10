@@ -1,16 +1,17 @@
-import * as B from "hareactive/behavior";
-import {Behavior, stepper, scan} from "hareactive/behavior";
+import {foldr} from "jabz/foldable";
+import {lift} from "jabz/applicative";
+import {flatten} from "jabz/monad";
 import {
-  Stream, merge, map, mergeList, switchStream, scanS
-} from "hareactive/stream";
-import {Now, sample} from "hareactive/now";
+  Now, sample, Behavior, stepper, scan, Stream, combine, map, combineList, switchStream, scanS
+} from "hareactive";
 
 import {Component, component, list, dynamic, text, runMain, elements} from "../../src";
-const {span, input, br, button, div, h1} = elements;
+const {span, input, ul, li, p, br, button, div, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
 const append = <A>(a: A, as: A[]) => as.concat([a]);
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
+const getter = (prop: string) => (obj: Object) => obj[prop];
 
 // Counter
 
@@ -36,27 +37,27 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
     const increment = incrementClick.mapTo(1);
     const decrement = decrementClick.mapTo(-1);
     const deleteS = deleteClick.mapTo(id);
-    const count = yield sample(scan(add, 0, merge(increment, decrement)));
+    const count = yield sample(scan(add, 0, combine(increment, decrement)));
     return [{count}, {count, deleteS}];
   },
-  function* counterView({count}) {
-    return yield div(function*() {
-      yield text("Counter ");
-      yield dynamic(count);
-      yield text(" ");
-      const {click: incrementClick} = yield button(" + ");
-      yield text(" ");
-      const {click: decrementClick} = yield button(" - ");
-      yield text(" ");
-      const {click: deleteClick} = yield button("x");
-      yield br;
-      return {incrementClick, decrementClick, deleteClick};
-    });
+  function counterView({count}) {
+    return li([
+      "Counter ",
+      count,
+      " ",
+      button({name: {click: "incrementClick"}}, " + ", ),
+      " ",
+      button({name: {click: "decrementClick"}}, " - "),
+      " ",
+      button({name: {click: "deleteClick"}}, "x"),
+      br
+    ]);
   }
 );
 
 type ToView = {
-  counterIds: Behavior<number[]>
+  counterIds: Behavior<number[]>,
+  sum: Behavior<number>
 };
 
 type ToModel = {
@@ -65,26 +66,31 @@ type ToModel = {
 };
 
 function* mainModel({addCounter, listOut}: ToModel): Iterator<Now<any>> {
-  const removeIdB = listOut.map((l) => mergeList(l.map(o => o.deleteS)));
+  const removeIdB = listOut.map((l) => combineList(l.map(o => o.deleteS)));
+  const sum = <Behavior<number>>flatten(map(
+    (list) => foldr(({count}, sum) => lift(add, count, sum), Behavior.of(0), list),
+    listOut
+  ));
   const removeCounterIdFn =
-    switchStream(removeIdB).map(id => arr => arr.filter(i => i !== id));
+    switchStream(removeIdB).map((id) => (arr: number[]) => arr.filter((i) => i !== id));
   const nextId: Stream<number> =
     yield sample(scanS(add, 2, addCounter.mapTo(1)));
   const appendCounterFn =
     map((id) => (ids: number[]) => ids.concat([id]), nextId);
   const modifications =
-    merge(appendCounterFn, removeCounterIdFn);
+    combine(appendCounterFn, removeCounterIdFn);
   const counterIds =
     yield sample(scan(apply, [0,1,2], modifications));
-  return [{counterIds}, {}];
+  return [{counterIds, sum}, {}];
 }
 
-function* mainView({counterIds}: ToView): Iterator<Component<any>> {
+function* mainView({sum, counterIds}: ToView): Iterator<Component<any>> {
   yield h1("Counters");
+  yield p(["Sum ", sum]);
   const {click: addCounter} = yield button("Add counter");
   yield br;
   yield br;
-  const listOut = yield list(counter, (n: number) => n, counterIds);
+  const listOut = yield ul(list(counter, (n: number) => n, counterIds));
   return {addCounter, listOut};
 }
 
