@@ -1,6 +1,4 @@
-import {Behavior, scan} from "hareactive/behavior";
-import {Now, sample} from "hareactive/now";
-import {Stream} from "hareactive/stream";
+import {Behavior, scan, Now, sample, Stream} from "hareactive";
 import {runMain, component, e, elements} from "../../src";
 const {h1, p, header, footer, section} = elements;
 
@@ -25,8 +23,8 @@ type ToView = {
 };
 
 function* view({todoNames}: ToView) {
-  const children = yield section({class: "todoapp"}, function* () {
-    const children = yield header({class: "header"}, function* () {
+  const children = yield section({class: "todoapp"}, function*() {
+    const children = yield header({class: "header"}, function*() {
       yield h1("todos");
       return yield todoInput;
     });

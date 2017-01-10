@@ -1,5 +1,5 @@
 import {Behavior, stepper} from "hareactive/behavior";
-import {Stream, snapshot, filter, changes, merge} from "hareactive/stream";
+import {Stream, snapshot, filter, changes, combine} from "hareactive/stream";
 import {Now} from "hareactive/now";
 import {Properties} from "../../../src/dom-builder";
 
@@ -29,7 +29,7 @@ export const todoInput = component<ToView, FromView, Out>(
     const enterPressed = keyup.filter(isEnterKey);
     const enterTodoS = snapshot(inputValue, enterPressed).filter(isValidValue);
     const clearedValue = stepper(
-      "", merge(changes(inputValue), enterPressed.mapTo(""))
+      "", combine(changes(inputValue), enterPressed.mapTo(""))
     );
     return Now.of([{clearedValue}, {enterTodoS}]);
   },

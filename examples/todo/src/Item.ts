@@ -17,22 +17,19 @@ export const toItem = (taskName: Behavior<string>): Item => ({
   isEditingB: sink(false)
 });
 
-export function view({taskName, isCompleteB, isEditingB}: Item) {
-  return li({
+const itemView = ({taskName, isCompleteB, isEditingB}: Item) =>
+  li({
     wrapper: true,
     class: "todo",
     classToggle: {completed: isCompleteB, editing: isEditingB}
-  }, function*() {
-    const children = yield div({class: "view"}, function*() {
-      const {checked} = yield checkbox({class: "toggle"});
-      yield label(taskName);
-      const {click: destroyS} = yield button({class: "destroy"});
-      return {checked, destroyS};
-    });
-    const {editName} = yield input({class: "edit"});
-    return {editName, children};
-  });
-}
+  }, [
+    div({class: "view"}, [
+      checkbox({class: "toggle", name: {checked: "completed"}}),
+      label(taskName),
+      button({class: "destroy", name: {click: "destroyS"}}),
+    ]),
+    input({class: "edit"})
+  ]);
 
 export function item(name: string): Component<{}> {
   return component(
@@ -45,6 +42,6 @@ export function item(name: string): Component<{}> {
         isEditingB: Behavior.of(false)
       }, {}])
     },
-    view
+    itemView
   );
 }
