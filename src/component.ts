@@ -9,6 +9,8 @@ import {
 
 import {merge} from "./utils";
 
+const supportsProxy = "Proxy" in window;
+
 export type Showable = string | number;
 
 function isShowable(s: any): s is Showable {
@@ -82,7 +84,7 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   };
   run(): [M, O] {
     let placeholders: any;
-    if ("Proxy" in window) {
+    if (supportsProxy) {
       placeholders = new Proxy({}, behaviorProxyHandler);
     } else {
       placeholders = {};
@@ -107,15 +109,35 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
     && fn.constructor.name === "GeneratorFunction";
 }
 
+function addErrorHandler(modelName: string, viewName: string, obj: any) {
+  if (modelName === "") { modelName = "anonymous"; }
+  if (viewName === "") { viewName = "anonymous"; }
+  if (!supportsProxy) {
+    return obj;
+  }
+  return new Proxy(obj, {
+    get(obj, prop) {
+      if (prop in obj) {
+        return obj[prop];
+      }
+      throw new Error(
+        `The model, ${modelName}, expected a property "${prop}" but the view, ${viewName}, returned an object without the property.`
+      );
+    }
+  });
+}
+
 export function component<M extends BehaviorObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
   view:  ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
   toViewBehaviorNames?: string[]
 ): Component<O> {
+  const modelName = (<any>model).name;
+  const viewName = (<any>view).name;
   const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
   const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
-    (bs) => v(bs).content(parent).chain(m),
+    (bs) => v(bs).content(parent).map((o) => addErrorHandler(modelName, viewName, o)).chain(m),
     toViewBehaviorNames
   ).map(snd));
 }

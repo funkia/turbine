@@ -1,10 +1,13 @@
 import {assert} from "chai";
 import {Now} from "hareactive/now";
 import {Behavior, sink, placeholder} from "hareactive/behavior";
-import {text, dynamic, runComponentNow, toComponent, component, e, elements} from "../src";
+import {text, dynamic, runComponentNow, toComponent, Component, component, e, elements} from "../src";
 const {span, div, button, input} = elements;
 
+const supportsProxy = "Proxy" in window;
+
 let divElm: HTMLDivElement;
+
 beforeEach(() => {
   divElm = document.createElement("div");
 });
@@ -120,6 +123,19 @@ describe("component specs", () => {
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "Hello");
       assert.property(fromView, "inputValue");
+    });
+
+    it("throws an error message if the view doesn't return the needed properties", () => {
+      if (!supportsProxy) {
+        return;
+      }
+      const c = component(
+        function fooComp({foo}) { return Now.of([{}, {}]); },
+        function barView() { return Component.of({bar: "no foo?"}); }
+      );
+      assert.throws(() => {
+        runComponentNow(divElm, c);
+      }, /fooComp/);
     });
   });
 });
