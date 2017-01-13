@@ -21,7 +21,7 @@ type ToView = {
   clearedValue: Behavior<string>
 };
 
-type Out = {
+export type Out = {
   enterTodoS: Stream<string>
 };
 
@@ -44,4 +44,4 @@ function view({clearedValue}: ToView) {
   });
 }
 
-export const todoInput = component<ToView, FromView, Out>(model, view);
+export default component<ToView, FromView, Out>(model, view);

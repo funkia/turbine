@@ -13,6 +13,11 @@ export type Item = {
   isEditing: Behavior<boolean>
 };
 
+export type Params = {
+  name: string,
+  id: number
+};
+
 export const toItem = (taskName: Behavior<string>): Item => ({
   taskName,
   isComplete: sink(false),
@@ -29,21 +34,22 @@ type FromView = {
 
 type ToView = Item;
 
-type Out = {
-  destroyItem: Stream<number>
+export type Out = {
+  destroyItemId: Stream<number>
 };
 
-export function item(name: string): Component<{}> {
-  return component(
+export default function item({name, id}: Params): Component<Out> {
+  return component<ToView, FromView, Out>(
     function itemModel({checked, taskName, startEditing, stopEditing, destroyItem}: FromView) {
       const editing = stepper(false, startEditing.mapTo(true).combine(stopEditing.mapTo(false)));
       const item = toItem(Behavior.of(name));
+      const destroyItemId = destroyItem.mapTo(id);
       return Now.of([{
         taskName,
         isComplete: checked,
         isEditing: editing
       }, {
-	destroyItem
+	destroyItemId
       }] as [ToView, Out]);
     },
     function itemView({taskName, isComplete, isEditing}: Item) {

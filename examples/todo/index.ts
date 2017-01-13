@@ -1,30 +1,32 @@
+import {sequence} from "jabz/traversable";
 import {
   Behavior, scan,
   Now, sample,
-  Stream
+  Stream, scanS
 } from "hareactive";
-import {runMain, component, e, elements} from "../../src";
+import {runMain, component, elements} from "../../src";
 const {h1, p, header, footer, section} = elements;
 
-import {todoInput} from "./src/TodoInput";
-import todoList from "./src/TodoList";
-import {Item, toItem} from "./src/Item";
-import {todoFooterView} from "./src/TodoFooter";
+import todoInput, {Out as InputOut} from "./src/TodoInput";
+import todoList, {Params as ListParams, Out as ListOut} from "./src/TodoList";
+import {Params as ItemParams} from "./src/Item";
+import todoFooter, {Params as FooterParams} from "./src/TodoFooter";
 
 const concat = <A>(a: A[], b: A[]): A[] => [].concat(b, a);
 
-type FromView = {
-  enterTodoS: Stream<string>
-};
+const toItemParams = (name: string, items: ItemParams[]) => concat(items, [{
+  id: items[0] == undefined ? 0 : items[0].id + 1,
+  name
+}]);
 
-function* model({enterTodoS}: FromView) {
-  const todoNames = yield sample(scan(concat, [], enterTodoS));
+type FromView = ListOut & InputOut;
+
+function* model({enterTodoS, toggleAll, deleteS}: FromView) {
+  const todoNames: Behavior<any> = yield sample(scan(toItemParams, [], enterTodoS));
   return [{todoNames}, {}];
 }
 
-type ToView = {
-  todoNames: Behavior<string[]>;
-};
+type ToView = ListParams & FooterParams;
 
 function view({todoNames}: ToView) {
   return [
@@ -34,7 +36,7 @@ function view({todoNames}: ToView) {
 	todoInput
       ]),
       todoList({todoNames}),
-      todoFooterView({todosB: todoNames})
+      todoFooter({todosB: todoNames})
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
