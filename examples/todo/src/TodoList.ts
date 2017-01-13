@@ -13,13 +13,14 @@ const isEmpty = (list: any[]) => list.length == 0;
 type ToView = {};
 
 type FromView = {
-  itemStuffList: Behavior<ItemOut[]>;
+  itemOutputs: Behavior<ItemOut[]>;
   checked: Behavior<boolean>;
 };
 
 export type Out = {
-  deleteS: Stream<number>
-  toggleAll: Behavior<boolean>
+  deleteS: Stream<number>,
+  toggleAll: Behavior<boolean>,
+  itemOutputs: Behavior<ItemOut[]>
 };
 
 export type Params = {
@@ -27,11 +28,13 @@ export type Params = {
 };
 
 export default ({todoNames}: Params) => component<ToView, FromView, Out>(
-  function model({itemStuffList, checked}: FromView) {
-    const deleteS = switchStream(itemStuffList.map((list) => combineList(list.map((a) => a.destroyItemId))))
-    return Now.of([{}, {deleteS, toggleAll: checked}] as [ToView, Out]);
+  function todoListModel({itemOutputs, checked}: FromView) {
+    const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map((a) => a.destroyItemId))))
+    return Now.of([
+      {}, {deleteS, toggleAll: checked, itemOutputs}
+    ] as [ToView, Out]);
   },
-  function view({}: ToView) {
+  function todoListView({}: ToView) {
     return section({
       class: "main",
       classToggle: {
@@ -39,9 +42,9 @@ export default ({todoNames}: Params) => component<ToView, FromView, Out>(
       }
     }, [
       checkbox({class: "toggle-all"}),
-      ul({class: "todo-list"}, function* () {
-	const itemStuffList = yield list(item, ({id}) => id.toString(), todoNames);
-	return {itemStuffList};
+      ul({class: "todo-list"}, function*() {
+	const itemOutputs = yield list(item, ({id}) => id.toString(), todoNames);
+	return {itemOutputs};
       })
     ]);
   }

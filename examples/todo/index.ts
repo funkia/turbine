@@ -35,14 +35,15 @@ type ToView = ListParams & FooterParams;
 
 function view({todoNames}: ToView) {
   return [
-    section({class: "todoapp"}, [
-      header({class: "header"}, [
+    section({class: "todoapp"}, function*() {
+      const o = yield header({class: "header"}, [
 	h1("todos"),
 	todoInput
-      ]),
-      todoList({todoNames}),
-      todoFooter({todosB: todoNames})
-    ]),
+      ]);
+      const {deleteS, toggleAll, itemOutputs} = yield todoList({todoNames});
+      yield todoFooter({todosB: itemOutputs});
+      return {deleteS, toggleAll, itemOutputs, ...o};
+    }),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
       p("Written with Funnel"),

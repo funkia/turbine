@@ -2,6 +2,10 @@ function isObject(item: any): item is Object {
   return typeof item === 'object' && !Array.isArray(item);
 }
 
+export function get<K extends string>(prop: K) {
+  return <V, Obj extends Record<K, V>>(obj: Obj): Obj[K] => obj[prop];
+}
+
 export function merge(a: any, b: any): any {
   const c: {[key: string]: any} = {};
   for (const key in a) {
