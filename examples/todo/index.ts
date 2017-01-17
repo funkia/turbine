@@ -1,18 +1,18 @@
-import {sequence} from "jabz/traversable";
+import {sequence, combine} from "jabz";
 import {
   Behavior, scan,
   Now, sample,
-  Stream, scanS, combine
+  Stream, scanS, switchStream, combineList
 } from "hareactive";
-import {runMain, component, elements} from "../../src";
-const {h1, p, header, footer, section} = elements;
+import {runMain, component, elements, list} from "../../src";
+const {h1, p, header, footer, section, checkbox, ul} = elements;
+import {get} from "../../src/utils";
 
 import todoInput, {Out as InputOut} from "./src/TodoInput";
-import todoList, {Params as ListParams, Out as ListOut} from "./src/TodoList";
-import {Params as ItemParams} from "./src/Item";
+import item, {Item, Out as ItemOut, Params as ItemParams} from "./src/Item";
 import todoFooter, {Params as FooterParams} from "./src/TodoFooter";
 
-const concat = <A>(a: A[], b: A[]): A[] => [].concat(a, b);
+const isEmpty = (list: any[]) => list.length == 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
 
 const toItemParams = (name: string, prev: ItemParams) => ({
@@ -20,30 +20,46 @@ const toItemParams = (name: string, prev: ItemParams) => ({
   name
 });
 
-type FromView = ListOut & InputOut;
+type FromView = {
+  toggleAll: Behavior<boolean>,
+  itemOutputs: Behavior<ItemOut[]>,
+  clearCompleted: Stream<{}>
+} & InputOut;
 
-function* model({enterTodoS, toggleAll, deleteS}: FromView) {
+type ToView = {
+  todoNames: Behavior<ItemParams[]>,
+  itemOutputs: Behavior<ItemOut[]>,
+} & FooterParams;
+
+function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
   const newTodoS: Stream<ItemParams> = yield sample(scanS(toItemParams, {id: 0}, enterTodoS));
-  const prependNewTodoS = newTodoS.map((todo) => (list: ItemParams[]) => concat([todo], list));
+  const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map(get("destroyItemId")))));
+  const prependNewTodoS = newTodoS.map((todo) => (list: ItemParams[]) => combine([todo], list));
   const removeTodoS = deleteS.map((removeId) => (list: ItemParams[]) => list.filter(({id}) => id !== removeId));
   const modifications = combine(prependNewTodoS, removeTodoS);
   const todoNames: Behavior<ItemParams[]> = yield sample(scan(apply, [], modifications));
-  return [{todoNames}, {}];
+  return [{itemOutputs, todoNames, clearAll: clearCompleted}, {}];
 }
 
-type ToView = ListParams & FooterParams;
-
-function view({todoNames}: ToView) {
+function view({itemOutputs, todoNames}: ToView) {
   return [
-    section({class: "todoapp"}, function*() {
-      const o = yield header({class: "header"}, [
+    section({class: "todoapp"}, [
+      header({class: "header"}, [
 	h1("todos"),
 	todoInput
-      ]);
-      const {deleteS, toggleAll, itemOutputs} = yield todoList({todoNames});
-      yield todoFooter({todosB: itemOutputs});
-      return {deleteS, toggleAll, itemOutputs, ...o};
-    }),
+      ]),
+      section({
+        class: "main",
+        classToggle: {hidden: todoNames.map(isEmpty)}
+      }, [
+        checkbox({class: "toggle-all", name: {checked: "toggleAll"}}),
+        ul({class: "todo-list"}, function*() {
+          const itemOutputs = yield list(item, ({id}) => id.toString(), todoNames);
+          return {itemOutputs};
+        })
+      ]),
+      todoFooter({todosB: itemOutputs})
+    ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
       p("Written with Funnel"),

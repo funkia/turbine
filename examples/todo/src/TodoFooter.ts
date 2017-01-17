@@ -34,6 +34,8 @@ export default ({todosB}: Params) => {
       filterItem("Active"),
       filterItem("Completed")
     ]),
-    button({class: "clear-completed"}, "Clear completed")
+    button({
+      class: "clear-completed", name: {click: "clearCompleted"}
+    }, "Clear completed")
   ]);
 }
