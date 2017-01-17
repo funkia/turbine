@@ -2,7 +2,7 @@ import {assert} from "chai";
 
 import {isStream} from "hareactive";
 
-import {runComponentNow, e} from "../src";
+import {runComponentNow, e, Component} from "../src";
 import {button} from "../src/elements";
 
 describe("dom-builder: e()", () => {
@@ -58,8 +58,8 @@ describe("dom-builder: e()", () => {
 
   it("can rename output", () => {
     const divElm = document.createElement("div");
-    const result = runComponentNow(
-      divElm, button({name: {click: "foobar"}}, "Click")
+    const result = runComponentNow<{foobar: any}>(
+      divElm, (button({name: {click: "foobar"}}, "Click") as Component<{foobar: any}>)
     );
     assert(isStream(result.foobar));
   });

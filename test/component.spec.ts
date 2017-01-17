@@ -1,6 +1,6 @@
 import {assert} from "chai";
 import {Now} from "hareactive/now";
-import {Behavior, sink, placeholder} from "hareactive/behavior";
+import {Behavior, isBehavior, sink, placeholder} from "hareactive/behavior";
 import {text, dynamic, runComponentNow, toComponent, Component, component, e, elements} from "../src";
 const {span, div, button, input} = elements;
 
@@ -82,7 +82,7 @@ describe("component specs", () => {
     it("simpel span component", () => {
       const c = component(
 	function model() {
-	  return Now.of([{}, {}]);
+	  return Now.of([{}, {}] as [{}, {}]);
 	},
 	function view() {
 	  return span("World");
@@ -96,7 +96,7 @@ describe("component specs", () => {
     it("simpel span component", () => {
       const c = component(
 	function model() {
-	  return Now.of([{}, {}]);
+	  return Now.of([{}, {}] as [{}, {}]);
 	},
 	function view() {
 	  return span("World");
@@ -107,22 +107,21 @@ describe("component specs", () => {
       assert.strictEqual(divElm.children[0].textContent, "World");
     });
 
-    it("view is function returning array of components", () => {
-      let fromView; 
-
+    it.only("view is function returning array of components", () => {
+      type FromView = {inputValue: Behavior<any>};
+      let fromView: FromView;
       const c = component(
-	function model(args) {
+	function model(args: FromView) {
 	  fromView = args;
-	  return Now.of([{}, {}]);
+	  return Now.of([{}, {}] as [{}, {}]);
 	}, () => [
 	  span("Hello"),
 	  input()
 	]);
-
       runComponentNow(divElm, c);
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "Hello");
-      assert.property(fromView, "inputValue");
+      assert(isBehavior(fromView.inputValue));
     });
 
     it("throws an error message if the view doesn't return the needed properties", () => {
@@ -130,7 +129,7 @@ describe("component specs", () => {
         return;
       }
       const c = component(
-        function fooComp({foo}) { return Now.of([{}, {}]); },
+        function fooComp({foo}) { return Now.of([{}, {}] as [{}, {}]); },
         function barView() { return Component.of({bar: "no foo?"}); }
       );
       assert.throws(() => {
