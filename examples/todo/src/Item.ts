@@ -29,6 +29,7 @@ type FromView = {
 type ToView = Item;
 
 export type Out = {
+  id: number,
   destroyItemId: Stream<number>,
   completed: Behavior<boolean>
 };
@@ -43,8 +44,7 @@ export default function item({name, id}: Params): Component<Out> {
         isComplete: checked,
         isEditing: editing
       }, {
-        destroyItemId,
-        completed: checked
+        id, destroyItemId, completed: checked
       }] as [ToView, Out]);
     },
     function itemView({taskName, isComplete, isEditing}: Item) {

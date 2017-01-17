@@ -7,7 +7,8 @@ import {get} from "../../../src/utils";
 import {Out as ItemOut} from "./Item";
 
 export type Params = {
-  todosB: Behavior<ItemOut[]>
+  todosB: Behavior<ItemOut[]>,
+  areAnyCompleted: Behavior<boolean>
 };
 
 const negate = (b: boolean): boolean => !b;
@@ -17,9 +18,8 @@ const formatRemainer = (value: number) => ` item${(value == 1)?"":"s"} left`;
 const filterItem = (name: string) => li(a(name));
 const sumFalse = (l: boolean[]) => l.filter(negate).length;
 
-export default ({todosB}: Params) => {
+export default ({todosB, areAnyCompleted}: Params) => {
   const hidden = todosB.map(isEmpty);
-  todosB.map((l) => console.log(l));
   const itemsLeft = todosB
     .map((list) => traverse(Behavior, get("completed"), list))
     .flatten()
@@ -35,6 +35,7 @@ export default ({todosB}: Params) => {
       filterItem("Completed")
     ]),
     button({
+      style: {visibility: areAnyCompleted.map((b) => b ? "visible" : "hidden")},
       class: "clear-completed", name: {click: "clearCompleted"}
     }, "Clear completed")
   ]);
