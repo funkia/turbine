@@ -31,15 +31,15 @@ type ToView = {
   itemOutputs: Behavior<ItemOut[]>,
 } & FooterParams;
 
+export function mapTraverseFlat<A, B>(fn: (a: A) => Behavior<B>, behavior: Behavior<A[]>): Behavior<B[]> {
+  return behavior.map(l => traverse(Behavior, fn, l)).flatten<B[]>();
+}
+
 function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
-  return outputs
-    .map((outs: ItemOut[]) => traverse(
-      Behavior,
-      ({completed, id}: ItemOut) => map((completed) => ({completed, id}), completed),
-      outs
-    ))
-    .flatten()
-    .map((list) => list.filter(get("completed")).map(get("id")));
+  return mapTraverseFlat(
+    ({completed, id}) => map((completed) => ({completed, id}), completed),
+    outputs
+  ).map((list) => list.filter(get("completed")).map(get("id")));
 }
 
 function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {

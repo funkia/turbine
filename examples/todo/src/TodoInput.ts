@@ -1,11 +1,11 @@
 import {
-  Stream, snapshot, filter, changes, combine,
+  Stream, snapshot, changes, combine,
   Behavior, stepper,
   Now
 } from "hareactive";
 import {Properties} from "../../../src/dom-builder";
 
-import {runMain, Component, component, e} from "../../../src";
+import {component} from "../../../src";
 import {input} from "../../../src/elements";
 
 const KEYCODE_ENTER = 13;

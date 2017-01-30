@@ -4,6 +4,7 @@ import {Component, dynamic, elements} from "../../../src";
 const {span, button, label, ul, li, a, footer, strong} = elements;
 import {get} from "../../../src/utils";
 
+import {mapTraverseFlat} from "../index";
 import {Out as ItemOut} from "./Item";
 
 export type Params = {
@@ -20,10 +21,7 @@ const sumFalse = (l: boolean[]) => l.filter(negate).length;
 
 export default ({todosB, areAnyCompleted}: Params) => {
   const hidden = todosB.map(isEmpty);
-  const itemsLeft = todosB
-    .map((list) => traverse(Behavior, get("completed"), list))
-    .flatten()
-    .map(sumFalse)
+  const itemsLeft = mapTraverseFlat(get("completed"), todosB).map(sumFalse);
   return footer({class: "footer", classToggle: {hidden}}, [
     span({class: "todo-count"}, [
       strong(itemsLeft),
