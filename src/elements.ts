@@ -17,16 +17,26 @@ export const input = e("input", {
     ["blur", "blur", id]
   ]
 });
+
+function getTargetChecked(event: any): boolean {
+  return event.target.checked;
+}
+
 export const checkbox = e("input[type=checkbox]", {
   behaviors: [
-    ["change", "checked", (evt: any) => evt.target.checked, ({checked}: HTMLInputElement) => checked]
+    ["change", "checked", getTargetChecked, ({checked}: HTMLInputElement) => checked]
+  ],
+  streams: [
+    ["change", "checkedChange", getTargetChecked]
   ]
 });
+
 export const button  = e("button", {
   streams: [
     ["click", "click", id]
   ]
 });
+
 export const br      = e("br")();
 export const span    = e("span", {wrapper: true});
 export const div     = e("div", {wrapper: true});
