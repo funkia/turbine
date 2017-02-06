@@ -18,7 +18,7 @@ export type Properties = {
   behaviors?: BehaviorDescription<any>[],
   style?: CSSStyleType,
   props?: {
-    [name: string]: Showable | Behavior<Showable>;
+    [name: string]: Showable | Behavior<Showable | boolean>;
   },
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;

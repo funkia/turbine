@@ -39,7 +39,7 @@ function view({clearedValue}: ToView) {
     class: "new-todo",
     props: {value: clearedValue},
     attribute: {
-      autofocus: "true", autocomplete: "off", placeholder: "What needs to bo done?"
+      autofocus: "true", autocomplete: "off", placeholder: "What needs to be done?"
     }
   });
 }
