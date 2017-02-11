@@ -1,4 +1,4 @@
-import {traverse, combine} from "jabz";
+import {traverse, combine, lift} from "jabz";
 import {
   Behavior, scan, map,
   sample, snapshot,
@@ -30,6 +30,7 @@ type ToView = {
   toggleAll: Stream<boolean>,
   todoNames: Behavior<ItemParams[]>,
   itemOutputs: Behavior<ItemOut[]>,
+  areAllCompleted: Behavior<boolean>
 } & FooterParams;
 
 export function mapTraverseFlat<A, B>(fn: (a: A) => Behavior<B>, behavior: Behavior<A[]>): Behavior<B[]> {
@@ -49,6 +50,8 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map(get("destroyItemId")))));
 
   const completedIds = getCompletedIds(itemOutputs);
+  const areAllCompleted =
+    lift((currentIds, currentOuts) => currentIds.length === currentOuts.length, completedIds, itemOutputs);
   const areAnyCompleted = completedIds.map(isEmpty).map((b) => !b);
 
   // Modifications
@@ -60,10 +63,10 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   const modifications = combineList([prependTodoFn, removeTodoFn, clearCompletedFn]);
 
   const todoNames: Behavior<ItemParams[]> = yield sample(scan(apply, [], modifications));
-  return [{itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll}, {}];
+  return [{itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted}, {}];
 }
 
-function view({itemOutputs, todoNames, areAnyCompleted, toggleAll}: ToView) {
+function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView) {
   return [
     section({class: "todoapp"}, [
       header({class: "header"}, [
@@ -74,7 +77,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll}: ToView) {
         class: "main",
         classToggle: { hidden: todoNames.map(isEmpty) }
       }, [
-        checkbox({class: "toggle-all", name: {checkedChange: "toggleAll"}}),
+        checkbox({class: "toggle-all", props: {checked: areAllCompleted}, name: {checkedChange: "toggleAll"}}),
         ul({class: "todo-list"}, function*() {
           const itemOutputs = yield list(item.bind(undefined, toggleAll), ({id}) => id.toString(), todoNames);
           return {itemOutputs};
