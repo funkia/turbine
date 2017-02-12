@@ -3,9 +3,8 @@ import {
   Behavior, stepper,
   Now
 } from "hareactive";
-import {Properties} from "../../../src/dom-builder";
 
-import {component} from "../../../src";
+import {Component, component} from "../../../src";
 import {input} from "../../../src/elements";
 
 const KEYCODE_ENTER = 13;
@@ -34,8 +33,8 @@ function model({keyup, inputValue}: FromView) {
   return Now.of([{clearedValue}, {enterTodoS}] as [ToView, Out]);
 }
 
-function view({clearedValue}: ToView) {
-  return input({
+function view({clearedValue}: ToView): Component<FromView> {
+  return input<FromView>({
     class: "new-todo",
     props: {value: clearedValue},
     attribute: {
