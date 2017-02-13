@@ -2,7 +2,7 @@ import {map} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  Now, combine, at, combineList
+  Now, combine, at, combineList, keepWhen
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
@@ -40,10 +40,6 @@ export type Out = {
   destroyItemId: Stream<number>,
   completed: Behavior<boolean>
 };
-
-function keepWhen<A>(stream: Stream<A>, behavior: Behavior<boolean>): Stream<A> {
-  return stream.filter((_) => at(behavior));
-}
 
 export default function item(toggleAll: Stream<boolean>, {name: initialName, id}: Params): Component<Out> {
   return component<ToView, FromView, Out>(
