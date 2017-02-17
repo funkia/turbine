@@ -1,7 +1,6 @@
 import {Behavior} from "hareactive";
-import {traverse} from "jabz/traversable";
-import {Component, dynamic, elements} from "../../../src";
-const {span, button, label, ul, li, a, footer, strong} = elements;
+import {elements} from "../../../src";
+const {span, button, ul, li, a, footer, strong} = elements;
 import {get} from "../../../src/utils";
 
 import {mapTraverseFlat} from "../index";
@@ -13,9 +12,8 @@ export type Params = {
 };
 
 const negate = (b: boolean): boolean => !b;
-const length = (list: any[]) => list.length;
-const isEmpty = (list: any[]) => list.length == 0;
-const formatRemainer = (value: number) => ` item${(value == 1)?"":"s"} left`;
+const isEmpty = (list: any[]) => list.length === 0;
+const formatRemainer = (value: number) => ` item${(value === 1) ? "" : "s"} left`;
 const filterItem = (name: string) => li(a(name));
 const sumFalse = (l: boolean[]) => l.filter(negate).length;
 
