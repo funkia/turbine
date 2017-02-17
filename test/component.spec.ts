@@ -1,7 +1,9 @@
 import {assert} from "chai";
 import {Now} from "hareactive/now";
+import {fgo} from "jabz/monad";
 import {Behavior, isBehavior, sink, placeholder} from "hareactive/behavior";
-import {text, dynamic, runComponentNow, toComponent, Component, component, e, elements} from "../src";
+
+import {text, dynamic, runComponentNow, toComponent, Component, component, e, elements, loop} from "../src";
 const {span, div, button, input} = elements;
 
 const supportsProxy = "Proxy" in window;
@@ -78,6 +80,21 @@ describe("component specs", () => {
     });
   });
 
+  describe("loop", () => {
+    it("works with explicit fgo and looped behavior", () => {
+      type Looped = {name: Behavior<string>};
+      const comp = loop(fgo(function*({name}: Looped): IterableIterator<Component<any>> {
+        yield div(name);
+        ({inputValue: name} = yield input({props: {value: "Foo"}}));
+        return {name};
+      }));
+      runComponentNow(divElm, comp);
+      console.log(divElm);
+      assert.strictEqual(divElm.children.length, 2);
+      assert.strictEqual(divElm.firstChild.textContent, "Foo");
+    });
+  });
+
   describe("component", () => {
     it("simpel span component", () => {
       const c = component(
@@ -107,7 +124,7 @@ describe("component specs", () => {
       assert.strictEqual(divElm.children[0].textContent, "World");
     });
 
-    it.only("view is function returning array of components", () => {
+    it("view is function returning array of components", () => {
       type FromView = {inputValue: Behavior<any>};
       let fromView: FromView;
       const c = component(

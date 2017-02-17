@@ -17,7 +17,6 @@ function isShowable(s: any): s is Showable {
   return typeof s === "string" || typeof s === "number";
 }
 
-function id<A>(a: A): A { return a; };
 function fst<A, B>(a: [A, B]): A { return a[0]; }
 function snd<A, B>(a: [A, B]): B { return a[1]; }
 
@@ -66,7 +65,7 @@ export interface BehaviorObject {
   [a: string]: Behavior<any>;
 }
 
-const behaviorProxyHandler = {
+const placeholderProxyHandler = {
   get: function (target: any, name: string): Behavior<any> {
     if (!(name in target)) {
       target[name] = placeholder();
@@ -74,6 +73,25 @@ const behaviorProxyHandler = {
     return target[name];
   }
 };
+
+class MfixComponentNow<A> extends Now<A> {
+  constructor(private f: (a: A) => Component<A>, private parent: Node) {
+    super();
+  }
+  run(): A {
+    const placeholderObject = new Proxy({}, placeholderProxyHandler);
+    const result = this.f(placeholderObject).content(this.parent).run();
+    const returned: (keyof A)[] = <any>Object.keys(result);
+    for (const name of returned) {
+      (placeholderObject[name]).replaceWith(result[name]);
+    }
+    return result;
+  }
+}
+
+export function loop<A>(f: (a: A) => Component<A>): Component<A> {
+  return new Component<A>((parent: Node) => new MfixComponentNow(f, parent));
+}
 
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   constructor(
@@ -85,13 +103,13 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   run(): [M, O] {
     let placeholders: any;
     if (supportsProxy) {
-      placeholders = new Proxy({}, behaviorProxyHandler);
+      placeholders = new Proxy({}, placeholderProxyHandler);
     } else {
       placeholders = {};
       if (this.toViewBehaviorNames !== undefined) {
-	for (const name of this.toViewBehaviorNames) {
+        for (const name of this.toViewBehaviorNames) {
           placeholders[name] = placeholder();
-	}
+        }
       }
     }
     const [behaviors, out] = this.fn(placeholders).run();
