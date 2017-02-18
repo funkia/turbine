@@ -20,6 +20,12 @@ function isShowable(s: any): s is Showable {
 function fst<A, B>(a: [A, B]): A { return a[0]; }
 function snd<A, B>(a: [A, B]): B { return a[1]; }
 
+export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
+  return fn !== undefined
+    && fn.constructor !== undefined
+    && fn.constructor.name === "GeneratorFunction";
+}
+
 /**
  * A component is a function from a parent DOM node to a now
  * computation I.e. something like `type Component<A> = (p: Node) =>
@@ -66,7 +72,7 @@ export interface BehaviorObject {
 }
 
 const placeholderProxyHandler = {
-  get: function (target: any, name: string): Behavior<any> {
+  get: function(target: any, name: string): Behavior<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }
@@ -89,8 +95,11 @@ class MfixComponentNow<A> extends Now<A> {
   }
 }
 
-export function loop<A>(f: (a: A) => Component<A>): Component<A> {
-  return new Component<A>((parent: Node) => new MfixComponentNow(f, parent));
+export function loop<A>(f: ((a: A) => Component<A>) | ((a: A) => Iterator<Component<any>>)): Component<A> {
+  if (isGeneratorFunction(f)) {
+    f = fgo(f);
+  }
+  return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent));
 }
 
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
@@ -119,12 +128,6 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
     }
     return [behaviors, out];
   };
-}
-
-export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
-  return fn !== undefined
-    && fn.constructor !== undefined
-    && fn.constructor.name === "GeneratorFunction";
 }
 
 function addErrorHandler(modelName: string, viewName: string, obj: any) {
