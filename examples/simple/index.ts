@@ -1,9 +1,8 @@
 import {Behavior, stepper} from "hareactive/behavior";
 import {Stream, snapshot} from "hareactive/stream";
 import {Now} from "hareactive/now";
-import {sequence_} from "jabz/foldable";
 
-import {Component, component, runMain, list, e, text, elements} from "../../src";
+import {Component, component, runMain, elements, loop} from "../../src";
 const {span, button, br, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -42,12 +41,12 @@ const main = component<ToView, ViewOut, {}>(
       span("Please enter an email address: "),
       input({name: {inputValue: "emailB"}}),
       div([
-	"The address is ",
-	validB.map(t => t ? "valid" : "invalid")
+        "The address is ",
+        validB.map(t => t ? "valid" : "invalid")
       ]),
       button({name: {click: "calcLength"}}, "Calculate length"),
       div([
-	"The length of the email is ", lengthB
+        "The length of the email is ", lengthB
       ])
     ];
   }
