@@ -3,8 +3,8 @@ import {
   Behavior, stepper,
 } from "hareactive";
 
-import {loop} from "../../../src";
-import {input} from "../../../src/elements";
+import {loop, elements} from "../../../src";
+const {input} = elements;
 
 const KEYCODE_ENTER = 13;
 const isEnterKey = (ev: any) => ev.keyCode === KEYCODE_ENTER;
