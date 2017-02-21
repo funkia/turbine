@@ -82,11 +82,25 @@ const placeholderProxyHandler = {
 };
 
 class MfixComponentNow<A> extends Now<A> {
-  constructor(private f: (a: A) => Component<A>, private parent: Node) {
+  constructor(
+    private f: (a: A) => Component<A>,
+    private parent: Node,
+    private placeholderNames?: string[]
+  ) {
     super();
   }
   run(): A {
-    const placeholderObject = new Proxy({}, placeholderProxyHandler);
+    let placeholderObject: any;
+    if (supportsProxy) {
+      placeholderObject = new Proxy({}, placeholderProxyHandler);
+    } else {
+      placeholderObject = {};
+      if (this.placeholderNames !== undefined) {
+        for (const name of this.placeholderNames) {
+          placeholderObject[name] = placeholder();
+        }
+      }
+    }
     const result = this.f(placeholderObject).content(this.parent).run();
     const returned: (keyof A)[] = <any>Object.keys(result);
     for (const name of returned) {
@@ -96,17 +110,17 @@ class MfixComponentNow<A> extends Now<A> {
   }
 }
 
-export function loop<A>(f: ((a: A) => Component<A>) | ((a: A) => Iterator<Component<any>>)): Component<A> {
+export function loop<A>(f: ((a: A) => Component<A>) | ((a: A) => Iterator<Component<any>>), placeholderNames?: string[]): Component<A> {
   if (isGeneratorFunction(f)) {
     f = fgo(f);
   }
-  return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent));
+  return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent, placeholderNames));
 }
 
 class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
   constructor(
     private fn: (m: M) => Now<[M, O]>,
-    private toViewBehaviorNames?: string[]
+    private placeholderNames?: string[]
   ) {
     super();
   };
@@ -116,8 +130,8 @@ class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
       placeholders = new Proxy({}, placeholderProxyHandler);
     } else {
       placeholders = {};
-      if (this.toViewBehaviorNames !== undefined) {
-        for (const name of this.toViewBehaviorNames) {
+      if (this.placeholderNames !== undefined) {
+        for (const name of this.placeholderNames) {
           placeholders[name] = placeholder();
         }
       }

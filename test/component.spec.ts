@@ -89,26 +89,26 @@ describe("component specs", () => {
         return {name};
       }));
       runComponentNow(divElm, comp);
-      console.log(divElm);
       assert.strictEqual(divElm.children.length, 2);
       assert.strictEqual(divElm.firstChild.textContent, "Foo");
     });
   });
+});
 
-  describe("component", () => {
-    it("simpel span component", () => {
-      const c = component(
-	function model() {
-	  return Now.of([{}, {}] as [{}, {}]);
-	},
-	function view() {
-	  return span("World");
-	}
-      );
-      runComponentNow(divElm, c);
-      assert.strictEqual(divElm.children[0].tagName, "SPAN");
-      assert.strictEqual(divElm.children[0].textContent, "World");
-    });
+describe("component", () => {
+  it("simpel span component", () => {
+    const c = component(
+      function model() {
+	return Now.of([{}, {}] as [{}, {}]);
+      },
+      function view() {
+	return span("World");
+      }
+    );
+    runComponentNow(divElm, c);
+    assert.strictEqual(divElm.children[0].tagName, "SPAN");
+    assert.strictEqual(divElm.children[0].textContent, "World");
+  });
 
     it("simpel span component", () => {
       const c = component(
