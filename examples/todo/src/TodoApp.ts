@@ -4,13 +4,13 @@ import {
   sample, snapshot,
   Stream, scanS, switchStream, combineList
 } from "hareactive";
-import {runMain, component, elements, list} from "../../src";
+import {runMain, component, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul} = elements;
-import {get} from "../../src/utils";
+import {get} from "../../../src/utils";
 
-import todoInput, {Out as InputOut} from "./src/TodoInput";
-import item, {Out as ItemOut, Params as ItemParams} from "./src/Item";
-import todoFooter, {Params as FooterParams} from "./src/TodoFooter";
+import todoInput, {Out as InputOut} from "./TodoInput";
+import item, {Out as ItemOut, Params as ItemParams} from "./Item";
+import todoFooter, {Params as FooterParams} from "./TodoFooter";
 
 const isEmpty = (list: any[]) => list.length == 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -93,6 +93,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-const app = component(model, view);
-
-runMain("body", app);
+export const app = component(model, view);
