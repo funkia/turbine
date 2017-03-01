@@ -1,10 +1,10 @@
-import {traverse, combine, lift} from "jabz";
+import {combine, fromMaybe, just, lift, mapMap, Maybe, nothing, traverse, withEffects} from "jabz";
 import {
   Behavior, scan, map,
   sample, snapshot,
-  Stream, scanS, switchStream, combineList
+  Stream, switchStream, combineList, async, Future, switcher, plan, performStream, changes, snapshotWith
 } from "hareactive";
-import {runMain, component, elements, list} from "../../../src";
+import {component, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul} = elements;
 import {get} from "../../../src/utils";
 
@@ -12,12 +12,15 @@ import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Out as ItemOut, Params as ItemParams} from "./Item";
 import todoFooter, {Params as FooterParams} from "./TodoFooter";
 
-const isEmpty = (list: any[]) => list.length == 0;
+const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
 
-const toItemParams = (name: string, prev: ItemParams) => ({
-  id: prev.id + 1,
-  name
+const getItemIO = withEffects((key: string): Maybe<any> => {
+  const value = JSON.parse(localStorage.getItem(key));
+  return value === null ? nothing : just(value);
+});
+const setItemIO = withEffects((key: string, value: any) => {
+  localStorage.setItem(key, JSON.stringify(value));
 });
 
 type FromView = {
@@ -39,13 +42,14 @@ export function mapTraverseFlat<A, B>(fn: (a: A) => Behavior<B>, behavior: Behav
 
 function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
   return mapTraverseFlat(
-    ({completed, id}) => map((completed) => ({completed, id}), completed),
+    ({completed: completedB, id}) => map((completed) => ({completed, id}), completedB),
     outputs
   ).map((list) => list.filter(get("completed")).map(get("id")));
 }
 
 function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
-  const newTodoS: Stream<ItemParams> = yield sample(scanS(toItemParams, {id: 0}, enterTodoS));
+  const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
+  const newTodoS: Stream<ItemParams> = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
 
   const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map(get("destroyItemId")))));
 
@@ -58,11 +62,17 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   const prependTodoFn = newTodoS.map((todo) => (list: ItemParams[]) => combine([todo], list));
   const removeTodoFn = deleteS.map((removeId) => (list: ItemParams[]) => list.filter(({id}) => id !== removeId));
   const clearCompletedFn =
-    snapshot(completedIds, clearCompleted).map((ids) => (list: ItemParams[]) => list.filter(({id}) => !ids.includes(id)))
+    snapshot(completedIds, clearCompleted).map((ids) => (list: ItemParams[]) => list.filter(({id}) => !ids.includes(id)));
 
   const modifications = combineList([prependTodoFn, removeTodoFn, clearCompletedFn]);
 
-  const todoNames: Behavior<ItemParams[]> = yield sample(scan(apply, [], modifications));
+  const savedTodoName: Future<Maybe<ItemParams[]>> = yield async(getItemIO("todoList"));
+  const restoredTodoNames = yield plan(savedTodoName.map((maybeList) => {
+    const initial = fromMaybe([], maybeList);
+    return sample(scan(apply, initial, modifications));
+  }));
+  const todoNames: Behavior<ItemParams[]> = switcher(Behavior.of([]), restoredTodoNames);
+  yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
   return [{itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted}, {}];
 }
 
