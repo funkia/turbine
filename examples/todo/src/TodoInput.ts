@@ -1,6 +1,6 @@
 import {
   Stream, snapshot, changes, combine,
-  Behavior, stepper,
+  Behavior, stepper
 } from "hareactive";
 
 import {loop, elements} from "../../../src";
@@ -31,6 +31,6 @@ export default loop<Looped & Out>(function*({enterPressed, value}: Looped) {
       autofocus: "true", autocomplete: "off", placeholder: "What needs to be done?"
     }
   });
-  enterPressed = keyup.filter(isEnterKey);
-  return {enterPressed, value: value_, enterTodoS};
+  const enterPressed_ = keyup.filter(isEnterKey);
+  return {enterPressed: enterPressed_, value: value_, enterTodoS};
 }).map(({enterTodoS}) => ({enterTodoS}));

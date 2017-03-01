@@ -2,7 +2,7 @@ import {map} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  Now, combine, at, combineList, keepWhen
+  Now, combine, combineList, keepWhen
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
@@ -75,7 +75,6 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
     },
     function itemView({taskName, isComplete, isEditing, newName}: ToView) {
       return map((out) => ({taskName, ...out}), li({
-        wrapper: true,
         class: "todo",
         classToggle: {completed: isComplete, editing: isEditing}
       }, [
