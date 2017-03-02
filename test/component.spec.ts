@@ -32,10 +32,10 @@ describe("component specs", () => {
       assert.strictEqual(divElm.children.length, 3);
       assert.strictEqual(divElm.children[0].tagName, "SPAN");
       assert.strictEqual(divElm.children[0].textContent, "Hello");
-      assert.strictEqual(divElm.children[1].tagName, 'DIV');
-      assert.strictEqual(divElm.children[1].textContent, 'There');
-      assert.strictEqual(divElm.children[2].tagName, 'BUTTON');
-      assert.strictEqual(divElm.children[2].textContent, 'Click me');
+      assert.strictEqual(divElm.children[1].tagName, "DIV");
+      assert.strictEqual(divElm.children[1].textContent, "There");
+      assert.strictEqual(divElm.children[2].tagName, "BUTTON");
+      assert.strictEqual(divElm.children[2].textContent, "Click me");
     });
   });
   describe("text", () => {
@@ -99,10 +99,10 @@ describe("component", () => {
   it("simpel span component", () => {
     const c = component(
       function model() {
-	return Now.of([{}, {}] as [{}, {}]);
+        return Now.of([{}, {}] as [{}, {}]);
       },
       function view() {
-	return span("World");
+        return span("World");
       }
     );
     runComponentNow(divElm, c);
@@ -110,49 +110,47 @@ describe("component", () => {
     assert.strictEqual(divElm.children[0].textContent, "World");
   });
 
-    it("simpel span component", () => {
-      const c = component(
-	function model() {
-	  return Now.of([{}, {}] as [{}, {}]);
-	},
-	function view() {
-	  return span("World");
-	}
-      );
-      runComponentNow(divElm, c);
-      assert.strictEqual(divElm.children[0].tagName, "SPAN");
-      assert.strictEqual(divElm.children[0].textContent, "World");
-    });
-
-    it("view is function returning array of components", () => {
-      type FromView = {inputValue: Behavior<any>};
-      let fromView: FromView;
-      const c = component(
-	function model(args: FromView) {
-	  fromView = args;
-	  return Now.of([{}, {}] as [{}, {}]);
-	}, () => [
-	  span("Hello"),
-	  input()
-	]);
-      runComponentNow(divElm, c);
-      assert.strictEqual(divElm.children[0].tagName, "SPAN");
-      assert.strictEqual(divElm.children[0].textContent, "Hello");
-      assert(isBehavior(fromView.inputValue));
-    });
-
-    it("throws an error message if the view doesn't return the needed properties", () => {
-      if (!supportsProxy) {
-        return;
+  it("simpel span component", () => {
+    const c = component(
+      function model() {
+        return Now.of([{}, {}] as [{}, {}]);
+      },
+      function view() {
+        return span("World");
       }
-      const c = component(
-        function fooComp({foo}) { return Now.of([{}, {}] as [{}, {}]); },
-        function barView() { return Component.of({bar: "no foo?"}); }
-      );
-      assert.throws(() => {
-        runComponentNow(divElm, c);
-      }, /fooComp/);
-    });
+    );
+    runComponentNow(divElm, c);
+    assert.strictEqual(divElm.children[0].tagName, "SPAN");
+    assert.strictEqual(divElm.children[0].textContent, "World");
+  });
+
+  it("view is function returning array of components", () => {
+    type FromView = {inputValue: Behavior<any>};
+    let fromView: FromView;
+    const c = component(
+      function model(args: FromView) {
+        fromView = args;
+        return Now.of([{}, {}] as [{}, {}]);
+      }, () => [
+        span("Hello"),
+        input()
+      ]);
+    runComponentNow(divElm, c);
+    assert.strictEqual(divElm.children[0].tagName, "SPAN");
+    assert.strictEqual(divElm.children[0].textContent, "Hello");
+    assert(isBehavior(fromView.inputValue));
+  });
+
+  it("throws an error message if the view doesn't return the needed properties", () => {
+    if (!supportsProxy) {
+      return;
+    }
+    const c = component(
+      function fooComp({foo}) { return Now.of([{}, {}] as [{}, {}]); },
+      function barView() { return Component.of({bar: "no foo?"}); }
+    );
+    assert.throws(() => {
+      runComponentNow(divElm, c);
+    }, /fooComp/);
   });
 });
-
