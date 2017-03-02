@@ -1,4 +1,4 @@
-import {combine, fromMaybe, just, lift, mapMap, Maybe, nothing, traverse, withEffects} from "jabz";
+import {combine, fromMaybe, lift, Maybe, traverse} from "jabz";
 import {
   Behavior, scan, map,
   sample, snapshot,
@@ -10,18 +10,11 @@ import {get} from "../../../src/utils";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams} from "./Item";
-import todoFooter, {Params as FooterParams} from "./TodoFooter";
+import todoFooter, { Params as FooterParams } from "./TodoFooter";
+import {setItemIO, getItemIO} from "./index";
 
 const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
-
-const getItemIO = withEffects((key: string): Maybe<any> => {
-  const value = JSON.parse(localStorage.getItem(key));
-  return value === null ? nothing : just(value);
-});
-const setItemIO = withEffects((key: string, value: any) => {
-  localStorage.setItem(key, JSON.stringify(value));
-});
 
 type FromView = {
   toggleAll: Stream<boolean>,
