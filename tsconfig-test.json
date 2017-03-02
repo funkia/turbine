@@ -5,7 +5,7 @@
     "module": "commonjs",
     "outDir": "tmp",
     "rootDir": ".",
-    "target": "ES5",
+    "target": "ES2015",
     "types" : [
       "mocha"
     ]

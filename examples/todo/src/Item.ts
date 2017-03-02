@@ -2,7 +2,7 @@ import {map} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  Now, combine, combineList, keepWhen
+  Now, combine, combineList, keepWhen, toggle
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
@@ -13,18 +13,18 @@ const esc = 27;
 const isKey = (keyCode: number) => (ev: {keyCode: number}) => ev.keyCode === keyCode;
 
 export type Item = {
+  id: number,
   taskName: Behavior<string>,
-  isComplete: Behavior<boolean>,
-  isEditing: Behavior<boolean>
+  isComplete: Behavior<boolean>
 };
 
-export type Params = {
+export type Input = {
   name: string,
   id: number
 };
 
 type FromView = {
-  toggle: Stream<boolean>,
+  toggleTodo: Stream<boolean>,
   taskName: Behavior<string>,
   startEditing: Stream<any>,
   nameBlur: Stream<any>,
@@ -33,45 +33,45 @@ type FromView = {
   newNameInput: Stream<any>
 };
 
-type ToView = Item & {newName: Behavior<string>};
+type ToView = {
+  taskName: Behavior<string>,
+  isComplete: Behavior<boolean>
+  newName: Behavior<string>
+  isEditing: Behavior<boolean>
+};
 
-export type Out = {
+export type Output = {
   id: number,
   destroyItemId: Stream<number>,
   completed: Behavior<boolean>
 };
 
-export default function item(toggleAll: Stream<boolean>, {name: initialName, id}: Params): Component<Out> {
-  return component<ToView, FromView, Out>(
-    function itemModel({toggle, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName}: FromView) {
+export default function item(toggleAll: Stream<boolean>, {name: initialName, id}: Input): Component<Output> {
+  return component<ToView, FromView, Output>(
+    function itemModel({toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName}: FromView) {
       const enterPress = filter(isKey(enter), nameKeyup);
-      const enterNotPressed =
-        stepper(true, combine(enterPress.mapTo(false), startEditing.mapTo(true)));
+      const enterNotPressed = toggle(true, startEditing, enterPress);
       const cancel = filter(isKey(esc), nameKeyup);
-      const notCancelled = stepper(true, combine(cancel.mapTo(false), startEditing.mapTo(true)));
-      const stop =
-        combineList([enterPress, keepWhen(nameBlur, enterNotPressed), cancel]).mapTo(false);
-      const editing = stepper(false, startEditing.mapTo(true).combine(stop));
-
+      const notCancelled = toggle(true, startEditing, cancel);
+      const stopEditing = combineList([enterPress, keepWhen(nameBlur, enterNotPressed), cancel]);
+      const isEditing = toggle(false, startEditing, stopEditing);
       const newName = stepper(
         initialName,
         combine(newNameInput.map((ev) => ev.target.value), snapshot(taskName, cancel))
       );
-      const nameChange = snapshot(newName, keepWhen(stop, notCancelled));
-      const name = stepper(initialName, nameChange);
-
+      const nameChange = snapshot(newName, keepWhen(stopEditing, notCancelled));
+      const taskName_ = stepper(initialName, nameChange);
       const destroyItem = combine(deleteClicked, nameChange.filter((s) => s === ""));
       const destroyItemId = destroyItem.mapTo(id);
-
-      const isComplete = stepper(false, toggle.combine(toggleAll));
+      const isComplete = stepper(false, combine(toggleTodo, toggleAll));
       return Now.of([{
-        taskName: name,
+        taskName: taskName_,
         isComplete,
-        isEditing: editing,
+        isEditing,
         newName
       }, {
         id, destroyItemId, completed: isComplete
-      }] as [ToView, Out]);
+      }] as [ToView, Output]);
     },
     function itemView({taskName, isComplete, isEditing, newName}: ToView) {
       return map((out) => ({taskName, ...out}), li({
@@ -80,7 +80,7 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
       }, [
         div({class: "view"}, [
           checkbox({
-            class: "toggle", name: {checkedChange: "toggle"},
+            class: "toggle", name: {checkedChange: "toggleTodo"},
             props: {checked: isComplete}
           }),
           label({name: {dblclick: "startEditing"}}, taskName),

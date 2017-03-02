@@ -4,7 +4,7 @@ const {span, button, ul, li, a, footer, strong} = elements;
 import {get} from "../../../src/utils";
 
 import {mapTraverseFlat} from "./TodoApp";
-import {Out as ItemOut} from "./Item";
+import {Output as ItemOut} from "./Item";
 
 export type Params = {
   todosB: Behavior<ItemOut[]>,

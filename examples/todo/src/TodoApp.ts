@@ -9,7 +9,7 @@ const {h1, p, header, footer, section, checkbox, ul} = elements;
 import {get} from "../../../src/utils";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
-import item, {Out as ItemOut, Params as ItemParams} from "./Item";
+import item, {Output as ItemOut, Input as ItemParams} from "./Item";
 import todoFooter, {Params as FooterParams} from "./TodoFooter";
 
 const isEmpty = (list: any[]) => list.length === 0;
@@ -85,7 +85,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
       ]),
       section({
         class: "main",
-        classToggle: { hidden: todoNames.map(isEmpty) }
+        classToggle: {hidden: todoNames.map(isEmpty)}
       }, [
         checkbox({class: "toggle-all", props: {checked: areAllCompleted}, name: {checkedChange: "toggleAll"}}),
         ul({class: "todo-list"}, function*() {
