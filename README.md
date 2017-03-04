@@ -7,16 +7,12 @@ A purely functional frontend framework based on functional reactive programming.
 [![codecov](https://codecov.io/gh/Funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/Funkia/funnel)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 
-## Buzzwords you might like:
-
-* Purely functional
-* Reactive
-* Component-based
-* Implemented in TypeScript
-
 ## Ideas/features
 
-* Use classic FRP to express values that changes over time and reactivity.
+* Purely functional.
+* Implemented in TypeScript.
+* Uses classic FRP. Behaviors represents values that changes over time
+  and streams provide reactivity.
 * A component-based architecture. Components are completely encapsulated and composable.
   Components are monads and are typically used and composed with do-notation.
 * Do not use virtual DOM. Instead constructed DOM elements reacts directly to behaviors and streams.
@@ -24,6 +20,29 @@ A purely functional frontend framework based on functional reactive programming.
 * Side-effects are expressed with a declarative IO-like monad. This allows for easy
   testing of effectful code.
 * The entire dataflow through applications is explicit and easy to follow.
+
+## Example
+
+```js
+import {map} from "jabz";
+import {runMain, elements, loop} from "funnel";
+const {span, input, div} = elements;
+
+const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
+
+const main = loop(function*({email}) {
+  const isValid = map(isValidEmail, email);
+  yield span("Please enter an email address: ");
+  const {inputValue: email_} = yield input();
+  yield div([
+    "The address is ", map((b) => b ? "valid" : "invalid", isValid)
+  ]);
+  return {email: email_};
+});
+
+// `runMain` should be the only impure function in application code
+runMain("#mount", main);
+```
 
 ## Getting started
 
