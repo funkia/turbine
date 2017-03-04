@@ -43,6 +43,7 @@
     "codecov": "^1.0.1",
     "jabz": "0.0.16",
     "karma": "^1.3.0",
+    "karma-chrome-launcher": "^2.0.0",
     "karma-cli": "^1.0.1",
     "karma-mocha": "^1.3.0",
     "karma-mocha-reporter": "^2.2.1",
