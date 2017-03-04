@@ -41,9 +41,10 @@ type FromView = {
 
 type ToView = {
   taskName: Behavior<string>,
-  isComplete: Behavior<boolean>
-  newName: Behavior<string>
-  isEditing: Behavior<boolean>
+  isComplete: Behavior<boolean>,
+  newName: Behavior<string>,
+  isEditing: Behavior<boolean>,
+  focusInput: Stream<any>
 };
 
 export type Output = {
@@ -92,12 +93,13 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
         taskName: taskName_,
         isComplete,
         isEditing,
-        newName
+        newName,
+	focusInput: startEditing
       }, {
         id, destroyItemId, completed: isComplete
       }] as [ToView, Output];
     },
-    function itemView({taskName, isComplete, isEditing, newName}: ToView) {
+    function itemView({taskName, isComplete, isEditing, newName, focusInput}: ToView) {
       return map((out) => ({taskName, ...out}), li({
         class: "todo",
         classToggle: {completed: isComplete, editing: isEditing}
@@ -111,8 +113,10 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
           button({class: "destroy", name: {click: "deleteClicked"}})
         ]),
         input({
-          class: "edit", props: {value: taskName},
-          name: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"}
+          class: "edit",
+	  props: {value: taskName},
+          name: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"},
+	  action: {focus: focusInput}
         })
       ]));
     }

@@ -1,9 +1,8 @@
 import {assert} from "chai";
+import {isStream, empty, Stream} from "hareactive";
 
-import {isStream} from "hareactive";
-
-import {runComponentNow, e, Component} from "../src";
-import {button} from "../src/elements";
+import {runComponentNow, e, Component, elements} from "../src";
+const {button} = elements;
 
 describe("dom-builder: e()", () => {
 
@@ -64,6 +63,20 @@ describe("dom-builder: e()", () => {
     assert(isStream(result.foobar));
   });
 
+  it("call methods/actions on the HTMLElement", () => {
+    const s: Stream<[string, string]> = empty();
+    const divElm = document.createElement("div");
+    const span = elements.span({
+      action: {
+	"setAttribute": s
+      }
+    })
+    runComponentNow(divElm, span);
+    assert.notOk(divElm.children[0].classList.contains("test"));
+    s.push(["class", "test"]);
+    assert(divElm.children[0].classList.contains("test"));
+  });
+  
   describe("children", () => {
 
     it("nested", () => {

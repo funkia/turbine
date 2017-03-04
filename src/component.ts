@@ -2,10 +2,11 @@ import {Applicative} from "jabz/applicative";
 import {Traversable, sequence} from "jabz/traversable";
 import {Monad, monad} from "jabz/monad";
 import {go, fgo} from "jabz/monad";
-import {Now} from "hareactive/now";
 import {
-  Behavior, observe, at, sink, isBehavior
-} from "hareactive/behavior";
+  Now,
+  Behavior, observe, at, sink, isBehavior,
+  Stream
+} from "hareactive";
 import {placeholder} from "hareactive/placeholder";
 
 import {merge} from "./utils";
@@ -68,12 +69,12 @@ export function isComponent(c: any): c is Component<any> {
   return c instanceof Component;
 }
 
-export interface BehaviorObject {
-  [a: string]: Behavior<any>;
+export interface ReactivesObject {
+  [a: string]: Behavior<any> | Stream<any>;
 }
 
 const placeholderProxyHandler = {
-  get: function(target: any, name: string): Behavior<any> {
+  get: function(target: any, name: string): Behavior<any> | Stream<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }
@@ -117,7 +118,7 @@ export function loop<A>(f: ((a: A) => Component<A>) | ((a: A) => Iterator<Compon
   return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent, placeholderNames));
 }
 
-class MfixNow<M extends BehaviorObject, O> extends Now<[M, O]> {
+class MfixNow<M extends ReactivesObject, O> extends Now<[M, O]> {
   constructor(
     private fn: (m: M) => Now<[M, O]>,
     private placeholderNames?: string[]
@@ -163,10 +164,10 @@ function addErrorHandler(modelName: string, viewName: string, obj: any) {
   });
 }
 
-export function component<M extends BehaviorObject, V, O>(
+export function component<M extends ReactivesObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
   view:  ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
-  toViewBehaviorNames?: string[]
+  toViewReactiveNames?: string[]
 ): Component<O> {
   const modelName = (<any>model).name;
   const viewName = (<any>view).name;
@@ -174,7 +175,7 @@ export function component<M extends BehaviorObject, V, O>(
   const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
     (bs) => v(bs).content(parent).map((o: any) => addErrorHandler(modelName, viewName, o)).chain(m),
-    toViewBehaviorNames
+    toViewReactiveNames
   ).map(snd));
 }
 

@@ -23,6 +23,9 @@ export type Properties = {
   attribute?: {
     [name: string]: Showable | Behavior<Showable>;
   },
+  action?: {
+    [name: string]: Stream<any[]>
+  }
   name?: {[name: string]: string},
   class?: string,
   classToggle?: {
@@ -89,6 +92,11 @@ class CreateDomNow<A> extends Now<A> {
 	    elm.classList.toggle(name, value);
           }
         }
+      }
+      if (this.props.action !== undefined) {
+	for (const name in this.props.action) {
+	  this.props.action[name].subscribe((args) => ((<any>elm)[name]).apply(elm, args));
+	}
       }
 
       if (this.props.behaviors !== undefined) {
