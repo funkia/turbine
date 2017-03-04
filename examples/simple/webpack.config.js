@@ -7,42 +7,22 @@ module.exports = {
     filename: 'bundle.js'
   },
   resolve: {
-    extensions: [".ts", ".js", ""]
-  },
-  devtool: "#inline-source-map",
-  plugins: [],
-  module: {
-    loaders: [
-      {test: /\.ts$/, exclude: /node_modules/, loader: 'babel-loader!ts-loader'}
+    extensions: ['.ts', '.tsx', '.js', '.jsx'],
+    modules: [
+      path.join(__dirname, 'src'),
+      "node_modules"
     ]
   },
-  resolveLoader: {
-    root: path.join(__dirname, 'node_modules')
+  module: {
+    rules: [
+      {
+        test: /\.tsx?$/,
+        exclude: /node_modules/,
+        use: [
+          "babel-loader",
+          "ts-loader"
+        ]
+      }
+    ]
   }
 };
-
-// module.exports = {
-//   entry: {
-//     app: ["./index.ts"]
-//   },
-//   output: {
-//     path: __dirname,
-//     filename: "bundle.js"
-//   },
-//   resolve: {
-//     extensions: ['', '.webpack.js', '.ts', '.js', '.tsx', 'jsx']
-//   },
-//   devtool: 'inline-source-map',
-//   module: {
-//     loaders: [
-//       {
-//         test: /\.tsx?$/,
-//         loader: 'awesome-typescript-loader'
-//       },
-//     ]
-//   },
-//   devServer: {
-//     contentBase: "./",
-//     port: 8080
-//   }
-// };
