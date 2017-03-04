@@ -3,7 +3,6 @@ node_js:
  - node
 install:
  - npm install
- - npm install hareactive jabz
 script:
  - ./node_modules/.bin/karma start karma-ci.conf.js
 after_success:
