@@ -1,7 +1,9 @@
 <img align="right" src="https://avatars0.githubusercontent.com/u/21360882?v=3&s=200">
 
 # Funnel
-A purely functional frontend framework based on functional reactive programming. Experimental.
+
+A purely functional frontend framework based on functional reactive
+programming. Experimental.
 
 [![Build Status](https://travis-ci.org/Funkia/funnel.svg?branch=master)](https://travis-ci.org/Funkia/funnel)
 [![codecov](https://codecov.io/gh/Funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/Funkia/funnel)
@@ -9,19 +11,30 @@ A purely functional frontend framework based on functional reactive programming.
 
 ## Ideas/features
 
+The goal of Funnel is to be a powerful framework for building frontend
+applications in a purely functional way. Funnel is based on FRP and is
+heavily inspired by functional techniques found in Haskell.
+
 * Purely functional.
 * Implemented in TypeScript.
-* Uses classic FRP. Behaviors represents values that changes over time
-  and streams provide reactivity.
-* A component-based architecture. Components are completely encapsulated and composable.
-  Components are monads and are typically used and composed with do-notation.
-* Do not use virtual DOM. Instead constructed DOM elements reacts directly to behaviors and streams.
-  This avoids the overhead of doing virtual DOM diffing and should lead to great performance.
-* Side-effects are expressed with a declarative IO-like monad. This allows for easy
-  testing of effectful code.
-* The entire dataflow through applications is explicit and easy to follow.
+* Based on classic FRP. Behaviors represents values that changes over
+  time and streams provide reactivity. Funnel uses the FRP
+  library [Hareactive](https://github.com/Funkia/hareactive).
+* A component-based architecture. Components are encapsulated and
+  composable. Components are monads and are typically used and
+  composed with do-notation.
+* Constructed DOM elements reacts directly to behaviors and streams.
+  This avoids the overhead of using virtual DOM and should lead to
+  great performance.
+* Side-effects are expressed with a declarative IO-like monad. This
+  allows for easy testing of effectful code.
+* The entire dataflow through applications is explicit and easy to
+  follow.
 
 ## Example
+
+The example below creates an input field and print whether or not it
+is valid.
 
 ```js
 import {map} from "jabz";
@@ -30,36 +43,69 @@ const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
-const main = loop(function*({email}) {
-  const isValid = map(isValidEmail, email);
+const main = go(function*() {
   yield span("Please enter an email address: ");
-  const {inputValue: email_} = yield input();
+  const {inputValue: email} = yield input();
+  const isValid = map(isValidEmail, email);
   yield div([
     "The address is ", map((b) => b ? "valid" : "invalid", isValid)
   ]);
-  return {email: email_};
 });
 
 // `runMain` should be the only impure function in application code
 runMain("#mount", main);
 ```
 
+A few explanations to the above code:
+
+* The `go` function and the generator expresses do-notation, i.e.
+  monadic chaining. Here the monad is `Component`.
+* The function `input` returns `Component<{inputValue:
+  Behavior<string>}>`. We `yield` it which binds the `inputValue`
+  behavior to `email`.
+* Next the `isValidEmail` predicate is mapped over the `email`
+  behavior and a `div` component describing the validation status is
+  added.
+
+## Examples
+
+Approximately listed in order of increasing complexity.
+
+* [Simple](./tree/master/examples/simple) — Very simple example of an
+  email validator.
+* [Fahrenheit celsius](./tree/master/examples/fahrenheit-celsius) — A
+  converter between fahrenheit and celsius.
+* [Zip codes](./tree/master/examples/zip-codes) — A zip code validator.
+  Shows one way of doing HTTP-requests with the IO-monad.
+* [Continuous time](./tree/master/examples/continuous-time) —
+  Shows how to utilize continuous time.
+* [Counters](./tree/master/examples/counters) — A list of counters.
+  Demonstrates nested components, managing a list of components and
+  how child components can communicate with parent components.
+* [Todo](./tree/master/examples/counters) — An implementation of the
+  classic TodoMVC application. Note: Routing is not implemented yet.
+
 ## Getting started
 
 ### Installation
+
 ```sh
 npm install @funkia/funnel
 ```
+
 Funnel uses two peer dependencies, that you'll need to install too:
+
 * [hareactive](https://github.com/Funkia/hareactive) (Pure FRP library)
-* [jabz](https://github.com/Funkia/jabz) (Monads, Do-notation and stuff)
+* [jabz](https://github.com/Funkia/jabz) (Monads, Do-notation and
+  stuff)
+
 ```sh
 npm install --save jabz hareactive
 ```
 
 ## Documentation
 
-Not there yet. See the examples.
+Nothing here yet. See the [examples](#examples).
 
 ## Contributing
 
