@@ -31,6 +31,28 @@ heavily inspired by functional techniques found in Haskell.
 * The entire dataflow through applications is explicit and easy to
   follow.
 
+## High level overview
+
+The key datatypes in Funnel are
+
+* `Behavior` — Represents values that change over time.
+* `Stream` — Represents discrete events that happen over time.
+
+These two are from FRP. They are documented in more detail in
+the [Hareactive readme](#https://github.com/Funkia/hareactive). On top
+of those Funnel adds `Component`. A component represents a GUI widget
+on the screen. Components are composable. Components combine into
+components. A Funnel app is just one big component. There is no
+difference between a top level component and child components.
+
+Components can run IO-computations, create stateful behaviors and
+streams and add elements to the DOM.
+
+![Component figure](https://rawgit.com/Funkia/funnel/master/component-figure.svg)
+
+Components in Funnel are encapsulated. They can have completely
+private state and decide what output they return to their parent.
+
 ## Example
 
 The example below creates an input field and print whether or not it
@@ -71,18 +93,18 @@ A few explanations to the above code:
 
 Approximately listed in order of increasing complexity.
 
-* [Simple](./tree/master/examples/simple) — Very simple example of an
+* [Simple](/examples/simple) — Very simple example of an
   email validator.
-* [Fahrenheit celsius](./tree/master/examples/fahrenheit-celsius) — A
+* [Fahrenheit celsius](/examples/fahrenheit-celsius) — A
   converter between fahrenheit and celsius.
-* [Zip codes](./tree/master/examples/zip-codes) — A zip code validator.
+* [Zip codes](/examples/zip-codes) — A zip code validator.
   Shows one way of doing HTTP-requests with the IO-monad.
-* [Continuous time](./tree/master/examples/continuous-time) —
+* [Continuous time](/examples/continuous-time) —
   Shows how to utilize continuous time.
-* [Counters](./tree/master/examples/counters) — A list of counters.
+* [Counters](/examples/counters) — A list of counters.
   Demonstrates nested components, managing a list of components and
   how child components can communicate with parent components.
-* [Todo](./tree/master/examples/counters) — An implementation of the
+* [Todo](/examples/counters) — An implementation of the
   classic TodoMVC application. Note: Routing is not implemented yet.
 
 ## Getting started
