@@ -16,18 +16,22 @@ applications in a purely functional way. Funnel is based on FRP and is
 heavily inspired by functional techniques found in Haskell.
 
 * Purely functional.
-* Implemented in TypeScript.
+* Implemented in TypeScript. Later on we'd like to support PureScript
+  as well.
 * Based on classic FRP. Behaviors represents values that changes over
   time and streams provide reactivity. Funnel uses the FRP
   library [Hareactive](https://github.com/Funkia/hareactive).
 * A component-based architecture. Components are encapsulated and
   composable. Components are monads and are typically used and
-  composed with do-notation.
+  composed with do-notation (do-notation is implemented with
+  generators).
 * Constructed DOM elements reacts directly to behaviors and streams.
   This avoids the overhead of using virtual DOM and should lead to
   great performance.
 * Side-effects are expressed with a declarative IO-like monad. This
-  allows for easy testing of effectful code.
+  allows for easy testing of effectful code. Furthermore, the IO-monad
+  is integrated with FRP. This makes it possible to perform
+  side-effects in response to user input.
 * The entire dataflow through applications is explicit and easy to
   follow.
 
@@ -38,20 +42,22 @@ The key datatypes in Funnel are
 * `Behavior` — Represents values that change over time.
 * `Stream` — Represents discrete events that happen over time.
 
-These two are from FRP. They are documented in more detail in
-the [Hareactive readme](#https://github.com/Funkia/hareactive). On top
-of those Funnel adds `Component`. A component represents a GUI widget
-on the screen. Components are composable. Components combine into
+These are from FRP. They are documented in more detail in
+the [Hareactive readme](https://github.com/Funkia/hareactive).
+
+On top of those Funnel adds `Component`. A component represents a GUI
+widget on the screen. Components are composable and combine into
 components. A Funnel app is just one big component. There is no
 difference between a top level component and child components.
 
-Components can run IO-computations, create stateful behaviors and
-streams and add elements to the DOM.
+Components expresses their logic through behaviors and streams, can
+run IO-actions and add elements to the DOM.
 
 ![Component figure](https://rawgit.com/Funkia/funnel/master/component-figure.svg)
 
 Components in Funnel are encapsulated. They can have completely
-private state and decide what output they return to their parent.
+private state and selectively decide what output they deliver to their
+parent.
 
 ## Example
 
