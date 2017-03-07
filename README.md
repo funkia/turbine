@@ -178,7 +178,7 @@ is valid.
 
 ```js
 import {map} from "jabz";
-import {runMain, elements, loop} from "funnel";
+import {runMain, elements, loop} from "@funkia/funnel";
 const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);

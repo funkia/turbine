@@ -17,19 +17,21 @@ var config = {
     umdNamedDefine: true
   },
   module: {
-    loaders: [
-      {test: /\.ts$/, loader: "ts-loader", exclude: /node_modules/}
-    ]
+    rules: [{
+      test: /\.ts$/,
+      loader: "ts-loader",
+      exclude: /node_modules/,
+      options: {
+        configFileName: "./tsconfig-web.json"
+      }
+    }]
   },
   resolve: {
-    root: path.resolve('./src'),
-    extensions: ["", ".ts", ".js"]
-  },
-  ts: {
-    configFileName: "./tsconfig-web.json"
+    modules: [path.resolve("./src"), "node_modules"],
+    extensions: [".ts", ".js"]
   },
   plugins: [
-    new webpack.optimize.UglifyJsPlugin({ include: /\.min\.js$/, minimize: true})
+    new UglifyJsPlugin({ include: /\.min\.js$/, minimize: true})
   ]
 };
 

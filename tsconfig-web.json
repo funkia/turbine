@@ -2,5 +2,8 @@
   "extends": "./tsconfig-cmjs.json",
   "compilerOptions": {
     "declarationDir": "./defs"
-  }
+  },
+  "include": [
+    "src/**/*"
+  ]
 }
