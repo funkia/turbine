@@ -1,15 +1,16 @@
-import {go} from "jabz/monad";
-import {Now} from "hareactive/now";
-import {Stream, empty} from "hareactive/stream";
-import {Behavior, sink, isBehavior} from "hareactive/behavior";
 import {
-  Component, runComponentNow, isGeneratorFunction,
+  Behavior, sink, isBehavior,
+  Stream, empty,
+  Now
+} from "hareactive";
+import {
+  Component, runComponentNow,
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
 import {rename, mergeDeep} from "./utils";
 
-export type StreamDescription<A> = [string, string, (evt: any) => A]
+export type StreamDescription<A> = [string, string, (evt: any) => A];
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, (elm: HTMLElement) => A];
 
 export type Properties = {
@@ -46,7 +47,7 @@ class CreateDomNow<A> extends Now<A> {
 
     if (this.props !== undefined) {
       if (this.props.style !== undefined) {
-        for (const styleProp in this.props.style) {
+        for (const styleProp of Object.keys(this.props.style)) {
           const value = (<any>this).props.style[styleProp];
           if (isBehavior(value)) {
             viewObserve((newValue) => (<any>elm.style)[styleProp] = newValue, value);
@@ -57,7 +58,7 @@ class CreateDomNow<A> extends Now<A> {
       }
 
       if (this.props.attribute !== undefined) {
-        for (const name in this.props.attribute) {
+        for (const name of Object.keys(this.props.attribute)) {
           const value = this.props.attribute[name];
           if (isBehavior(value)) {
             viewObserve((newValue) => elm.setAttribute(name, newValue.toString()), value);
@@ -68,7 +69,7 @@ class CreateDomNow<A> extends Now<A> {
       }
 
       if (this.props.props !== undefined) {
-        for (const name in this.props.props) {
+        for (const name of Object.keys(this.props.props)) {
           const value = this.props.props[name];
           if (isBehavior(value)) {
             viewObserve((newValue) => (<any>elm)[name] = newValue, value);
@@ -84,19 +85,19 @@ class CreateDomNow<A> extends Now<A> {
         }
       }
       if (this.props.classToggle !== undefined) {
-        for (const name in this.props.classToggle) {
+        for (const name of Object.keys(this.props.classToggle)) {
           const value = this.props.classToggle[name];
           if (isBehavior(value)) {
             viewObserve((newValue) => elm.classList.toggle(name, newValue), value);
           } else {
-	    elm.classList.toggle(name, value);
+            elm.classList.toggle(name, value);
           }
         }
       }
       if (this.props.action !== undefined) {
-	for (const name in this.props.action) {
-	  this.props.action[name].subscribe((args) => ((<any>elm)[name]).apply(elm, args));
-	}
+        for (const name of Object.keys(this.props.action)) {
+          this.props.action[name].subscribe((args) => ((<any>elm)[name]).apply(elm, args));
+        }
       }
 
       if (this.props.behaviors !== undefined) {
@@ -104,7 +105,7 @@ class CreateDomNow<A> extends Now<A> {
           let a: Behavior<any> = undefined;
           const initial = initialFn(elm);
           Object.defineProperty(output, name, {
-	    enumerable: true,
+            enumerable: true,
             get: () => {
               if (a === undefined) {
                 a = behaviorFromEvent(evt, initial, extractor, elm);
@@ -117,7 +118,7 @@ class CreateDomNow<A> extends Now<A> {
         for (const [evt, name, extractor] of this.props.streams) {
           let a: Stream<any> = undefined;
           Object.defineProperty(output, name, {
-	    enumerable: true,
+            enumerable: true,
             get: () => {
               if (a === undefined) {
                 a = streamFromEvent(evt, extractor, elm);
@@ -144,24 +145,23 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
-
 function parseCSSTagname(cssTagName: string): [string, Properties] {
   const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
   const result: Properties = {};
   for (let i = 1; i < parsedTag.length; i++) {
     const token = parsedTag[i];
     switch (token[0]) {
-    case '#':
+    case "#":
       result.props = result.props || {};
       result.props["id"] = token.slice(1);
       break;
-    case '.':
+    case ".":
       result.classToggle = result.classToggle || {};
       result.classToggle[token.slice(1)] = true;
       break;
-    case '[':
+    case "[":
       result.attribute = result.attribute || {};
-      const attr = token.slice(1,-1).split('=');
+      const attr = token.slice(1, -1).split("=");
       result.attribute[attr[0]] = attr[1] || "";
       break;
     default:
@@ -173,14 +173,13 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
 
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
-
 export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, tagProps);
   function createElement(): Component<any>;
-  function createElement(props: Properties): Component<A>;
+  function createElement(props1: Properties): Component<A>;
   function createElement(child: Child): Component<A>;
-  function createElement(props: Properties, bChildren: Child): Component<A>;
+  function createElement(props2: Properties, bChildren: Child): Component<A>;
   function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
       return new Component((p) => new CreateDomNow<A>(p, parsedTagName, props, newPropsOrChildren));

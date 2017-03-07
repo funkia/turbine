@@ -2,16 +2,16 @@ function isObject(item: any): item is Object {
   return typeof item === "object" && !Array.isArray(item);
 }
 
-export function get<K extends string>(prop: K) {
+export function get<K extends string>(prop: K): any {
   return <V, Obj extends Record<K, V>>(obj: Obj): Obj[K] => obj[prop];
 }
 
 export function merge(a: any, b: any): any {
   const c: {[key: string]: any} = {};
-  for (const key in a) {
+  for (const key of Object.keys(a)) {
     c[key] = a[key];
   }
-  for (const key in b) {
+  for (const key of Object.keys(b)) {
     c[key] = b[key];
   }
   return c;
@@ -46,7 +46,7 @@ export function rename(
   source: {[key: string]: any},
   renames: {[name: string]: string}
 ): void {
-  for (const name in renames) {
+  for (const name of Object.keys(renames)) {
     const newName = renames[name];
     source[newName] = source[name];
   }

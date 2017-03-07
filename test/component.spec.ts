@@ -1,9 +1,12 @@
 import {assert} from "chai";
-import {Now} from "hareactive/now";
 import {fgo} from "jabz/monad";
-import {Behavior, isBehavior, sink, placeholder} from "hareactive/behavior";
+import {Behavior, isBehavior, sink, placeholder, Now} from "hareactive";
 
-import {text, dynamic, runComponentNow, toComponent, Component, component, e, elements, loop} from "../src";
+import {
+  text, dynamic, runComponentNow,
+  toComponent, Component, component,
+  elements, loop
+} from "../src";
 const {span, div, button, input} = elements;
 
 const supportsProxy = "Proxy" in window;
@@ -98,10 +101,10 @@ describe("component specs", () => {
 describe("component", () => {
   it("simpel span component", () => {
     const c = component(
-      function model() {
+      function model(): Now<any> {
         return Now.of([{}, {}] as [{}, {}]);
       },
-      function view() {
+      function view(): Component<any> {
         return span("World");
       }
     );
@@ -112,10 +115,10 @@ describe("component", () => {
 
   it("simpel span component", () => {
     const c = component(
-      function model() {
+      function model(): Now<any> {
         return Now.of([{}, {}] as [{}, {}]);
       },
-      function view() {
+      function view(): Component<any> {
         return span("World");
       }
     );
@@ -128,7 +131,7 @@ describe("component", () => {
     type FromView = {inputValue: Behavior<any>};
     let fromView: FromView;
     const c = component(
-      function model(args: FromView) {
+      function model(args: FromView): Now<any> {
         fromView = args;
         return Now.of([{}, {}] as [{}, {}]);
       }, () => [
@@ -146,8 +149,8 @@ describe("component", () => {
       return;
     }
     const c = component(
-      function fooComp({foo}) { return Now.of([{}, {}] as [{}, {}]); },
-      function barView() { return Component.of({bar: "no foo?"}); }
+      function fooComp({foo}: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
+      function barView(): Component<any> { return Component.of({bar: "no foo?"}); }
     );
     assert.throws(() => {
       runComponentNow(divElm, c);

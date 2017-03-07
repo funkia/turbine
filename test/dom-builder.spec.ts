@@ -68,17 +68,16 @@ describe("dom-builder: e()", () => {
     const divElm = document.createElement("div");
     const span = elements.span({
       action: {
-	"setAttribute": s
+        "setAttribute": s
       }
-    })
+    });
     runComponentNow(divElm, span);
     assert.notOk(divElm.children[0].classList.contains("test"));
     s.push(["class", "test"]);
     assert(divElm.children[0].classList.contains("test"));
   });
-  
-  describe("children", () => {
 
+  describe("children", () => {
     it("nested", () => {
       const spanFac = e("span");
       const h1Fac = e("h1");

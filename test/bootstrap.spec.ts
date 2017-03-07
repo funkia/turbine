@@ -16,6 +16,5 @@ describe("bootstrap", () => {
       assert.strictEqual(div.children[0].tagName, "SPAN");
       assert.strictEqual(div.children[0].textContent, "Hello world");
     });
-  })
-
+  });
 });

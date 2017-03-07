@@ -1,10 +1,9 @@
-import {Applicative} from "jabz/applicative";
-import {Traversable, sequence} from "jabz/traversable";
+import {sequence} from "jabz/traversable";
 import {Monad, monad} from "jabz/monad";
 import {go, fgo} from "jabz/monad";
 import {
   Now,
-  Behavior, observe, at, sink, isBehavior,
+  Behavior, observe, sink, isBehavior,
   Stream
 } from "hareactive";
 import {placeholder} from "hareactive/placeholder";
@@ -50,8 +49,8 @@ export class Component<A> implements Monad<A> {
       });
     });
   }
-  static multi = false;
-  multi = false;
+  static multi: boolean = false;
+  multi: boolean = false;
   // Definitions below are inserted by Jabz
   flatten: <B>() => Component<B>;
   map: <B>(f: (a: A) => B) => Component<B>;
@@ -139,23 +138,23 @@ class MfixNow<M extends ReactivesObject, O> extends Now<[M, O]> {
     }
     const [behaviors, out] = this.fn(placeholders).run();
     // Tie the recursive knot
-    for (const name in behaviors) {
+    for (const name of Object.keys(behaviors)) {
       (placeholders[name]).replaceWith(behaviors[name]);
     }
     return [behaviors, out];
   };
 }
 
-function addErrorHandler(modelName: string, viewName: string, obj: any) {
+function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   if (modelName === "") { modelName = "anonymous"; }
   if (viewName === "") { viewName = "anonymous"; }
   if (!supportsProxy) {
     return obj;
   }
   return new Proxy(obj, {
-    get(obj, prop) {
+    get(object: any, prop: string): any {
       if (prop in obj) {
-        return obj[prop];
+        return object[prop];
       }
       throw new Error(
         `The model, ${modelName}, expected a property "${prop}" but the view, ${viewName}, returned an object without the property.`
@@ -257,7 +256,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     const performed = this.bChild.map((child) => {
       currentlyShowable = isShowable(child);
       if (currentlyShowable && wasShowable) {
-      	return [undefined, child] as [A, Showable];
+        return [undefined, child] as [A, Showable];
       }
       const fragment = document.createDocumentFragment();
       const a = runComponentNow(fragment, <Component<A>>toComponent(child));
@@ -267,21 +266,21 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     let showableNode: Node;
     viewObserve(([_, node]) => {
       if (currentlyShowable && wasShowable) {
-      	showableNode.nodeValue = node.toString();
+        showableNode.nodeValue = node.toString();
       } else {
-      	if (currentlyShowable) {
-      	  showableNode = (<Node> node).firstChild;
-      	  wasShowable = true;
-      	} else {
-      	  wasShowable = false;
-      	}
-	let i: Node = start.nextSibling;
-	while (i !== end) {
+        if (currentlyShowable) {
+          showableNode = (<Node> node).firstChild;
+          wasShowable = true;
+        } else {
+          wasShowable = false;
+        }
+        let i: Node = start.nextSibling;
+        while (i !== end) {
           const j = i;
           i = i.nextSibling;
           this.parent.removeChild(j);
-	}
-	this.parent.insertBefore((<Node> node), end);
+        }
+        this.parent.insertBefore((<Node> node), end);
       }
     }, performed);
     return performed.map(fst);
@@ -296,7 +295,7 @@ export function dynamic<A>(behavior: Behavior<Child>): Component<Behavior<A>> {
 
 type ComponentStuff<A> = {
   elm: Node, out: A
-}
+};
 
 class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
   constructor(
@@ -316,9 +315,9 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
       const newKeyToElm: {[key: string]: ComponentStuff<B>} = {};
       const newArray: B[] = [];
       // Re-add existing elements and new elements
-      
+
       for (let i = 0; i < newAs.length; i++) {
-	const a = newAs[i];
+        const a = newAs[i];
         const key = this.getKey(a, i);
         let stuff = keyToElm[key];
         if (stuff === undefined) {

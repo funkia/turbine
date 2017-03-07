@@ -18,22 +18,22 @@ describe("utils: deepMerge", () => {
     const a = {
       name: "Alice",
       friend: {
-	name: "john",
-	age: 70
+        name: "john",
+        age: 70
       }
     };
     const b = {
       name: "Bob",
       age: 41,
-      friend: {name: "walter" }
+      friend: {name: "walter"}
     };
     const ab = mergeDeep(a, b);
     assert.deepEqual(ab, {
       name: "Bob",
       age: 41,
       friend: {
-	name: "walter",
-	age: 70
+        name: "walter",
+        age: 70
       }
     });
   });
