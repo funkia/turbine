@@ -37,27 +37,112 @@ heavily inspired by functional techniques found in Haskell.
 
 ## High level overview
 
-The key datatypes in Funnel are
+### FRP as building blocks
+
+Funnel builds on top of the FRP library Hareactive. Two of the key
+concepts from FRP are:
 
 * `Behavior` — Represents values that change over time.
 * `Stream` — Represents discrete events that happen over time.
 
-These are from FRP. They are documented in more detail in
+They are documented in more detail in
 the [Hareactive readme](https://github.com/Funkia/hareactive).
 
-On top of those Funnel adds `Component`. A component represents a GUI
-widget on the screen. Components are composable and combine into
-components. A Funnel app is just one big component. There is no
-difference between a top level component and child components.
+### What is `Component`
 
-Components expresses their logic through behaviors and streams, can
-run IO-actions and add elements to the DOM.
+On top of the FRP primitives Funnel adds `Component`. Components can
+contain logic expressed through combinations of behaviors and streams.
+They can run IO-actions and add elements to the DOM.
 
 ![Component figure](https://rawgit.com/Funkia/funnel/master/component-figure.svg)
 
 Components in Funnel are encapsulated. They can have completely
 private state and selectively decide what output they deliver to their
 parent.
+
+A component
+represents one or more DOM elements and the output they produce. For
+example, a `Component` that represents an `input` element can be
+created like this
+
+```typescript
+const inputComponent = input();
+```
+
+The component has the type `Component<Output>` where `Output` is an
+object containing the output that an `input` element produces. Among
+other things an `input` element produces a string-valued behavior with
+the current content of the `input` element and a stream of keyboard
+events from the element.
+
+Components are _composable_ and combine into components. A Funnel app
+is just one big component. There is no difference between a top level
+component and child components. Components combine with their `chain`
+method. The signature of `chain` is
+
+```typescript
+chain((output: Output) => Component<NewOutput>): Component<NewOutput>;
+```
+
+Example.
+
+```typescript
+input().chain((inputOutput) => span(inputOutput.inputValue));
+```
+
+An invocation `component.chain(fn)` works like this:
+
+* The output from `component` is passed to `fn`.
+* `fn` returns a new component, let's call it `component2`
+* The DOM-elements from `component` and `component2` are concatenated.
+* The result of the computation is a component with the concatenated
+  DOM-elements and output equal to the output from `component2`.
+
+So, the above example boils down to this:
+
+```
+Create input component   Create span component with text content
+  ↓                             ↓
+input().chain((inputOutput) => span(inputOutput.inputValue));
+                   ↑                                ↑
+      Output from input-element       Behavior of text in input-element
+```
+
+The result is an input element followed by a span element. When
+something is written in the input the text in the span element is
+update accordingly.
+
+With `chain` we can combine as many elements as we'd like. This
+example combines a `div` with a `span` with a `p`.
+
+```typescript
+div().chain((_) => span("Text").chain((_) => p("More text")));
+```
+
+And the resulting HTML would look like this:
+
+```html
+<div></div>
+<span>Text</span>
+<p>More text</p>
+```
+
+However, when we don't use the output from components we can instead
+combine them with `sequence_`.
+
+```typescript
+sequence_(Component [div(), span("Text"), p("More text")]);
+```
+
+Often using `chain` can be cumbersome since each `chain` invocation
+adds a layer of nesting. Instead we can use "go-notation".
+
+```typescript
+component = go(function*() {
+  const {inputValue} = yield input();
+  yield p(inputValue);
+});
+```
 
 ## Example
 
