@@ -134,6 +134,33 @@ combine them with `sequence_`.
 sequence_(Component [div(), span("Text"), p("More text")]);
 ```
 
+Components typically take _child components_ as their last argument.
+If instead of the above HTML we wanted this:
+
+```html
+<div>
+  <span>Text</span>
+  <p>More text</p>
+</div>
+```
+
+We could do
+
+```typescript
+div(span("Test").chain((_) => p("More text")));
+```
+
+As a convenience we can also do
+
+```typescript
+div([
+  span("Test"),
+  p("More text")
+])
+```
+
+This is "sugar" for calling `sequence_` on the array.
+
 Often using `chain` can be cumbersome since each `chain` invocation
 adds a layer of nesting. Instead we can use "go-notation".
 
