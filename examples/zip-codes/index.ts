@@ -1,19 +1,20 @@
-// import "@types/whatwg-fetch";
-
 import {
-  Behavior, Stream, Now, performStream, stepper, snapshot, combineList, changes
+  Behavior, Stream, Now, performStream, stepper, snapshot, combineList, changes, split
 } from "hareactive";
-import {IO, withEffectsP} from "jabz/io";
-import {Either, left, right} from "jabz/either";
+import {combine, IO, withEffectsP, catchE, Either, left, right} from "jabz";
 
 import {Component, component, runMain, list, e, elements} from "../../src/index";
 const {text, span, button, br, input, div} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
 
-const fetchJSON = withEffectsP((url: string): Promise<ZipResult> => {
+const fetchJSON = withEffectsP((url: string): Promise<any> => {
   return fetch(url).then((resp) => resp.ok ? resp.json() : Promise.reject("Not found"));
 });
+
+function fetchZip(zip: string): IO<Either<string, string>> {
+  return catchE((err) => IO.of(left(err)), fetchJSON(apiUrl + zip).map(right));
+}
 
 const isValidZip = (s: string) => s.match(/^\d{5}$/) !== null;
 
@@ -33,44 +34,38 @@ type ToView = {
 
 type ViewOut = {
   zipCode: Behavior<string>,
-  zipInput: Stream<{}>
 };
 
-function* model({zipCode, zipInput}: ViewOut): Iterator<Now<any>> {
+function* model({zipCode}: ViewOut): Iterator<Now<any>> {
   // A stream that occurs whenever the current zip code changes
   const zipCodeChange = changes(zipCode);
   // Split the zip code changes into those that represent valid zip
   // codes and those that represent invalid zip codes.
-  const validZipCodeChange = zipCodeChange.filter(isValidZip);
-  const invalidZipCodeChange = zipCodeChange.filter((s) => !isValidZip(s));
+  const [validZipCodeChange, invalidZipCodeChange] = split(isValidZip, zipCodeChange);
   // A stream of IO requests for each time the zipCode changes
-  const requests = validZipCodeChange.map((zip) => fetchJSON(apiUrl + zip));
+  const requests = validZipCodeChange.map(fetchZip);
   // A stream of results optained from performing the IO requests
   const results: Stream<Either<string, ZipResult>> = yield performStream(requests);
   const status = stepper(
     "",
-    combineList([
+    combine(
       invalidZipCodeChange.mapTo("Not a valid zip code"),
       validZipCodeChange.mapTo("Loading ..."),
-      results.map((r) => {
-        console.log(r);
-        return r.match({
-          left: () => "Zip code does not exist",
-          right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
-        })
-      })
-    ])
+      results.map((r) => r.match({
+        left: () => "Zip code does not exist",
+        right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
+      }))
+    )
   );
   return [{status}, {}];
 }
 
 function* view({status}: ToView): Iterator<Component<any>> {
   yield span("Please type a valid US zip code: ");
-  const {inputValue: zipCode, input: zipInput} =
-    yield input({props: {placeholder: "Zip code"}});
+  const {inputValue: zipCode} = yield input({props: {placeholder: "Zip code"}});
   yield br;
   yield span(status);
-  return {zipCode, zipInput};
+  return {zipCode};
 }
 
 const main = component<ToView, ViewOut, {}>(model, view);

@@ -1,8 +1,8 @@
-import {fromMaybe, lift, map, Maybe} from "jabz";
+import {combine, fromMaybe, lift, map, Maybe} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  combine, combineList, keepWhen, toggle, Future, async, switcher, performStream, changes
+  combineList, keepWhen, toggle, Future, async, switcher, performStream, changes
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
@@ -60,7 +60,7 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
       const enterNotPressed = toggle(true, startEditing, enterPress);
       const cancel = filter(isKey(esc), nameKeyup);
       const notCancelled = toggle(true, startEditing, cancel);
-      const stopEditing = combineList([enterPress, keepWhen(nameBlur, enterNotPressed), cancel]);
+      const stopEditing = combine(enterPress, keepWhen(nameBlur, enterNotPressed), cancel);
       const isEditing = toggle(false, startEditing, stopEditing);
       const newName = stepper(
         initialName,

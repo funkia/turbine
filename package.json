@@ -29,8 +29,8 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "jabz": "0.0.16",
-    "hareactive": "0.0.14"
+    "jabz": "0.0.18",
+    "hareactive": "0.0.15"
   },
   "bugs": {
     "url": "https://github.com/Funkia/funnel/issues"
@@ -41,8 +41,8 @@
     "@types/mocha": "^2.2.39",
     "chai": "3.5.0",
     "codecov": "1.0.1",
-    "hareactive": "0.0.14",
-    "jabz": "0.0.16",
+    "hareactive": "0.0.15",
+    "jabz": "0.0.18",
     "karma": "^1.5.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-cli": "1.0.1",
