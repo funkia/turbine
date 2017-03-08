@@ -80,7 +80,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
         class: "main",
         classToggle: {hidden: todoNames.map(isEmpty)}
       }, [
-        checkbox({class: "toggle-all", props: {checked: areAllCompleted}, name: {checkedChange: "toggleAll"}}),
+        checkbox({class: "toggle-all", props: {checked: areAllCompleted}, output: {checkedChange: "toggleAll"}}),
         ul({class: "todo-list"}, function*() {
           const itemOutputs = yield list(item.bind(undefined, toggleAll), ({id}) => id.toString(), todoNames);
           return {itemOutputs};

@@ -21,11 +21,11 @@ const main = loop(function*({fahrenChange, celsiusChange}: Looped) {
   // View
   const {fahrenInput} = yield div([
     label("Fahrenheit"),
-    input({props: {value: fahren}, name: {input: "fahrenInput"}})
+    input({props: {value: fahren}, output: {input: "fahrenInput"}})
   ]);
   const {celsiusInput} = yield div([
     label("Celcious"),
-    input({props: {value: celsius}, name: {input: "celsiusInput"}})
+    input({props: {value: celsius}, output: {input: "celsiusInput"}})
   ]);
 
   return {

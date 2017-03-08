@@ -43,11 +43,11 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       "Counter ",
       count,
       " ",
-      button({name: {click: "incrementClick"}}, " + ", ),
+      button({output: {click: "incrementClick"}}, " + ", ),
       " ",
-      button({name: {click: "decrementClick"}}, " - "),
+      button({output: {click: "decrementClick"}}, " - "),
       " ",
-      button({name: {click: "deleteClick"}}, "x"),
+      button({output: {click: "deleteClick"}}, "x"),
       br
     ]);
   }

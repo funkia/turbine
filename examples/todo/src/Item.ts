@@ -106,16 +106,16 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
       }, [
         div({class: "view"}, [
           checkbox({
-            class: "toggle", name: {checkedChange: "toggleTodo"},
+            class: "toggle", output: {checkedChange: "toggleTodo"},
             props: {checked: isComplete}
           }),
-          label({name: {dblclick: "startEditing"}}, taskName),
-          button({class: "destroy", name: {click: "deleteClicked"}})
+          label({output: {dblclick: "startEditing"}}, taskName),
+          button({class: "destroy", output: {click: "deleteClicked"}})
         ]),
         input({
           class: "edit",
 	  props: {value: taskName},
-          name: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"},
+          output: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"},
 	  action: {focus: focusInput}
         })
       ]));

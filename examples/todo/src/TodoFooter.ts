@@ -32,7 +32,7 @@ export default ({todosB, areAnyCompleted}: Params) => {
     ]),
     button({
       style: {visibility: areAnyCompleted.map((b) => b ? "visible" : "hidden")},
-      class: "clear-completed", name: {click: "clearCompleted"}
+      class: "clear-completed", output: {click: "clearCompleted"}
     }, "Clear completed")
   ]);
 }

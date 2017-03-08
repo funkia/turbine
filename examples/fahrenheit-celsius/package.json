@@ -1,22 +1,21 @@
 {
-  "name": "simple",
+  "name": "funnel-fahrenheit-example",
   "version": "1.0.0",
   "description": "",
-  "main": "webpack.config.js",
+  "main": "index.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "babel-loader": "^6.2.4",
-    "babel-polyfill": "^6.13.0",
-    "ts-loader": "^0.8.2"
-  },
+  "dependencies": {},
   "devDependencies": {
-    "babel-core": "^6.13.2",
-    "babel-loader": "^6.2.4",
+    "babel-core": "^6.14.0",
+    "babel-loader": "^6.2.5",
+    "babel-polyfill": "^6.13.0",
     "babel-preset-es2015": "^6.13.2",
-    "webpack": "^1.13.1"
+    "ts-loader": "^2.0.0",
+    "typescript": "^2.3.0-dev.20170219",
+    "webpack": "^2.2.1"
   }
 }
