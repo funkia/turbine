@@ -58,7 +58,7 @@ describe("dom-builder: e()", () => {
   it("can rename output", () => {
     const divElm = document.createElement("div");
     const result = runComponentNow<{foobar: any}>(
-      divElm, (button({name: {click: "foobar"}}, "Click") as Component<{foobar: any}>)
+      divElm, (button({output: {click: "foobar"}}, "Click") as Component<{foobar: any}>)
     );
     assert(isStream(result.foobar));
   });

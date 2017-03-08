@@ -27,7 +27,7 @@ export type Properties = {
   action?: {
     [name: string]: Stream<any[]>
   }
-  name?: {[name: string]: string},
+  output?: {[name: string]: string},
   class?: string,
   classToggle?: {
     [name: string]: boolean | Behavior<boolean>;
@@ -137,8 +137,8 @@ class CreateDomNow<A> extends Now<A> {
         output.children = childOutput;
       }
     }
-    if (this.props.name !== undefined) {
-      rename(output, this.props.name);
+    if (this.props.output !== undefined) {
+      rename(output, this.props.output);
     }
     this.parent.appendChild(elm);
     return output;
