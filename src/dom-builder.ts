@@ -32,6 +32,36 @@ export type Properties = {
   }
 };
 
+const attributeSetter = (element: HTMLElement) => (key: string, value: string) =>
+  element.setAttribute(key, value);
+
+const propertySetter = (element: HTMLElement) => (key: string, value: string) =>
+  (<any>element)[key] = value;
+
+const classSetter = (element: HTMLElement) => (key: string, value: boolean) =>
+  element.classList.toggle(key, value);
+
+const styleSetter = (element: HTMLElement) => (key: string, value: string) =>
+  element.style[<any>key] = value;
+
+function handleObject<A>(
+  object: {[key: string]: A | Behavior<A>} | undefined,
+  element: HTMLElement,
+  createSetter: (element: HTMLElement) => (key: string, value: A) => void
+): void {
+  if (object !== undefined) {
+    const setter = createSetter(element);
+    for (const key of Object.keys(object)) {
+      const value = object[key];
+      if (isBehavior(value)) {
+        viewObserve((newValue) => setter(key, newValue), value);
+      } else {
+        setter(key, value);
+      }
+    }
+  }
+}
+
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
@@ -44,50 +74,14 @@ class CreateDomNow<A> extends Now<A> {
     const elm = document.createElement(this.tagName);
 
     if (this.props !== undefined) {
-      if (this.props.style !== undefined) {
-        for (const styleProp of Object.keys(this.props.style)) {
-          const value = (<any>this).props.style[styleProp];
-          if (isBehavior(value)) {
-            viewObserve((newValue) => (<any>elm.style)[styleProp] = newValue, value);
-          } else {
-            (<any>elm.style)[styleProp] = value;
-          }
-        }
-      }
-      if (this.props.attrs !== undefined) {
-        for (const name of Object.keys(this.props.attrs)) {
-          const value = this.props.attrs[name];
-          if (isBehavior(value)) {
-            viewObserve((newValue) => elm.setAttribute(name, <string>newValue), value);
-          } else {
-            elm.setAttribute(name, value.toString());
-          }
-        }
-      }
-      if (this.props.props !== undefined) {
-        for (const name of Object.keys(this.props.props)) {
-          const value = this.props.props[name];
-          if (isBehavior(value)) {
-            viewObserve((newValue) => (<any>elm)[name] = newValue, value);
-          } else {
-            (<any>elm)[name] = value;
-          }
-        }
-      }
+      handleObject(<any>this.props.style, elm, styleSetter);
+      handleObject(this.props.attrs, elm, attributeSetter);
+      handleObject(this.props.props, elm, propertySetter);
+      handleObject(this.props.classToggle, elm, classSetter);
       if (this.props.class !== undefined) {
         const classes = this.props.class.split(" ");
         for (const name of classes) {
           elm.classList.add(name);
-        }
-      }
-      if (this.props.classToggle !== undefined) {
-        for (const name of Object.keys(this.props.classToggle)) {
-          const value = this.props.classToggle[name];
-          if (isBehavior(value)) {
-            viewObserve((newValue) => elm.classList.toggle(name, newValue), value);
-          } else {
-            elm.classList.toggle(name, value);
-          }
         }
       }
       if (this.props.action !== undefined) {
