@@ -7,22 +7,12 @@ module.exports = {
     filename: 'bundle.js'
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx'],
-    modules: [
-      path.join(__dirname, 'src'),
-      "node_modules"
-    ]
+    extensions: ['.ts', '.js'],
+    modules: [path.join(__dirname, 'src'), "node_modules"]
   },
   module: {
     rules: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        use: [
-	  "babel-loader",
-	  "ts-loader"
-	]
-      }
+      {test: /\.ts$/, exclude: /node_modules/, use: ["babel-loader", "ts-loader"]}
     ]
   }
 };

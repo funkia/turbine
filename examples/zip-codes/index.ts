@@ -1,5 +1,5 @@
 import {
-  Behavior, Stream, Now, performStream, stepper, snapshot, combineList, changes, split
+  Behavior, Stream, Now, performStreamLatest, stepper, changes, split
 } from "hareactive";
 import {combine, IO, withEffectsP, catchE, Either, left, right} from "jabz";
 
@@ -33,7 +33,7 @@ type ToView = {
 };
 
 type ViewOut = {
-  zipCode: Behavior<string>,
+  zipCode: Behavior<string>
 };
 
 function* model({zipCode}: ViewOut): Iterator<Now<any>> {
@@ -45,7 +45,7 @@ function* model({zipCode}: ViewOut): Iterator<Now<any>> {
   // A stream of IO requests for each time the zipCode changes
   const requests = validZipCodeChange.map(fetchZip);
   // A stream of results optained from performing the IO requests
-  const results: Stream<Either<string, ZipResult>> = yield performStream(requests);
+  const results: Stream<Either<string, ZipResult>> = yield performStreamLatest(requests);
   const status = stepper(
     "",
     combine(

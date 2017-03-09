@@ -1,26 +1,18 @@
 var path = require('path');
 
 module.exports = {
-  entry: ['babel-polyfill', './index.ts'],
+  entry: ["babel-polyfill", "./index.ts"],
   output: {
     path: __dirname,
-    filename: 'bundle.js'
+    filename: "bundle.js"
   },
   resolve: {
-    extensions: ['.ts', '.tsx', '.js', '.jsx', '']
+    extensions: [".ts", ".js"],
+    modules: [path.join(__dirname, "src"), "node_modules"]
   },
-  plugins: [
-  ],
   module: {
-    loaders: [
-      {
-        test: /\.tsx?$/,
-        exclude: /node_modules/,
-        loader: 'babel-loader!ts-loader'
-      }
+    rules: [
+      {test: /\.ts$/, exclude: /node_modules/, use: ["babel-loader", "ts-loader"]}
     ]
-  },
-  resolveLoader: {
-    root: path.join(__dirname, 'node_modules')
   }
 };
