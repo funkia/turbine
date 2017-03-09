@@ -1,6 +1,7 @@
 var webpack = require("webpack");
 var path = require("path");
 
+var ExternalsPlugin = require("webpack2-externals-plugin");
 var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
 var config = {
@@ -13,7 +14,7 @@ var config = {
     path: __dirname + "/dist",
     filename: "[name].js",
     library: "funnel",
-    libraryTarget: 'umd',
+    libraryTarget: "var",
     umdNamedDefine: true
   },
   module: {
@@ -31,7 +32,8 @@ var config = {
     extensions: [".ts", ".js"]
   },
   plugins: [
-    new UglifyJsPlugin({ include: /\.min\.js$/, minimize: true})
+    new UglifyJsPlugin({include: /\.min\.js$/, minimize: true}),
+    new ExternalsPlugin({include: path.resolve(__dirname, "./node_modules")})
   ]
 };
 

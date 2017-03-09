@@ -11,16 +11,16 @@
   "scripts": {
     "test": "./node_modules/.bin/karma start --single-run",
     "test-watch": "./node_modules/.bin/karma start",
-    "codecov": "codecov -f coverage/**/json",
+    "codecov": "./node_modules/.bin/codecov -f coverage/**/json",
     "build-web": "./node_modules/.bin/webpack",
     "build-es6": "./node_modules/.bin/tsc -P tsconfig-es6.json",
     "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run build",
-    "release-major": "xyz --repo git@github.com:funkia/funnel.git --increment major",
-    "release-minor": "xyz --repo git@github.com:funkia/funnel.git --increment minor",
-    "release-patch": "xyz --repo git@github.com:funkia/funnel.git --increment patch"
+    "release-major": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment major",
+    "release-minor": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment minor",
+    "release-patch": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment patch"
   },
   "repository": {
     "type": "git",
@@ -42,8 +42,10 @@
   "homepage": "https://github.com/Funkia/funnel#readme",
   "devDependencies": {
     "@types/chai": "^3.4.35",
+    "@types/chai-dom": "0.0.5",
     "@types/mocha": "^2.2.39",
     "chai": "3.5.0",
+    "chai-dom": "^1.4.3",
     "codecov": "1.0.1",
     "hareactive": "0.0.15",
     "jabz": "0.0.18",
@@ -59,6 +61,7 @@
     "ts-loader": "^2.0.1",
     "typescript": "2.1.x",
     "webpack": "^2.2.1",
+    "webpack2-externals-plugin": "^1.0.0",
     "xyz": "^2.1.0"
   },
   "contributors": [

@@ -64,6 +64,15 @@ export function runComponentNow<A>(parent: Node, c: Component<A>): A {
   return c.content(parent).run();
 }
 
+export function testComponent<A>(c: Component<A>): {out: A, dom: HTMLDivElement} {
+  const dom = document.createElement("div");
+  const out = runComponentNow(dom, c);
+  return {
+    out,
+    dom
+  };
+}
+
 export function isComponent(c: any): c is Component<any> {
   return c instanceof Component;
 }

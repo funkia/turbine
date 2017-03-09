@@ -1,7 +1,8 @@
-import {assert} from "chai";
+import {assert, use, expect} from "chai";
+import * as chaiDom from "chai-dom";
+use(chaiDom);
 import {isStream, empty, Stream} from "hareactive";
-
-import {runComponentNow, e, Component, elements} from "../src";
+import {testComponent, e, Component, elements} from "../src";
 const {button} = elements;
 
 describe("dom-builder: e()", () => {
@@ -9,83 +10,71 @@ describe("dom-builder: e()", () => {
   it("basic DOM elements", () => {
     const spanFac = e("span");
     const spanC = spanFac();
-    const spanDiv = document.createElement("div");
-    runComponentNow(spanDiv, spanC);
-    assert.strictEqual(spanDiv.children.length, 1, "No element was attached");
-    assert.strictEqual(spanDiv.children[0].tagName, "SPAN", "Wrong element was attached");
+    const {dom: domSpan} = testComponent(spanC);
+    expect(domSpan).to.have.html("<span></span>");
 
     const h1Fac = e("h1");
     const h1C = h1Fac();
-    const h1Div = document.createElement("div");
-    runComponentNow(h1Div, h1C);
-    assert.strictEqual(h1Div.children.length, 1, "No element was attached");
-    assert.strictEqual(h1Div.children[0].tagName, "H1", "Wrong element was attached");
+    const {dom: domH1} = testComponent(h1C);
+    expect(domH1).to.have.html("<h1></h1>");
 
     const btnFac = e("button");
     const btnC = btnFac();
-    const btnDiv = document.createElement("div");
-    runComponentNow(btnDiv, btnC);
-    assert.strictEqual(btnDiv.children.length, 1, "No element was attached");
-    assert.strictEqual(btnDiv.children[0].tagName, "BUTTON", "Wrong element was attached");
+    const {dom: domBtn} = testComponent(btnC);
+    expect(domBtn).to.have.html("<button></button>");
   });
 
   it("with class", () => {
     const spanFac = e("span.someClass.otherClass");
     const spanC = spanFac();
-    const div = document.createElement("div");
-    runComponentNow(div, spanC);
-    assert.strictEqual(div.children[0].tagName, "SPAN", "Wrong element was attached");
-    assert.strictEqual(div.children[0].classList.toString(), "someClass otherClass");
+    const {dom} = testComponent(spanC);
+    expect(dom.querySelector("span")).to.have.class("someClass");
+    expect(dom.querySelector("span")).to.have.class("otherClass");
   });
 
   it("adds static classes", () => {
-    const divElm = document.createElement("div");
-    runComponentNow(divElm, e("div")({class: "foo bar baz"}));
-    assert(divElm.children[0].classList.contains("foo"));
-    assert(divElm.children[0].classList.contains("bar"));
-    assert(divElm.children[0].classList.contains("baz"));
+    const divC = e("div")({class: "foo bar baz"});
+    const {dom} = testComponent(divC);
+    expect(dom.querySelector("div")).to.have.class("foo");
+    expect(dom.querySelector("div")).to.have.class("bar");
+    expect(dom.querySelector("div")).to.have.class("baz");
   });
 
   it("with id", () => {
     const spanFac = e("span#someId");
     const spanC = spanFac();
-    const div = document.createElement("div");
-    runComponentNow(div, spanC);
-    assert.strictEqual(div.children[0].tagName, "SPAN", "Wrong element was attached");
-    assert.strictEqual(div.children[0].id, "someId");
+    const {dom} = testComponent(spanC);
+    expect(dom.querySelector("span")).to.have.id("someId");
   });
 
   it("can rename output", () => {
-    const divElm = document.createElement("div");
-    const result = runComponentNow<{foobar: any}>(
-      divElm, (button({output: {click: "foobar"}}, "Click") as Component<{foobar: any}>)
-    );
-    assert(isStream(result.foobar));
+    const btn = (<Component<{foobar: Stream<any>}>>button({output: {click: "foobar"}}, "Click"));
+    const {dom, out} = testComponent(btn);
+    assert(isStream(out.foobar));
   });
 
   it("call methods/actions on the HTMLElement", () => {
     const s: Stream<[string, string]> = empty();
-    const divElm = document.createElement("div");
     const span = elements.span({
       action: {
         "setAttribute": s
       }
     });
-    runComponentNow(divElm, span);
-    assert.notOk(divElm.children[0].classList.contains("test"));
+    const {dom, out} = testComponent(span);
+    expect(dom.querySelector("span")).not.to.have.class("test");
     s.push(["class", "test"]);
-    assert(divElm.children[0].classList.contains("test"));
+    expect(dom.querySelector("span")).to.have.class("test");
   });
 
   describe("children", () => {
     it("nested", () => {
       const spanFac = e("span");
       const h1Fac = e("h1");
-      const spanC = h1Fac(spanFac("Test"));
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].tagName, "H1", "Wrong element was attached");
-      assert.strictEqual(div.children[0].children[0].tagName, "SPAN", "Wrong element was attached");
+      const span = h1Fac(spanFac("Test"));
+      const {dom, out} = testComponent(span);
+      expect(dom.querySelector("h1")).to.have.length(1);
+      expect(dom.querySelector("h1")).to.contain("span");
+      expect(dom.querySelector("span")).to.have.text("Test");
     });
   });
 
@@ -98,15 +87,14 @@ describe("dom-builder: e()", () => {
         }
       });
       const spanC = spanFac();
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("override style", () => {
       const spanFac = e("span", {
         style: {
-          background: "red"
+          backgroundColor: "red"
         }
       });
       const spanC = spanFac({
@@ -114,9 +102,8 @@ describe("dom-builder: e()", () => {
           backgroundColor: "green"
         }
       });
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "green");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: green;")
     });
   });
 
@@ -127,9 +114,8 @@ describe("dom-builder: e()", () => {
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }});
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("e(children)         fac(props, children) ", () => {
@@ -137,10 +123,9 @@ describe("dom-builder: e()", () => {
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }}, "override text");
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "override text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.text("override text")
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("e(props)            fac(children) ", () => {
@@ -148,10 +133,9 @@ describe("dom-builder: e()", () => {
         backgroundColor: "green"
       }});
       const spanC = spanFac("text");
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "green");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.text("text")
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: green;")
     });
 
     it("e(props)            fac(props, children) ", () => {
@@ -161,10 +145,9 @@ describe("dom-builder: e()", () => {
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }}, "text");
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.text("text")
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("e(props, children)  fac(props, children) ", () => {
@@ -174,10 +157,9 @@ describe("dom-builder: e()", () => {
       const spanC = spanFac({style: {
         backgroundColor: "red"
       }}, "override text");
-      const div = document.createElement("div");
-      runComponentNow(div, spanC);
-      assert.strictEqual(div.children[0].textContent, "override text");
-      assert.strictEqual((<HTMLElement>div.children[0]).style.backgroundColor, "red");
+      const {dom} = testComponent(spanC);
+      expect(dom.querySelector("span")).to.have.text("override text")
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
   });
 });

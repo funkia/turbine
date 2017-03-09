@@ -1,4 +1,6 @@
-import {assert} from "chai";
+import {use, expect} from "chai";
+import * as chaiDom from "chai-dom";
+use(chaiDom);
 import {runMain, elements} from "../src";
 const {span} = elements;
 
@@ -12,9 +14,8 @@ describe("bootstrap", () => {
       const comp = span("Hello world");
       runMain("#container", comp);
 
-      assert.strictEqual(div.children.length, 1);
-      assert.strictEqual(div.children[0].tagName, "SPAN");
-      assert.strictEqual(div.children[0].textContent, "Hello world");
+      expect(document.querySelector("span")).to.exist;
+      expect(document.querySelector("span")).to.have.text("Hello world");
     });
   });
 });

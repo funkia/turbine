@@ -1,85 +1,81 @@
-import {assert} from "chai";
+import {assert, use, expect} from "chai";
+import * as chaiDom from "chai-dom";
+use(chaiDom);
 import {fgo} from "jabz/monad";
 import {Behavior, isBehavior, sink, placeholder, Now} from "hareactive";
 
 import {
-  text, dynamic, runComponentNow,
+  text, dynamic,
   toComponent, Component, component,
-  elements, loop
+  elements, loop, testComponent
 } from "../src";
 const {span, div, button, input} = elements;
 
 const supportsProxy = "Proxy" in window;
-
-let divElm: HTMLDivElement;
-
-beforeEach(() => {
-  divElm = document.createElement("div");
-});
 
 describe("component specs", () => {
   describe("toComponent", () => {
     it("convert behavior of string to component", () => {
       const b = sink("Hello");
       const component = toComponent(b);
-      runComponentNow(divElm, component);
-      assert.strictEqual(divElm.textContent, "Hello");
+      const {dom} = testComponent(component);
+      expect(dom).to.have.text("Hello");
       b.push("world");
-      assert.strictEqual(divElm.textContent, "world");
+      expect(dom).to.have.text("world");
     });
     it("converts an array of components to component", () => {
-      const result = runComponentNow(divElm, toComponent([
-        span("Hello"), div("There"), button("Click me")
-      ]));
-      assert.property(result, "click");
-      assert.strictEqual(divElm.children.length, 3);
-      assert.strictEqual(divElm.children[0].tagName, "SPAN");
-      assert.strictEqual(divElm.children[0].textContent, "Hello");
-      assert.strictEqual(divElm.children[1].tagName, "DIV");
-      assert.strictEqual(divElm.children[1].textContent, "There");
-      assert.strictEqual(divElm.children[2].tagName, "BUTTON");
-      assert.strictEqual(divElm.children[2].textContent, "Click me");
+      const component = toComponent([span("Hello"), div("There"), button("Click me")]);
+      const {dom, out} = testComponent(component);
+
+      expect(out).to.have.property("click");
+      expect(dom).to.have.length(3);
+      expect(dom.querySelector("span")).to.have.text("Hello");
+      expect(dom.querySelector("div")).to.have.text("There");
+      expect(dom.querySelector("button")).to.have.text("Click me");
     });
   });
   describe("text", () => {
     it("converts string to component", () => {
-      runComponentNow(divElm, text("Hello, dom!"));
-      assert.strictEqual(divElm.textContent, "Hello, dom!");
+      const component = text("Hello, dom!");
+      const {dom} = testComponent(component);
+      expect(dom).to.have.text("Hello, dom!");
     });
     it("converts number to component", () => {
-      runComponentNow(divElm, text(200));
-      assert.strictEqual(divElm.textContent, "200");
+      const component = text(200);
+      const {dom} = testComponent(component);
+      expect(dom).to.have.text("200");
     });
   });
   describe("dynamic", () => {
     it("handles behavior of strings", () => {
       const b = sink("Hello");
       const component = dynamic(b);
-      runComponentNow(divElm, component);
-      assert.strictEqual(divElm.textContent, "Hello");
+      const {dom} = testComponent(component);
+      expect(dom).to.have.text("Hello");
       b.push("world");
-      assert.strictEqual(divElm.textContent, "world");
+      expect(dom).to.have.text("world");
     });
     it("handles behavior of component", () => {
       const comp1 = div("Hello");
       const comp2 = span("World");
       const b = sink(comp1);
       const component = dynamic(b);
-      runComponentNow(divElm, component);
-      assert.strictEqual(divElm.children.length, 1);
-      assert.strictEqual(divElm.children[0].tagName, "DIV");
-      assert.strictEqual(divElm.children[0].textContent, "Hello");
+      const {dom} = testComponent(component);
+      expect(dom).to.have.length(1);
+      expect(dom.querySelector("div")).to.exist;
+      expect(dom.querySelector("div")).to.have.text("Hello");
       b.push(comp2);
-      assert.strictEqual(divElm.children.length, 1);
-      assert.strictEqual(divElm.children[0].tagName, "SPAN");
-      assert.strictEqual(divElm.children[0].textContent, "World");
+      expect(dom).to.have.length(1);
+      expect(dom.querySelector("div")).not.to.exist;
+      expect(dom.querySelector("span")).to.exist;
+      expect(dom.querySelector("span")).to.have.text("World");
     });
     it("works with placeholder behavior", () => {
       const b = placeholder();
       const component = dynamic(b);
-      runComponentNow(divElm, component);
+      const {dom} = testComponent(component);
       b.replaceWith(sink("Hello"));
-      assert.strictEqual(divElm.textContent, "Hello");
+      expect(dom).to.have.text("Hello");
     });
   });
 
@@ -91,9 +87,9 @@ describe("component specs", () => {
         ({inputValue: name} = yield input({props: {value: "Foo"}}));
         return {name};
       }));
-      runComponentNow(divElm, comp);
-      assert.strictEqual(divElm.children.length, 2);
-      assert.strictEqual(divElm.firstChild.textContent, "Foo");
+      const {dom} = testComponent(comp);
+      expect(dom).to.have.length(2);
+      expect(dom.firstChild).to.have.text("Foo");
     });
   });
 });
@@ -108,23 +104,9 @@ describe("component", () => {
         return span("World");
       }
     );
-    runComponentNow(divElm, c);
-    assert.strictEqual(divElm.children[0].tagName, "SPAN");
-    assert.strictEqual(divElm.children[0].textContent, "World");
-  });
-
-  it("simpel span component", () => {
-    const c = component(
-      function model(): Now<any> {
-        return Now.of([{}, {}] as [{}, {}]);
-      },
-      function view(): Component<any> {
-        return span("World");
-      }
-    );
-    runComponentNow(divElm, c);
-    assert.strictEqual(divElm.children[0].tagName, "SPAN");
-    assert.strictEqual(divElm.children[0].textContent, "World");
+    const {dom} = testComponent(c);
+    expect(dom.querySelector("span")).to.exist;
+    expect(dom.querySelector("span")).to.have.text("World");
   });
 
   it("view is function returning array of components", () => {
@@ -138,9 +120,9 @@ describe("component", () => {
         span("Hello"),
         input()
       ]);
-    runComponentNow(divElm, c);
-    assert.strictEqual(divElm.children[0].tagName, "SPAN");
-    assert.strictEqual(divElm.children[0].textContent, "Hello");
+    const {dom} = testComponent(c);
+    expect(dom.querySelector("span")).to.exist;
+    expect(dom.querySelector("span")).to.have.text("Hello");
     assert(isBehavior(fromView.inputValue));
   });
 
@@ -153,7 +135,7 @@ describe("component", () => {
       function barView(): Component<any> { return Component.of({bar: "no foo?"}); }
     );
     assert.throws(() => {
-      runComponentNow(divElm, c);
+      testComponent(c);
     }, /fooComp/);
   });
 });
