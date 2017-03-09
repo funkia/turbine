@@ -1,7 +1,5 @@
 import {
-  Behavior, sink, isBehavior,
-  Stream, empty,
-  Now
+  Behavior, sink, isBehavior, Stream, empty, Now
 } from "hareactive";
 import {
   Component, runComponentNow,
@@ -21,7 +19,7 @@ export type Properties = {
   props?: {
     [name: string]: Showable | Behavior<Showable | boolean>;
   },
-  attribute?: {
+  attrs?: {
     [name: string]: Showable | Behavior<Showable>;
   },
   action?: {
@@ -56,18 +54,16 @@ class CreateDomNow<A> extends Now<A> {
           }
         }
       }
-
-      if (this.props.attribute !== undefined) {
-        for (const name of Object.keys(this.props.attribute)) {
-          const value = this.props.attribute[name];
+      if (this.props.attrs !== undefined) {
+        for (const name of Object.keys(this.props.attrs)) {
+          const value = this.props.attrs[name];
           if (isBehavior(value)) {
-            viewObserve((newValue) => elm.setAttribute(name, newValue.toString()), value);
+            viewObserve((newValue) => elm.setAttribute(name, <string>newValue), value);
           } else {
             elm.setAttribute(name, value.toString());
           }
         }
       }
-
       if (this.props.props !== undefined) {
         for (const name of Object.keys(this.props.props)) {
           const value = this.props.props[name];
@@ -99,7 +95,6 @@ class CreateDomNow<A> extends Now<A> {
           this.props.action[name].subscribe((args) => ((<any>elm)[name]).apply(elm, args));
         }
       }
-
       if (this.props.behaviors !== undefined) {
         for (const [evt, name, extractor, initialFn] of this.props.behaviors) {
           let a: Behavior<any> = undefined;
@@ -160,9 +155,9 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
       result.classToggle[token.slice(1)] = true;
       break;
     case "[":
-      result.attribute = result.attribute || {};
+      result.attrs = result.attrs || {};
       const attr = token.slice(1, -1).split("=");
-      result.attribute[attr[0]] = attr[1] || "";
+      result.attrs[attr[0]] = attr[1] || "";
       break;
     default:
       throw new Error("Unknown symbol");
