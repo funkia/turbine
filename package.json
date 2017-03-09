@@ -16,7 +16,10 @@
     "build-es6": "./node_modules/.bin/tsc -P tsconfig-es6.json",
     "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
-    "clean": "rm -rf coverage dist"
+    "clean": "rm -rf coverage dist",
+    "release-major": "xyz --repo git@github.com:funkia/funnel.git --increment major",
+    "release-minor": "xyz --repo git@github.com:funkia/funnel.git --increment minor",
+    "release-patch": "xyz --repo git@github.com:funkia/funnel.git --increment patch"
   },
   "repository": {
     "type": "git",
@@ -54,7 +57,8 @@
     "mocha": "^3.2.0",
     "ts-loader": "^2.0.1",
     "typescript": "2.1.x",
-    "webpack": "^2.2.1"
+    "webpack": "^2.2.1",
+    "xyz": "^2.1.0"
   },
   "contributors": [
     {
