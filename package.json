@@ -17,6 +17,7 @@
     "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
+    "prepublishOnly": "npm run build",
     "release-major": "xyz --repo git@github.com:funkia/funnel.git --increment major",
     "release-minor": "xyz --repo git@github.com:funkia/funnel.git --increment minor",
     "release-patch": "xyz --repo git@github.com:funkia/funnel.git --increment patch"
