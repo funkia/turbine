@@ -47,6 +47,7 @@
     "chai": "3.5.0",
     "chai-dom": "^1.4.3",
     "codecov": "1.0.1",
+    "fake-raf": "^1.0.1",
     "hareactive": "0.0.15",
     "jabz": "0.0.18",
     "karma": "^1.5.0",

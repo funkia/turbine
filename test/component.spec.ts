@@ -2,12 +2,13 @@ import {assert, use, expect} from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import {fgo} from "jabz/monad";
-import {Behavior, isBehavior, sink, placeholder, Now} from "hareactive";
+import {Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction} from "hareactive";
+import * as fakeRaf from "fake-raf";
 
 import {
   text, dynamic,
   toComponent, Component, component,
-  elements, loop, testComponent
+  elements, loop, testComponent, list
 } from "../src";
 const {span, div, button, input} = elements;
 
@@ -47,13 +48,26 @@ describe("component specs", () => {
     });
   });
   describe("dynamic", () => {
-    it("handles behavior of strings", () => {
+    it("handles push behavior of strings", () => {
       const b = sink("Hello");
       const component = dynamic(b);
       const {dom} = testComponent(component);
       expect(dom).to.have.text("Hello");
       b.push("world");
       expect(dom).to.have.text("world");
+    });
+    it("handles pull behavior of strings", () => {
+      fakeRaf.use();
+      let value = "foo";
+      const b = fromFunction(() => value);
+      const component = dynamic(b);
+      const {dom} = testComponent(component);
+      expect(dom).to.have.text("foo");
+      value = "bar";
+      expect(dom).to.have.text("foo");
+      fakeRaf.step();
+      expect(dom).to.have.text("bar");
+      fakeRaf.restore();
     });
     it("handles behavior of component", () => {
       const comp1 = div("Hello");
@@ -80,8 +94,8 @@ describe("component specs", () => {
   });
 
   describe("loop", () => {
+    type Looped = {name: Behavior<string>};
     it("works with explicit fgo and looped behavior", () => {
-      type Looped = {name: Behavior<string>};
       const comp = loop(fgo(function*({name}: Looped): IterableIterator<Component<any>> {
         yield div(name);
         ({inputValue: name} = yield input({props: {value: "Foo"}}));
@@ -90,6 +104,13 @@ describe("component specs", () => {
       const {dom} = testComponent(comp);
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
+    });
+    it("can be called directly with generator function", () => {
+      const comp = loop(function*({name}: Looped): IterableIterator<Component<any>> {
+        yield div(name);
+        ({inputValue: name} = yield input({props: {value: "Foo"}}));
+        return {name};
+      });
     });
   });
 });
@@ -137,5 +158,39 @@ describe("component", () => {
     assert.throws(() => {
       testComponent(c);
     }, /fooComp/);
+  });
+});
+
+describe("list", () => {
+  const createSpan = (content: string) => span(content);
+  it("has correct initial order", () => {
+    const initiel = ["Hello ", "there", "!"]
+    const listB = sink(initiel);
+    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    expect(dom).to.have.length(3);
+    expect(dom).to.have.text("Hello there!");
+  });
+  it("reorders elements", () => {
+    const initiel = ["Hello ", "there", "!"]
+    const listB = sink(initiel);
+    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    expect(dom).to.have.length(3);
+    const elements = dom.childNodes;
+    publish(["!", "there", "Hello "], listB);
+    expect(dom).to.have.length(3);
+    expect(dom).to.contain(elements[0]);
+    expect(dom).to.contain(elements[1]);
+    expect(dom).to.contain(elements[2]);
+  });
+  it("removes element", () => {
+    const initiel = ["Hello ", "there", "!"]
+    const listB = sink(initiel);
+    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    const toBeRemoved = dom.childNodes[1];
+    expect(dom).to.have.length(3);
+    expect(dom).to.have.text("Hello there!");
+    publish(["Hello ", "!"], listB);
+    expect(dom).to.have.length(2);
+    expect(dom).to.not.contain(toBeRemoved);
   });
 });
