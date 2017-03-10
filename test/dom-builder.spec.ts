@@ -133,6 +133,21 @@ describe("dom-builder: e()", () => {
       publish("/bar", hrefB);
       expect(aElm).to.have.attribute("href", "/bar");
     });
+    it("sets boolean attributes correctly", () => {
+      const {dom} = testComponent(e("a", {attrs: {contenteditable: true}})());
+      const aElm = dom.firstChild;
+      expect(aElm).to.have.attribute("contenteditable", "");
+    });
+    it("removes boolean attribute correctly", () => {
+      const checkedB = sink(false);
+      const {dom} = testComponent(e("a", {attrs: {checked: checkedB}})());
+      const aElm = dom.firstChild;
+      expect(aElm).to.not.have.attribute("checked");
+      publish(true, checkedB);
+      expect(aElm).to.have.attribute("checked", "");
+      publish(false, checkedB);
+      expect(aElm).to.not.have.attribute("checked");
+    });
   });
 
   describe("properties", () => {

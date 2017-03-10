@@ -20,7 +20,7 @@ export type Properties = {
     [name: string]: Showable | Behavior<Showable | boolean>;
   },
   attrs?: {
-    [name: string]: Showable | Behavior<Showable>;
+    [name: string]: (Showable | boolean) | Behavior<(Showable | boolean)>;
   },
   action?: {
     [name: string]: Stream<any[]>
@@ -32,8 +32,15 @@ export type Properties = {
   }
 };
 
-const attributeSetter = (element: HTMLElement) => (key: string, value: string) =>
-  element.setAttribute(key, value);
+const attributeSetter = (element: HTMLElement) => (key: string, value: boolean | string) => {
+  if (value === true) {
+    element.setAttribute(key, "");
+  } else if (value === false) {
+    element.removeAttribute(key);
+  } else {
+    element.setAttribute(key, value);
+  }
+}
 
 const propertySetter = (element: HTMLElement) => (key: string, value: string) =>
   (<any>element)[key] = value;
