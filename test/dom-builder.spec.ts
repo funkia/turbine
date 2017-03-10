@@ -1,7 +1,8 @@
 import {assert, use, expect} from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
-import {isStream, empty, Stream, sink, publish} from "hareactive";
+import * as fakeRaf from "fake-raf";
+import {isStream, empty, Stream, sink, publish, fromFunction} from "hareactive";
 import {testComponent, e, Component, elements} from "../src";
 const {button} = elements;
 
@@ -53,17 +54,61 @@ describe("dom-builder: e()", () => {
     assert(isStream(out.foobar));
   });
 
-  it("call methods/actions on the HTMLElement", () => {
-    const s: Stream<[string, string]> = empty();
-    const span = elements.span({
-      action: {
-        "setAttribute": s
-      }
+  describe("actions", () => {
+    it("calls function with element and stream value", () => {
+      const myComponent = e("span", {
+        actionDefinitions: {
+          boldText: (element: HTMLElement, value: string) => element.innerHTML = `<b>${value}</b>`
+        }
+      });
+      const s: Stream<string> = empty();
+      const {dom} = testComponent(myComponent({actions: {boldText: s}}));
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.html("");
+      s.push("foo");
+      expect(spanElm).to.have.html("<b>foo</b>");
+      s.push("bar");
+      expect(spanElm).to.have.html("<b>bar</b>");
     });
-    const {dom, out} = testComponent(span);
-    expect(dom.querySelector("span")).not.to.have.class("test");
-    s.push(["class", "test"]);
-    expect(dom.querySelector("span")).to.have.class("test");
+
+    it("calls function with element and value from pushing behavior", () => {
+      const myComponent = e("span", {
+        actionDefinitions: {
+          boldText: (element: HTMLElement, value: number) => element.textContent = value.toString()
+        }
+      });
+      const numberB = sink(0);
+      const {dom} = testComponent(myComponent({setters: {boldText: numberB}}));
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.text("0");
+      publish(1, numberB);
+      expect(spanElm).to.have.text("1");
+      publish(2, numberB);
+      expect(spanElm).to.have.text("2");
+    });
+    it("calls function with element and value from pulling behavior", () => {
+      fakeRaf.use();
+      const myComponent = e("span", {
+        actionDefinitions: {
+          boldText: (element: HTMLElement, value: number) => element.textContent = value.toString()
+        }
+      });
+      let nr = 0;
+      const numberB = fromFunction(() => nr);
+      const {dom} = testComponent(myComponent({setters: {boldText: numberB}}));
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.text("0");
+      nr = 1;
+      expect(spanElm).to.have.text("0");
+      fakeRaf.step();
+      expect(spanElm).to.have.text("1");
+      fakeRaf.step();
+      expect(spanElm).to.have.text("1");
+      nr = 2;
+      fakeRaf.step();
+      expect(spanElm).to.have.text("2");
+      fakeRaf.restore();
+    });
   });
 
   describe("children", () => {

@@ -1,5 +1,5 @@
 import {
-  Behavior, sink, isBehavior, Stream, empty, Now
+  Behavior, sink, isBehavior, isStream, Stream, empty, Now
 } from "hareactive";
 import {
   Component, runComponentNow,
@@ -10,6 +10,14 @@ import {rename, mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A];
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, (elm: HTMLElement) => A];
+
+export type ActionDefinitions = {
+  [name: string]: (element: HTMLElement, value: any) => void
+};
+
+export type Actions = {
+  [name: string]: Stream<any>
+};
 
 export type Properties = {
   wrapper?: boolean,
@@ -22,9 +30,9 @@ export type Properties = {
   attrs?: {
     [name: string]: (Showable | boolean) | Behavior<(Showable | boolean)>;
   },
-  action?: {
-    [name: string]: Stream<any[]>
-  }
+  actionDefinitions?: ActionDefinitions,
+  actions?: Actions,
+  setters?: {[name: string]: Behavior<any>},
   output?: {[name: string]: string},
   class?: string,
   classToggle?: {
@@ -69,6 +77,22 @@ function handleObject<A>(
   }
 }
 
+function handleCustom(
+  elm: HTMLElement, isStreamActions: boolean, actionDefinitions: ActionDefinitions, actions: Actions | undefined
+): void {
+  if (actions !== undefined) {
+    for (const name of Object.keys(actions)) {
+      const actionTrigger = actions[name];
+      const actionDefinition = actionDefinitions[name];
+      if (isStreamActions) {
+        actionTrigger.subscribe((value) => actionDefinition(elm, value));
+      } else {
+        viewObserve((value) => actionDefinition(elm, value), <any>actionTrigger);
+      }
+    }
+  }
+}
+
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
@@ -91,11 +115,8 @@ class CreateDomNow<A> extends Now<A> {
           elm.classList.add(name);
         }
       }
-      if (this.props.action !== undefined) {
-        for (const name of Object.keys(this.props.action)) {
-          this.props.action[name].subscribe((args) => ((<any>elm)[name]).apply(elm, args));
-        }
-      }
+      handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);
+      handleCustom(elm, false, this.props.actionDefinitions, this.props.setters);
       if (this.props.behaviors !== undefined) {
         for (const [evt, name, extractor, initialFn] of this.props.behaviors) {
           let a: Behavior<any> = undefined;

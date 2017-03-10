@@ -116,7 +116,7 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
           class: "edit",
 	  props: {value: taskName},
           output: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"},
-	  action: {focus: focusInput}
+	  actions: {focus: focusInput}
         })
       ]));
     }
