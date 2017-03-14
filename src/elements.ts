@@ -6,6 +6,9 @@ import {CSSStyleType} from "./CSSStyleType";
 function id<A>(a: A): A { return a; };
 
 export const input = e("input", {
+  actionDefinitions: {
+    focus: (element) => element.focus()
+  },
   behaviors: [
     ["input", "inputValue", (evt: any) => evt.target.value, ({value}: HTMLInputElement) => value]
   ],
