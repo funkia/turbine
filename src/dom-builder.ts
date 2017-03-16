@@ -6,9 +6,10 @@ import {
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import {CSSStyleType} from "./CSSStyleType";
-import {rename, mergeDeep} from "./utils";
+import {id, rename, mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A];
+
 export type BehaviorDescription<A> = [string, string, (evt: any) => A, (elm: HTMLElement) => A];
 
 export type ActionDefinitions = {
@@ -38,6 +39,16 @@ export type Properties = {
   classToggle?: {
     [name: string]: boolean | Behavior<boolean>;
   }
+};
+
+// Output streams that _all_ elements share
+const defaultStreams = [
+  ["click", "click", id],
+  ["dblclick", "dblclick", id]
+];
+
+const defaultProperties = {
+  streams: defaultStreams,
 };
 
 const attributeSetter = (element: HTMLElement) => (key: string, value: boolean | string) => {
@@ -192,7 +203,7 @@ export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, new
 
 export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-  props = mergeDeep(props, tagProps);
+  props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
   function createElement(): Component<any>;
   function createElement(props1: Properties): Component<A>;
   function createElement(child: Child): Component<A>;
