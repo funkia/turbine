@@ -3,6 +3,8 @@ import * as chaiDom from "chai-dom";
 use(chaiDom);
 import * as fakeRaf from "fake-raf";
 import {isStream, empty, Stream, sink, publish, fromFunction} from "hareactive";
+
+import {id} from "../src/utils";
 import {testComponent, e, Component, elements} from "../src";
 const {button} = elements;
 
@@ -45,6 +47,17 @@ describe("dom-builder: e()", () => {
       const spanC = spanFac();
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.id("someId");
+    });
+  });
+
+  describe("stream and behavior output descriptions", () => {
+    it("does not overwrite descriptions", () => {
+      const myElement = e("span", {
+        streams: [["click", "customClick", id]]
+      });
+      const myCreatedElement = myElement({streams: []});
+      const {dom, out} = testComponent(myCreatedElement);
+      assert(isStream(out.customClick));
     });
   });
 
