@@ -52,18 +52,18 @@ describe("dom-builder: e()", () => {
 
   describe("stream and behavior output descriptions", () => {
     it("does not overwrite descriptions", () => {
-      const myElement = e("span", {
+      const myElement = e<{customClick: Stream<{}>}>("span", {
         streams: [["click", "customClick", id]]
       });
       const myCreatedElement = myElement({streams: []});
-      const {dom, out} = testComponent(myCreatedElement);
+      const {out} = testComponent(myCreatedElement);
       assert(isStream(out.customClick));
     });
   });
 
   it("can rename output", () => {
     const btn = (<Component<{foobar: Stream<any>}>>button({output: {click: "foobar"}}, "Click"));
-    const {dom, out} = testComponent(btn);
+    const {out} = testComponent(btn);
     assert(isStream(out.foobar));
   });
 

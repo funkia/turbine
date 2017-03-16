@@ -20,6 +20,10 @@ export type Actions = {
   [name: string]: Stream<any>
 };
 
+export type Setters = {
+  [name: string]: Behavior<any>
+};
+
 export type Properties = {
   wrapper?: boolean,
   streams?: StreamDescription<any>[],
@@ -89,7 +93,7 @@ function handleObject<A>(
 }
 
 function handleCustom(
-  elm: HTMLElement, isStreamActions: boolean, actionDefinitions: ActionDefinitions, actions: Actions | undefined
+  elm: HTMLElement, isStreamActions: boolean, actionDefinitions: ActionDefinitions, actions: Actions | Setters | undefined
 ): void {
   if (actions !== undefined) {
     for (const name of Object.keys(actions)) {

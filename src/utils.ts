@@ -1,4 +1,4 @@
-function arrayConcat(arr1, arr2) {
+function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
   const result = [];
   for (let i = 0; i < arr1.length; ++i) {
     result.push(arr1[i]);
@@ -6,7 +6,7 @@ function arrayConcat(arr1, arr2) {
   for (let i = 0; i < arr2.length; ++i) {
     result.push(arr2[i]);
   }
-  return result
+  return result;
 }
 
 function isObject(item: any): item is Object {
