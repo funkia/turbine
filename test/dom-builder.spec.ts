@@ -59,10 +59,18 @@ describe("dom-builder: e()", () => {
       const {out} = testComponent(myCreatedElement);
       assert(isStream(out.customClick));
     });
+    it("contains a stream for all DOM events", () => {
+      const myElement = e<{customClick: Stream<{}>}>("span");
+      const myCreatedElement = myElement();
+      const {out} = testComponent(myCreatedElement);
+      assert(isStream(out.beforecopy));
+      assert(isStream(out.drag));
+      assert(isStream(out.load));
+    });
   });
 
   it("can rename output", () => {
-    const btn = (<Component<{foobar: Stream<any>}>>button({output: {click: "foobar"}}, "Click"));
+    const btn = (<Component<any>>button({output: {click: "foobar"}}, "Click"));
     const {out} = testComponent(btn);
     assert(isStream(out.foobar));
   });

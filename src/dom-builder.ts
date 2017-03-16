@@ -45,11 +45,18 @@ export type Properties = {
   }
 };
 
+export type DefaultOutput = {
+  [E in keyof HTMLElementEventMap]: Stream<HTMLElementEventMap[E]>
+}
+
+// An array of names of all DOM events
+export const allDomEvents: (keyof HTMLElementEventMap)[] =
+  <any>Object.getOwnPropertyNames(Object.getPrototypeOf(Object.getPrototypeOf(document)))
+  .filter((i) => i.indexOf('on') === 0)
+  .map((name) => name.slice(2));
+
 // Output streams that _all_ elements share
-const defaultStreams = [
-  ["click", "click", id],
-  ["dblclick", "dblclick", id]
-];
+const defaultStreams = allDomEvents.map((name) => [name, name, id]);
 
 const defaultProperties = {
   streams: defaultStreams,
@@ -149,15 +156,17 @@ class CreateDomNow<A> extends Now<A> {
       if (this.props.streams !== undefined) {
         for (const [evt, name, extractor] of this.props.streams) {
           let a: Stream<any> = undefined;
-          Object.defineProperty(output, name, {
-            enumerable: true,
-            get: () => {
-              if (a === undefined) {
-                a = streamFromEvent(evt, extractor, elm);
+          if (output[name] === undefined) {
+            Object.defineProperty(output, name, {
+              enumerable: true,
+              get: () => {
+                if (a === undefined) {
+                  a = streamFromEvent(evt, extractor, elm);
+                }
+                return a;
               }
-              return a;
-            }
-          });
+            });
+          }
         }
       }
     }
@@ -205,19 +214,20 @@ function parseCSSTagname(cssTagName: string): [string, Properties] {
 
 export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
 
-export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A> {
+export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A & DefaultOutput> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
-  function createElement(): Component<any>;
-  function createElement(props1: Properties): Component<A>;
-  function createElement(child: Child): Component<A>;
-  function createElement(props2: Properties, bChildren: Child): Component<A>;
-  function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<A> {
+  type Output = A & DefaultOutput;
+  function createElement(): Component<Output>;
+  function createElement(props1: Properties): Component<Output>;
+  function createElement(child: Child): Component<Output>;
+  function createElement(props2: Properties, bChildren: Child): Component<Output>;
+  function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<Output> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, props, newPropsOrChildren));
+      return new Component((p) => new CreateDomNow<Output>(p, parsedTagName, props, newPropsOrChildren));
     } else {
       const newProps = mergeDeep(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<A>(p, parsedTagName, newProps, newChildrenOrUndefined));
+      return new Component((p) => new CreateDomNow<Output>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
   return createElement;
