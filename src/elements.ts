@@ -1,7 +1,6 @@
 import {Behavior, Stream} from "hareactive";
 import {Component, ChildList} from "./component";
 import {e} from "./dom-builder";
-import {CSSStyleType} from "./CSSStyleType";
 
 export const input = e("input", {
   actionDefinitions: {

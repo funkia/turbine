@@ -5,7 +5,6 @@ import {
   Component, runComponentNow,
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
-import {CSSStyleType} from "./CSSStyleType";
 import {id, rename, mergeDeep} from "./utils";
 
 export type StreamDescription<A> = [string, string, (evt: any) => A];
@@ -24,11 +23,15 @@ export type Setters = {
   [name: string]: Behavior<any>
 };
 
+export type Style = {
+  [N in keyof CSSStyleDeclaration]?: Behavior<CSSStyleDeclaration[N]> | CSSStyleDeclaration[N]
+}
+
 export type Properties = {
   wrapper?: boolean,
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
-  style?: CSSStyleType,
+  style?: Style,
   props?: {
     [name: string]: Showable | Behavior<Showable | boolean>;
   },
