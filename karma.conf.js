@@ -10,7 +10,7 @@ module.exports = function(config) {
       "test/**/*.ts": ["karma-typescript"]
     },
     reporters: ["mocha", "karma-typescript"],
-    browsers: ["Chrome", "Chromium"],
+    browsers: ["Chrome", "Chromium", "Firefox"],
     karmaTypescriptConfig: {
       tsconfig: "tsconfig-test.json",
       reports: {

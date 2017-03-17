@@ -52,14 +52,14 @@ export type DefaultOutput = {
 // An array of names of all DOM events
 export const allDomEvents: (keyof HTMLElementEventMap)[] =
   <any>Object.getOwnPropertyNames(Object.getPrototypeOf(Object.getPrototypeOf(document)))
-  .filter((i) => i.indexOf('on') === 0)
+  .filter((i) => i.indexOf("on") === 0)
   .map((name) => name.slice(2));
 
 // Output streams that _all_ elements share
 const defaultStreams = allDomEvents.map((name) => [name, name, id]);
 
 const defaultProperties = {
-  streams: defaultStreams,
+  streams: defaultStreams
 };
 
 const attributeSetter = (element: HTMLElement) => (key: string, value: boolean | string) => {
@@ -70,7 +70,7 @@ const attributeSetter = (element: HTMLElement) => (key: string, value: boolean |
   } else {
     element.setAttribute(key, value);
   }
-}
+};
 
 const propertySetter = (element: HTMLElement) => (key: string, value: string) =>
   (<any>element)[key] = value;

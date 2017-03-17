@@ -63,7 +63,7 @@ describe("dom-builder: e()", () => {
       const myElement = e<{customClick: Stream<{}>}>("span");
       const myCreatedElement = myElement();
       const {out} = testComponent(myCreatedElement);
-      assert(isStream(out.beforecopy));
+      assert(isStream(out.keyup));
       assert(isStream(out.drag));
       assert(isStream(out.load));
     });
