@@ -1,11 +1,13 @@
 import {
-  Behavior, sink, isBehavior, isStream, Stream, empty, Now
+  Behavior, sink, isBehavior, Stream, empty, Now
 } from "hareactive";
 import {
   Component, runComponentNow,
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
-import {id, rename, mergeDeep} from "./utils";
+import { id, rename, mergeDeep } from "./utils";
+
+export type Cp<A> = Component<A>
 
 export type StreamDescription<A> = [string, string, (evt: any) => A];
 
@@ -27,7 +29,7 @@ export type Style = {
   [N in keyof CSSStyleDeclaration]?: Behavior<CSSStyleDeclaration[N]> | CSSStyleDeclaration[N]
 }
 
-export type Properties = {
+export type InitialProperties = {
   wrapper?: boolean,
   streams?: StreamDescription<any>[],
   behaviors?: BehaviorDescription<any>[],
@@ -40,8 +42,7 @@ export type Properties = {
   },
   actionDefinitions?: ActionDefinitions,
   actions?: Actions,
-  setters?: {[name: string]: Behavior<any>},
-  output?: {[name: string]: string},
+  setters?: { [name: string]: Behavior<any> },
   class?: string,
   classToggle?: {
     [name: string]: boolean | Behavior<boolean>;
@@ -55,8 +56,8 @@ export type DefaultOutput = {
 // An array of names of all DOM events
 export const allDomEvents: (keyof HTMLElementEventMap)[] =
   <any>Object.getOwnPropertyNames(Object.getPrototypeOf(Object.getPrototypeOf(document)))
-  .filter((i) => i.indexOf("on") === 0)
-  .map((name) => name.slice(2));
+    .filter((i) => i.indexOf("on") === 0)
+    .map((name) => name.slice(2));
 
 // Output streams that _all_ elements share
 const defaultStreams = allDomEvents.map((name) => [name, name, id]);
@@ -85,7 +86,7 @@ const styleSetter = (element: HTMLElement) => (key: string, value: string) =>
   element.style[<any>key] = value;
 
 function handleObject<A>(
-  object: {[key: string]: A | Behavior<A>} | undefined,
+  object: { [key: string]: A | Behavior<A> } | undefined,
   element: HTMLElement,
   createSetter: (element: HTMLElement) => (key: string, value: A) => void
 ): void {
@@ -122,7 +123,7 @@ class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
     private tagName: string,
-    private props?: Properties,
+    private props?: Properties<A>,
     private children?: Child
   ) { super(); };
   run(): A {
@@ -153,7 +154,8 @@ class CreateDomNow<A> extends Now<A> {
                 a = behaviorFromEvent(evt, initial, extractor, elm);
               }
               return a;
-            }});
+            }
+          });
         }
       }
       if (this.props.streams !== undefined) {
@@ -189,48 +191,91 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
-function parseCSSTagname(cssTagName: string): [string, Properties] {
+function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
   const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
-  const result: Properties = {};
+  const result: InitialProperties = {};
   for (let i = 1; i < parsedTag.length; i++) {
     const token = parsedTag[i];
     switch (token[0]) {
-    case "#":
-      result.props = result.props || {};
-      result.props["id"] = token.slice(1);
-      break;
-    case ".":
-      result.classToggle = result.classToggle || {};
-      result.classToggle[token.slice(1)] = true;
-      break;
-    case "[":
-      result.attrs = result.attrs || {};
-      const attr = token.slice(1, -1).split("=");
-      result.attrs[attr[0]] = attr[1] || "";
-      break;
-    default:
-      throw new Error("Unknown symbol");
+      case "#":
+        result.props = result.props || {};
+        result.props["id"] = token.slice(1);
+        break;
+      case ".":
+        result.classToggle = result.classToggle || {};
+        result.classToggle[token.slice(1)] = true;
+        break;
+      case "[":
+        result.attrs = result.attrs || {};
+        const attr = token.slice(1, -1).split("=");
+        result.attrs[attr[0]] = attr[1] || "";
+        break;
+      default:
+        throw new Error("Unknown symbol");
     }
   }
   return [parsedTag[0], result];
 }
 
-export type CreateElementFunc<A> = (newPropsOrChildren?: Child | Properties, newChildren?: Properties) => Component<A>;
+export type OutputNames<A> = {
+  [name: string]: (keyof A)
+}
 
-export function e<A>(tagName: string, props: Properties = {}): CreateElementFunc<A & DefaultOutput> {
+export type Properties<A> = {
+  output?: OutputNames<A>,
+} & InitialProperties;
+
+export type OutputRenamed<A, B extends OutputNames<A>> = {
+  [N in keyof B]: A[B[N]]
+} & A;
+
+export type ElementCreator<A> = {
+  (props: Properties<A>): Cp<A>;
+}
+
+// `A` is the parents output
+export type WrapperElementCreator<A> = {
+  <B>(props: { wrapper: false } & Properties<A>): Cp<A>;
+  <B>(props: Properties<A>, child: Cp<B>): Cp<B>;
+  // When properties are given
+  <B, C>(props: Properties<A>, child: [Cp<B>, Cp<C>]): Cp<B & C>;
+  <B, C, D>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
+  <B, C, D, E>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
+  <B, C, D, E, F>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>, Cp<F>]): Cp<B & C & D & E & F>;
+  // Properties aren't given
+  <B>(child: Cp<B>): Cp<B>;
+  <B, C>(child: [Cp<B>, Cp<C>]): Cp<B & C>;
+  <B, C, D>(child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
+  <B, C, D, E>(child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
+  <B, C, D, E, F>(child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>, Cp<F>]): Cp<B & C & D & E & F>;
+  (props: Properties<A>, child: Child): Cp<any>;
+} & ElementCreator<A>;
+
+export type NonwrapperElementCreator<A> = {
+  (): Cp<A>;
+  (child: Child): Cp<A>;
+  <O extends OutputNames<A>>(props: { output: O } & Properties<A>): Cp<OutputRenamed<A, O>>;
+  <O extends OutputNames<A>>(props: { output: O } & Properties<A>, child: Child): Cp<OutputRenamed<A, O>>;
+  (props: Properties<A>): Cp<A>;
+  <B>(props: { wrapper: false } & Properties<A>, child: Child): Cp<A>;
+  <B>(props: Properties<A>, child: Cp<B>): Cp<B>;
+  <B, C>(props: Properties<A>, child: [Cp<B>, Cp<C>]): Cp<B & C>;
+  <B, C, D>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
+  <B, C, D, E>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
+  (props: Properties<A>, child: Child): Cp<A>;
+} & ElementCreator<A>;
+
+export function e(tagName: string, props: { wrapper: true } & InitialProperties): WrapperElementCreator<DefaultOutput>;
+export function e(tagName: string, props?: InitialProperties): NonwrapperElementCreator<DefaultOutput>;
+export function e(tagName: string, props: InitialProperties = {}): NonwrapperElementCreator<DefaultOutput> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
-  type Output = A & DefaultOutput;
-  function createElement(): Component<Output>;
-  function createElement(props1: Properties): Component<Output>;
-  function createElement(child: Child): Component<Output>;
-  function createElement(props2: Properties, bChildren: Child): Component<Output>;
-  function createElement(newPropsOrChildren?: Properties | Child, newChildrenOrUndefined?: Child): Component<Output> {
+  function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<Output>(p, parsedTagName, props, newPropsOrChildren));
+      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, props, newPropsOrChildren));
     } else {
       const newProps = mergeDeep(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<Output>(p, parsedTagName, newProps, newChildrenOrUndefined));
+      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
   return createElement;

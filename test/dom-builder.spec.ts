@@ -1,12 +1,12 @@
-import {assert, use, expect} from "chai";
+import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import * as fakeRaf from "fake-raf";
-import {isStream, empty, Stream, sink, publish, fromFunction} from "hareactive";
+import { isStream, empty, Stream, sink, publish, fromFunction } from "hareactive";
 
-import {id} from "../src/utils";
-import {testComponent, e, Component, elements} from "../src";
-const {button} = elements;
+import { id } from "../src/utils";
+import { testComponent, e, Component, elements } from "../src";
+const {button, div, a} = elements;
 
 describe("dom-builder: e()", () => {
 
@@ -36,7 +36,7 @@ describe("dom-builder: e()", () => {
       expect(dom.querySelector("span")).to.have.class("otherClass");
     });
     it("adds static classes", () => {
-      const divC = e("div")({class: "foo bar baz"});
+      const divC = e("div")({ class: "foo bar baz" });
       const {dom} = testComponent(divC);
       expect(dom.querySelector("div")).to.have.class("foo");
       expect(dom.querySelector("div")).to.have.class("bar");
@@ -50,17 +50,42 @@ describe("dom-builder: e()", () => {
     });
   });
 
+  describe("wrapper", () => {
+    describe("wrapper element", () => {
+      it("passes parent output through in wrapper element", () => {
+        const c = div(button({ output: { buttonClick: "click" } }));
+        const {out} = testComponent(c);
+        assert(isStream(out.buttonClick));
+      });
+      it("merges output from list of elements", () => {
+        const btn = button({ output: { fooClick: "click" } }, "Click me");
+        const btn2 = button({ output: { barClick: "click" } }, "Click me");
+        const c = div({}, [btn, btn2]);
+        const {out} = testComponent(c);
+        assert(isStream(out.fooClick));
+        assert(isStream(out.barClick));
+      });
+    });
+    describe("non-wrapper elements", () => {
+      it("does not pass child component through", () => {
+        const c = a(button({output: {btnClick: "click"}}));
+        const {out} = testComponent(c);
+        assert.isUndefined((<any>out).btnClick);
+      });
+    });
+  });
+
   describe("stream and behavior output descriptions", () => {
     it("does not overwrite descriptions", () => {
-      const myElement = e<{customClick: Stream<{}>}>("span", {
+      const myElement = e("span", {
         streams: [["click", "customClick", id]]
       });
-      const myCreatedElement = myElement({streams: []});
+      const myCreatedElement: Component<any> = myElement({ streams: [] });
       const {out} = testComponent(myCreatedElement);
       assert(isStream(out.customClick));
     });
     it("contains a stream for all DOM events", () => {
-      const myElement = e<{customClick: Stream<{}>}>("span");
+      const myElement = e("span");
       const myCreatedElement = myElement();
       const {out} = testComponent(myCreatedElement);
       assert(isStream(out.keyup));
@@ -69,10 +94,12 @@ describe("dom-builder: e()", () => {
     });
   });
 
-  it("can rename output", () => {
-    const btn = (<Component<any>>button({output: {click: "foobar"}}, "Click"));
-    const {out} = testComponent(btn);
-    assert(isStream(out.foobar));
+  describe("output", () => {
+    it("can rename output", () => {
+      const btn = button({ output: { foobar: "click" } }, "Click");
+      const {out} = testComponent(btn);
+      assert(isStream(out.foobar));
+    });
   });
 
   describe("actions", () => {
@@ -83,7 +110,7 @@ describe("dom-builder: e()", () => {
         }
       });
       const s: Stream<string> = empty();
-      const {dom} = testComponent(myComponent({actions: {boldText: s}}));
+      const {dom} = testComponent(myComponent({ actions: { boldText: s } }));
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.html("");
       s.push("foo");
@@ -99,7 +126,7 @@ describe("dom-builder: e()", () => {
         }
       });
       const numberB = sink(0);
-      const {dom} = testComponent(myComponent({setters: {boldText: numberB}}));
+      const {dom} = testComponent(myComponent({ setters: { boldText: numberB } }));
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.text("0");
       publish(1, numberB);
@@ -116,7 +143,7 @@ describe("dom-builder: e()", () => {
       });
       let nr = 0;
       const numberB = fromFunction(() => nr);
-      const {dom} = testComponent(myComponent({setters: {boldText: numberB}}));
+      const {dom} = testComponent(myComponent({ setters: { boldText: numberB } }));
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.text("0");
       nr = 1;
@@ -187,26 +214,26 @@ describe("dom-builder: e()", () => {
 
   describe("attributes", () => {
     it("sets attributes from constant values", () => {
-      const {dom} = testComponent(e("a", {attrs: {href: "/foo"}})());
+      const {dom} = testComponent(e("a", { attrs: { href: "/foo" } })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("href", "/foo");
     });
     it("sets attributes from behaviors", () => {
       const hrefB = sink("/foo");
-      const {dom} = testComponent(e("a", {attrs: {href: hrefB}})());
+      const {dom} = testComponent(e("a", { attrs: { href: hrefB } })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("href", "/foo");
       publish("/bar", hrefB);
       expect(aElm).to.have.attribute("href", "/bar");
     });
     it("sets boolean attributes correctly", () => {
-      const {dom} = testComponent(e("a", {attrs: {contenteditable: true}})());
+      const {dom} = testComponent(e("a", { attrs: { contenteditable: true } })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("contenteditable", "");
     });
     it("removes boolean attribute correctly", () => {
       const checkedB = sink(false);
-      const {dom} = testComponent(e("a", {attrs: {checked: checkedB}})());
+      const {dom} = testComponent(e("a", { attrs: { checked: checkedB } })());
       const aElm = dom.firstChild;
       expect(aElm).to.not.have.attribute("checked");
       publish(true, checkedB);
@@ -218,13 +245,13 @@ describe("dom-builder: e()", () => {
 
   describe("properties", () => {
     it("sets properties from constant values", () => {
-      const {dom} = testComponent(e("a", {props: {innerHTML: "<b>Hi</b>"}})());
+      const {dom} = testComponent(e("a", { props: { innerHTML: "<b>Hi</b>" } })());
       const aElm = <Element>dom.firstChild;
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
     });
     it("sets properties from behaviors", () => {
       const htmlB = sink("<b>Hi</b>");
-      const {dom} = testComponent(e("a", {props: {innerHTML: htmlB}})());
+      const {dom} = testComponent(e("a", { props: { innerHTML: htmlB } })());
       const aElm = <Element>dom.firstChild;
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
       publish("<b>there</b>", htmlB);
@@ -235,26 +262,32 @@ describe("dom-builder: e()", () => {
   describe("style and children combinations", () => {
     it("e(children)         fac(props) ", () => {
       const spanFac = e("span");
-      const spanC = spanFac({style: {
-        backgroundColor: "red"
-      }});
+      const spanC = spanFac({
+        style: {
+          backgroundColor: "red"
+        }
+      });
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
     it("e(children)         fac(props, children) ", () => {
       const spanFac = e("span");
-      const spanC = spanFac({style: {
-        backgroundColor: "red"
-      }}, "override text");
+      const spanC = spanFac({
+        style: {
+          backgroundColor: "red"
+        }
+      }, "override text");
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.text("override text")
       expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("e(props)            fac(children) ", () => {
-      const spanFac = e("span", {style: {
-        backgroundColor: "green"
-      }});
+      const spanFac = e("span", {
+        style: {
+          backgroundColor: "green"
+        }
+      });
       const spanC = spanFac("text");
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.text("text")
@@ -262,24 +295,32 @@ describe("dom-builder: e()", () => {
     });
 
     it("e(props)            fac(props, children) ", () => {
-      const spanFac = e("span", {style: {
-        backgroundColor: "green"
-      }});
-      const spanC = spanFac({style: {
-        backgroundColor: "red"
-      }}, "text");
+      const spanFac = e("span", {
+        style: {
+          backgroundColor: "green"
+        }
+      });
+      const spanC = spanFac({
+        style: {
+          backgroundColor: "red"
+        }
+      }, "text");
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.text("text")
       expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
     });
 
     it("e(props, children)  fac(props, children) ", () => {
-      const spanFac = e("span", {style: {
-        backgroundColor: "green"
-      }});
-      const spanC = spanFac({style: {
-        backgroundColor: "red"
-      }}, "override text");
+      const spanFac = e("span", {
+        style: {
+          backgroundColor: "green"
+        }
+      });
+      const spanC = spanFac({
+        style: {
+          backgroundColor: "red"
+        }
+      }, "override text");
       const {dom} = testComponent(spanC);
       expect(dom.querySelector("span")).to.have.text("override text")
       expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
@@ -290,7 +331,7 @@ describe("dom-builder: e()", () => {
     it("toggles classe based on behavior", () => {
       const boolB = sink(false);
       const span = elements.span({
-        classToggle: {foo: boolB}
+        classToggle: { foo: boolB }
       });
       const {dom} = testComponent(span);
       const spanElm = dom.firstChild;
