@@ -1,14 +1,14 @@
-import {sequence} from "jabz/traversable";
-import {Monad, monad} from "jabz/monad";
-import {go, fgo} from "jabz/monad";
+import { sequence } from "jabz/traversable";
+import { Monad, monad } from "jabz/monad";
+import { go, fgo } from "jabz/monad";
 import {
   Now,
   Behavior, observe, sink, isBehavior,
   Stream
 } from "hareactive";
-import {placeholder} from "hareactive/placeholder";
+import { placeholder } from "hareactive/placeholder";
 
-import {merge} from "./utils";
+import { merge } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -35,7 +35,7 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
  */
 @monad
 export class Component<A> implements Monad<A> {
-  constructor(public content: (n: Node) => Now<A>) {}
+  constructor(public content: (n: Node) => Now<A>) { }
   static of<B>(b: B): Component<B> {
     return new Component(() => Now.of(b));
   }
@@ -64,7 +64,7 @@ export function runComponentNow<A>(parent: Node, c: Component<A>): A {
   return c.content(parent).run();
 }
 
-export function testComponent<A>(c: Component<A>): {out: A, dom: HTMLDivElement} {
+export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
   const dom = document.createElement("div");
   const out = runComponentNow(dom, c);
   return {
@@ -82,7 +82,7 @@ export interface ReactivesObject {
 }
 
 const placeholderProxyHandler = {
-  get: function(target: any, name: string): Behavior<any> | Stream<any> {
+  get: function (target: any, name: string): Behavior<any> | Stream<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }
@@ -174,7 +174,7 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
 
 export function component<M extends ReactivesObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
-  view:  ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
+  view: ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
   toViewReactiveNames?: string[]
 ): Component<O> {
   const modelName = (<any>model).name;
@@ -197,7 +197,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
         update(behavior.pull());
         if (isPulling) {
           requestAnimationFrame(pull);
-        }
+        } 
       }
       pull();
     },
@@ -211,12 +211,12 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
 export type Child = Component<any> | Showable | Behavior<Showable>
-                  | (() => Iterator<Component<any>>) | ChildList;
+  | (() => Iterator<Component<any>>) | ChildList;
 
 // A dummy interface is required since TypeScript doesn't handle
 // recursive type aliases
 // See: https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
-export interface ChildList extends Array<Child> {}
+export interface ChildList extends Array<Child> { }
 
 export function isChild(a: any): a is Child {
   return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a) || Array.isArray(a);
@@ -245,7 +245,7 @@ export function toComponent<A>(child: Child): Component<any> {
   } else if (isShowable(child)) {
     return text(child);
   } else if (Array.isArray(child)) {
-    return <Component<A>> sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merge, {}));
+    return <Component<A>>sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merge, {}));
   }
 }
 
@@ -278,7 +278,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
         showableNode.nodeValue = node.toString();
       } else {
         if (currentlyShowable) {
-          showableNode = (<Node> node).firstChild;
+          showableNode = (<Node>node).firstChild;
           wasShowable = true;
         } else {
           wasShowable = false;
@@ -289,7 +289,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
           i = i.nextSibling;
           this.parent.removeChild(j);
         }
-        this.parent.insertBefore((<Node> node), end);
+        this.parent.insertBefore((<Node>node), end);
       }
     }, performed);
     return performed.map(fst);
@@ -318,10 +318,10 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
     // least avoids recreating elements and is quite simple.
     const resultB = sink<B[]>([]);
     const end = document.createComment("list end");
-    let keyToElm: {[key: string]: ComponentStuff<B>} = {};
+    let keyToElm: { [key: string]: ComponentStuff<B> } = {};
     this.parent.appendChild(end);
     this.list.subscribe((newAs) => {
-      const newKeyToElm: {[key: string]: ComponentStuff<B>} = {};
+      const newKeyToElm: { [key: string]: ComponentStuff<B> } = {};
       const newArray: B[] = [];
       // Re-add existing elements and new elements
 
@@ -333,7 +333,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
           const fragment = document.createDocumentFragment();
           const out = runComponentNow(fragment, this.compFn(a));
           // Assumes component only adds a single element
-          stuff = {out, elm: fragment.firstChild};
+          stuff = { out, elm: fragment.firstChild };
         }
         this.parent.insertBefore(stuff.elm, end);
         newArray.push(stuff.out);
