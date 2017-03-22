@@ -28,21 +28,6 @@ export function merge<A, B>(a: A, b: B): A & B {
   return <any>c;
 }
 
-export function mergeAll<A, B>(o: [A, B]): A & B;
-export function mergeAll<A, B, C>(o: [A, B, C]): A & B & C;
-export function mergeAll(objects: any[]): any {
-  const combined: { [key: string]: any } = {};
-  for (const object of objects) {
-    for (const key of (Object.keys(object))) {
-      combined[key] = object[key];
-    }
-  }
-  return combined;
-}
-
-const merged = mergeAll([{ horse: 1 }, { goat: 1 }]);
-const merge3 = mergeAll([{ horse: 1 }, { goat: 1 }, { snizzle: 3 }]);
-
 export function mergeDeep(...objects: any[]): any { // .length of function is 2
   const result: any = {};
   for (const source of objects) {

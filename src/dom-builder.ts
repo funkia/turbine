@@ -7,11 +7,41 @@ import {
 } from "./component";
 import { id, rename, mergeDeep } from "./utils";
 
-export type Cp<A> = Component<A>
+export type EventName = keyof HTMLElementEventMap;
 
-export type StreamDescription<A> = [string, string, (evt: any) => A];
+export type Cp<A> = Component<A>;
 
-export type BehaviorDescription<A> = [string, string, (evt: any) => A, (elm: HTMLElement) => A];
+export type StreamDescription<A> = [EventName, (evt: any) => A, A];
+
+export function streamDescription<A, N extends EventName>(
+  eventName: N, f: (evt: HTMLElementEventMap[N]) => A
+): StreamDescription<A> {
+  return <any>[eventName, f]; // The third value don't exist it's for type info only
+}
+
+export type StreamDescriptions = {
+  [name: string]: StreamDescription<any>
+}
+
+export type OutputStream<T extends StreamDescriptions> = {
+  [K in keyof T]: Stream<T[K][2]>
+}
+
+export type BehaviorDescription<A> = [EventName, (evt: any) => A, (elm: HTMLElement) => A, A];
+
+export function behaviorDescription<A, N extends EventName>(
+  eventName: N, f: (evt: HTMLElementEventMap[N]) => A, init: (elm: HTMLElement) => A
+): BehaviorDescription<A> {
+  return <any>[eventName, f, init]; // The fourth value don't exist it's for type info only
+}
+
+export type BehaviorDescriptions = {
+  [name: string]: BehaviorDescription<any>
+}
+
+export type BehaviorOutput<T extends BehaviorDescriptions> = {
+  [K in keyof T]: Behavior<T[K][3]>
+}
 
 export type ActionDefinitions = {
   [name: string]: (element: HTMLElement, value: any) => void
@@ -31,8 +61,8 @@ export type Style = {
 
 export type InitialProperties = {
   wrapper?: boolean,
-  streams?: StreamDescription<any>[],
-  behaviors?: BehaviorDescription<any>[],
+  streams?: StreamDescriptions,
+  behaviors?: BehaviorDescriptions,
   style?: Style,
   props?: {
     [name: string]: Showable | Behavior<Showable | boolean>;
@@ -50,17 +80,24 @@ export type InitialProperties = {
 };
 
 export type DefaultOutput = {
-  [E in keyof HTMLElementEventMap]: Stream<HTMLElementEventMap[E]>
+  [E in EventName]: Stream<HTMLElementEventMap[E]>
 }
 
+export type InitialOutput<P extends InitialProperties> =
+  OutputStream<(P & {streams: {}})["streams"]> & BehaviorOutput<(P & {behaviors: {}})["behaviors"]> & DefaultOutput;
+
 // An array of names of all DOM events
-export const allDomEvents: (keyof HTMLElementEventMap)[] =
+export const allDomEvents: EventName[] =
   <any>Object.getOwnPropertyNames(Object.getPrototypeOf(Object.getPrototypeOf(document)))
     .filter((i) => i.indexOf("on") === 0)
     .map((name) => name.slice(2));
 
 // Output streams that _all_ elements share
-const defaultStreams = allDomEvents.map((name) => [name, name, id]);
+const defaultStreams: StreamDescriptions = {};
+
+for (const name of allDomEvents) {
+  defaultStreams[name] = streamDescription(name, id);
+}
 
 const defaultProperties = {
   streams: defaultStreams
@@ -144,12 +181,13 @@ class CreateDomNow<A> extends Now<A> {
       handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);
       handleCustom(elm, false, this.props.actionDefinitions, this.props.setters);
       if (this.props.behaviors !== undefined) {
-        for (const [evt, name, extractor, initialFn] of this.props.behaviors) {
+        for (const name of Object.keys(this.props.behaviors)) {
+          const [evt, extractor, initialFn] = this.props.behaviors[name];
           let a: Behavior<any> = undefined;
           const initial = initialFn(elm);
           Object.defineProperty(output, name, {
             enumerable: true,
-            get: () => {
+            get: (): Behavior<any> => {
               if (a === undefined) {
                 a = behaviorFromEvent(evt, initial, extractor, elm);
               }
@@ -159,12 +197,13 @@ class CreateDomNow<A> extends Now<A> {
         }
       }
       if (this.props.streams !== undefined) {
-        for (const [evt, name, extractor] of this.props.streams) {
+        for (const name of Object.keys(this.props.streams)) {
+          const [evt, extractor] = this.props.streams[name];
           let a: Stream<any> = undefined;
           if (output[name] === undefined) {
             Object.defineProperty(output, name, {
               enumerable: true,
-              get: () => {
+              get: (): Stream<any> => {
                 if (a === undefined) {
                   a = streamFromEvent(evt, extractor, elm);
                 }
@@ -199,7 +238,7 @@ function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
     switch (token[0]) {
       case "#":
         result.props = result.props || {};
-        result.props["id"] = token.slice(1);
+        result.props.id = token.slice(1);
         break;
       case ".":
         result.classToggle = result.classToggle || {};
@@ -265,8 +304,10 @@ export type NonwrapperElementCreator<A> = {
   (props: Properties<A>, child: Child): Cp<A>;
 } & ElementCreator<A>;
 
-export function e(tagName: string, props: { wrapper: true } & InitialProperties): WrapperElementCreator<DefaultOutput>;
-export function e(tagName: string, props?: InitialProperties): NonwrapperElementCreator<DefaultOutput>;
+export function e<P extends InitialProperties>(tagName: string, props: { wrapper: true } & P):
+  WrapperElementCreator<InitialOutput<P>>;
+export function e<P extends InitialProperties>(tagName: string, props?: P):
+  NonwrapperElementCreator<InitialOutput<P>>;
 export function e(tagName: string, props: InitialProperties = {}): NonwrapperElementCreator<DefaultOutput> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));

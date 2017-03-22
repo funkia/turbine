@@ -1,14 +1,14 @@
 import { Behavior, Stream } from "hareactive";
 import { Component, ChildList } from "./component";
-import { e } from "./dom-builder";
+import { e, streamDescription, behaviorDescription } from "./dom-builder";
 
 export const input = e("input", {
   actionDefinitions: {
     focus: (element): void => element.focus()
   },
-  behaviors: [
-    ["input", "inputValue", (evt: any) => evt.target.value, ({value}: HTMLInputElement) => value]
-  ]
+  behaviors: {
+    inputValue: behaviorDescription("input", (evt: any) => evt.target.value, (elm: any) => elm.value)
+  }
 });
 
 function getTargetChecked(event: any): boolean {
@@ -16,12 +16,12 @@ function getTargetChecked(event: any): boolean {
 }
 
 export const checkbox = e("input[type=checkbox]", {
-  behaviors: [
-    ["change", "checked", getTargetChecked, ({checked}: HTMLInputElement) => checked]
-  ],
-  streams: [
-    ["change", "checkedChange", getTargetChecked]
-  ]
+  behaviors: {
+    checked: behaviorDescription("change", getTargetChecked, (elm: any) => elm.checked)
+  },
+  streams: {
+    checkedChange: streamDescription("change", getTargetChecked)
+  }
 });
 
 // Elements with interesting output
