@@ -3,8 +3,8 @@ import {
 } from "hareactive";
 import {combine, IO, withEffectsP, catchE, Either, left, right} from "jabz";
 
-import {Component, component, runMain, list, e, elements} from "../../src/index";
-const {text, span, button, br, input, div} = elements;
+import {Component, component, runMain, elements} from "../../src/index";
+const {span, br, input} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
 

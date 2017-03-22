@@ -27,7 +27,7 @@ export default loop<Looped & Out>(function*({enterPressed, value}: Looped) {
   const {keyup, inputValue: value_} = yield input({
     class: "new-todo",
     props: {value: clearedValue},
-    attribute: {
+    attrs: {
       autofocus: "true", autocomplete: "off", placeholder: "What needs to be done?"
     }
   });
