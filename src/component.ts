@@ -174,7 +174,7 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
 
 export function component<M extends ReactivesObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
-  view: ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
+  view: ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>),
   toViewReactiveNames?: string[]
 ): Component<O> {
   const modelName = (<any>model).name;
@@ -210,7 +210,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
-export type Child = Component<any> | Showable | Behavior<Showable>
+export type Child<A = {}> = Component<A> | Showable | Behavior<Showable>
   | (() => Iterator<Component<any>>) | ChildList;
 
 // A dummy interface is required since TypeScript doesn't handle

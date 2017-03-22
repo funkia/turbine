@@ -66,10 +66,18 @@ describe("dom-builder: e()", () => {
         assert(isStream(out.fooClick));
         assert(isStream(out.barClick));
       });
+      it("merges output from list of elements alongside strings", () => {
+        const btn = button({ output: { fooClick: "click" } }, "Click me");
+        const btn2 = button({ output: { barClick: "click" } }, "Click me");
+        const c = div({}, [btn, "foo", btn2]);
+        const { out } = testComponent(c);
+        assert(isStream(out.fooClick));
+        assert(isStream(out.barClick));
+      });
     });
     describe("non-wrapper elements", () => {
       it("does not pass child component through", () => {
-        const c = a(button({ output: { btnClick: "click" } }));
+        const c = a({}, button({ output: { btnClick: "click" } }));
         const { out } = testComponent(c);
         assert.isUndefined((<any>out).btnClick);
       });
@@ -116,6 +124,12 @@ describe("dom-builder: e()", () => {
       const btn = button({ output: { foobar: "click" } }, "Click");
       const { out } = testComponent(btn);
       assert(isStream(out.foobar));
+    });
+    it("can rename custom output", () => {
+      const myElement = e("span", {
+        streams: { customClick: streamDescription("click", id) }
+      });
+      const { out } = testComponent(myElement({ output: { horse: "customClick" } }));
     });
   });
 

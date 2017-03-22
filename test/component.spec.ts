@@ -6,7 +6,7 @@ import {Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction} fro
 import * as fakeRaf from "fake-raf";
 
 import {
-  text, dynamic,
+  text, dynamic, Child,
   toComponent, Component, component,
   elements, loop, testComponent, list
 } from "../src";
@@ -137,7 +137,7 @@ describe("component", () => {
       function model(args: FromView): Now<any> {
         fromView = args;
         return Now.of([{}, {}] as [{}, {}]);
-      }, () => [
+      }, (): Child<FromView> => [
         span("Hello"),
         input()
       ]);

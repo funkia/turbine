@@ -10,6 +10,7 @@ import { id, rename, mergeDeep } from "./utils";
 export type EventName = keyof HTMLElementEventMap;
 
 export type Cp<A> = Component<A>;
+export type Ch<A> = Child<A>;
 
 export type StreamDescription<A> = [EventName, (evt: any) => A, A];
 
@@ -275,33 +276,28 @@ export type ElementCreator<A> = {
 // `A` is the parents output
 export type WrapperElementCreator<A> = {
   <B>(props: { wrapper: false } & Properties<A>): Cp<A>;
-  <B>(props: Properties<A>, child: Cp<B>): Cp<B>;
   // When properties are given
-  <B, C>(props: Properties<A>, child: [Cp<B>, Cp<C>]): Cp<B & C>;
-  <B, C, D>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
-  <B, C, D, E>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
-  <B, C, D, E, F>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>, Cp<F>]): Cp<B & C & D & E & F>;
+  <B, C>(props: Properties<A>, child: [Ch<B>, Ch<C>]): Cp<B & C>;
+  <B, C, D>(props: Properties<A>, child: [Child<B>, Child<C>, Child<D>]): Cp<B & C & D>;
+  <B, C, D, E>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<B & C & D & E>;
+  <B, C, D, E, F>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<B & C & D & E & F>;
+  <B>(props: Properties<A>, child: Ch<B>): Cp<B>;
   // Properties aren't given
-  <B>(child: Cp<B>): Cp<B>;
-  <B, C>(child: [Cp<B>, Cp<C>]): Cp<B & C>;
-  <B, C, D>(child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
-  <B, C, D, E>(child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
-  <B, C, D, E, F>(child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>, Cp<F>]): Cp<B & C & D & E & F>;
-  (props: Properties<A>, child: Child): Cp<any>;
+  <B>(child: Ch<B>): Cp<B>;
+  <B, C>(child: [Ch<B>, Ch<C>]): Cp<B & C>;
+  <B, C, D>(child: [Ch<B>, Ch<C>, Ch<D>]): Cp<B & C & D>;
+  <B, C, D, E>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<B & C & D & E>;
+  <B, C, D, E, F>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<B & C & D & E & F>;
+  <B, C, D, E, F, G, H, I, J>(child: [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>]): Cp<B & C & D & E & F & G & H & I & J>;
+  <B>(props: Properties<A>, child: Child<B>): Ch<B>;
 } & ElementCreator<A>;
 
 export type NonwrapperElementCreator<A> = {
   (): Cp<A>;
   (child: Child): Cp<A>;
-  <O extends OutputNames<A>>(props: { output: O } & Properties<A>): Cp<OutputRenamed<A, O>>;
-  <O extends OutputNames<A>>(props: { output: O } & Properties<A>, child: Child): Cp<OutputRenamed<A, O>>;
+  <O extends OutputNames<A>>(props: { output: O } & Properties<A>, child?: Child): Cp<OutputRenamed<A, O>>;
   (props: Properties<A>): Cp<A>;
-  <B>(props: { wrapper: false } & Properties<A>, child: Child): Cp<A>;
-  <B>(props: Properties<A>, child: Cp<B>): Cp<B>;
-  <B, C>(props: Properties<A>, child: [Cp<B>, Cp<C>]): Cp<B & C>;
-  <B, C, D>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>]): Cp<B & C & D>;
-  <B, C, D, E>(props: Properties<A>, child: [Cp<B>, Cp<C>, Cp<D>, Cp<E>]): Cp<B & C & D & E>;
-  (props: Properties<A>, child: Child): Cp<A>;
+  <B>(props: Properties<A>, child: Child): Cp<B>;
 } & ElementCreator<A>;
 
 export function e<P extends InitialProperties>(tagName: string, props: { wrapper: true } & P):
