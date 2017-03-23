@@ -5,7 +5,7 @@ import {
   Component, runComponentNow,
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
-import { id, rename, mergeDeep } from "./utils";
+import { id, rename, mergeDeep, assign } from "./utils";
 
 export type EventName = keyof HTMLElementEventMap;
 
@@ -61,7 +61,6 @@ export type Style = {
 }
 
 export type InitialProperties = {
-  wrapper?: boolean,
   streams?: StreamDescriptions,
   behaviors?: BehaviorDescriptions,
   style?: Style,
@@ -161,7 +160,7 @@ class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
     private tagName: string,
-    private props?: Properties<A>,
+    private props?: Properties<A> & {output?: OutputNames<A>},
     private children?: Child
   ) { super(); };
   run(): A {
@@ -217,11 +216,7 @@ class CreateDomNow<A> extends Now<A> {
     }
     if (this.children !== undefined) {
       const childOutput = runComponentNow(elm, toComponent(this.children));
-      if (this.props.wrapper === true) {
-        output = childOutput;
-      } else {
-        output.children = childOutput;
-      }
+      assign(output, childOutput);
     }
     if (this.props.output !== undefined) {
       rename(output, this.props.output);
@@ -261,50 +256,46 @@ export type OutputNames<A> = {
   [name: string]: (keyof A)
 }
 
-export type Properties<A> = {
-  output?: OutputNames<A>,
+export type Properties<A> = InitialProperties;
+
+export type PropsOutput<A, O extends OutputNames<A>> = {
+  output?: O
 } & InitialProperties;
 
 export type OutputRenamed<A, B extends OutputNames<A>> = {
   [N in keyof B]: A[B[N]]
 } & A;
 
-export type ElementCreator<A> = {
-  (props: Properties<A>): Cp<A>;
-}
+export type ChArr1<A> = [Ch<A>];
+export type ChArr2<A, B> = [Ch<A>, Ch<B>];
+export type ChArr3<A, B, C> = [Ch<A>, Ch<B>, Ch<C>];
 
 // `A` is the parents output
-export type WrapperElementCreator<A> = {
-  <B>(props: { wrapper: false } & Properties<A>): Cp<A>;
-  // When properties are given
-  <B, C>(props: Properties<A>, child: [Ch<B>, Ch<C>]): Cp<B & C>;
-  <B, C, D>(props: Properties<A>, child: [Child<B>, Child<C>, Child<D>]): Cp<B & C & D>;
-  <B, C, D, E>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<B & C & D & E>;
-  <B, C, D, E, F>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<B & C & D & E & F>;
-  <B>(props: Properties<A>, child: Ch<B>): Cp<B>;
-  // Properties aren't given
-  <B>(child: Ch<B>): Cp<B>;
-  <B, C>(child: [Ch<B>, Ch<C>]): Cp<B & C>;
-  <B, C, D>(child: [Ch<B>, Ch<C>, Ch<D>]): Cp<B & C & D>;
-  <B, C, D, E>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<B & C & D & E>;
-  <B, C, D, E, F>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<B & C & D & E & F>;
-  <B, C, D, E, F, G, H, I, J>(child: [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>]): Cp<B & C & D & E & F & G & H & I & J>;
-  <B>(props: Properties<A>, child: Child<B>): Ch<B>;
-} & ElementCreator<A>;
-
-export type NonwrapperElementCreator<A> = {
+export type ElementCreator<A> = {
   (): Cp<A>;
-  (child: Child): Cp<A>;
-  <O extends OutputNames<A>>(props: { output: O } & Properties<A>, child?: Child): Cp<OutputRenamed<A, O>>;
+  // When output is given
+  <B, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr1<B>): Cp<B & OutputRenamed<A, O>>;
+  <B, C, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr2<B, C>): Cp<B & C & OutputRenamed<A, O>>;
+  <O extends OutputNames<A>, B>(props: PropsOutput<A, O>, child?: Ch<B>): Cp<B & OutputRenamed<A, O>>;
+  // When properties are given
+  // <B>(props: Properties<A>, child: [Ch<B>]): Cp<A & B>;
+  // <B, C>(props: Properties<A>, child: [Ch<B>, Ch<C>]): Cp<A & B & C>;
+  <B, C, D>(props: Properties<A>, child: [Child<B>, Child<C>, Child<D>]): Cp<A & B & C & D>;
+  <B, C, D, E>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<A & B & C & D & E>;
+  <B, C, D, E, F>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<A & B & C & D & E & F>;
+  <B>(props: Properties<A>, child: Child<B>): Cp<B>;
+  // Properties aren't given
+  <B, C>(child: [Ch<B>, Ch<C>]): Cp<A & B & C>;
+  <B, C, D>(child: [Ch<B>, Ch<C>, Ch<D>]): Cp<A & B & C & D>;
+  <B, C, D, E>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<A & B & C & D & E>;
+  <B, C, D, E, F>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<A & B & C & D & E & F>;
+  <B, C, D, E, F, G, H, I, J>(child: [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>]): Cp<A & B & C & D & E & F & G & H & I & J>;
+  <B>(child: Ch<B>): Cp<A & B>;
   (props: Properties<A>): Cp<A>;
-  <B>(props: Properties<A>, child: Child): Cp<B>;
-} & ElementCreator<A>;
+};
 
-export function e<P extends InitialProperties>(tagName: string, props: { wrapper: true } & P):
-  WrapperElementCreator<InitialOutput<P>>;
-export function e<P extends InitialProperties>(tagName: string, props?: P):
-  NonwrapperElementCreator<InitialOutput<P>>;
-export function e(tagName: string, props: InitialProperties = {}): NonwrapperElementCreator<DefaultOutput> {
+export function e<P extends InitialProperties>(tagName?: string, props?: P):
+  ElementCreator<InitialOutput<P>> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
   function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
@@ -315,7 +306,7 @@ export function e(tagName: string, props: InitialProperties = {}): NonwrapperEle
       return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, newProps, newChildrenOrUndefined));
     }
   }
-  return createElement;
+  return createElement as any;
 }
 
 function behaviorFromEvent<A>(

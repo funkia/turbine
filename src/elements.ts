@@ -24,22 +24,19 @@ export const checkbox = e("input[type=checkbox]", {
   }
 });
 
-// Elements with interesting output
 export const button = e("button");
 export const a = e("a");
 export const label = e("label");
-
-// Wrapper elements
 export const br = e("br")();
-export const span = e("span", { wrapper: true });
-export const div = e("div", { wrapper: true });
-export const p = e("p", { wrapper: true });
+export const span = e("span");
+export const div = e("div");
+export const p = e("p");
 export const h1 = e("h1");
-export const ul = e("ul", { wrapper: true });
-export const li = e("li", { wrapper: true });
-export const strong = e("strong", { wrapper: true });
-export const section = e("section", { wrapper: true });
-export const header = e("header", { wrapper: true });
-export const footer = e("footer", { wrapper: true });
+export const ul = e("ul");
+export const li = e("li");
+export const strong = e("strong");
+export const section = e("section");
+export const header = e("header");
+export const footer = e("footer");
 
 export { text } from "./component";

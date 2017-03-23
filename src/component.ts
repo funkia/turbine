@@ -173,8 +173,8 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
 }
 
 export function component<M extends ReactivesObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
-  view: ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>),
+  model: ((v: V) => Now<[M, O]>) | ((v: V) => IterableIterator<Monad<any>>),
+  view: ((m: M) => Child<V>) | ((m: M) => IterableIterator<Component<any>>),
   toViewReactiveNames?: string[]
 ): Component<O> {
   const modelName = (<any>model).name;
@@ -197,7 +197,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
         update(behavior.pull());
         if (isPulling) {
           requestAnimationFrame(pull);
-        } 
+        }
       }
       pull();
     },

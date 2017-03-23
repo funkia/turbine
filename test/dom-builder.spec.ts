@@ -7,7 +7,7 @@ import { empty, fromFunction, isBehavior, isStream, publish, sink, Stream } from
 
 import { id } from "../src/utils";
 import { testComponent, e, Component, elements } from "../src";
-const { button, div, a } = elements;
+const { button, div } = elements;
 
 describe("dom-builder: e()", () => {
 
@@ -51,36 +51,34 @@ describe("dom-builder: e()", () => {
     });
   });
 
-  describe("wrapper", () => {
-    describe("wrapper element", () => {
-      it("passes parent output through in wrapper element", () => {
-        const c = div(button({ output: { buttonClick: "click" } }));
-        const { out } = testComponent(c);
-        assert(isStream(out.buttonClick));
-      });
-      it("merges output from list of elements", () => {
-        const btn = button({ output: { fooClick: "click" } }, "Click me");
-        const btn2 = button({ output: { barClick: "click" } }, "Click me");
-        const c = div({}, [btn, btn2]);
-        const { out } = testComponent(c);
-        assert(isStream(out.fooClick));
-        assert(isStream(out.barClick));
-      });
-      it("merges output from list of elements alongside strings", () => {
-        const btn = button({ output: { fooClick: "click" } }, "Click me");
-        const btn2 = button({ output: { barClick: "click" } }, "Click me");
-        const c = div({}, [btn, "foo", btn2]);
-        const { out } = testComponent(c);
-        assert(isStream(out.fooClick));
-        assert(isStream(out.barClick));
-      });
+  describe("output", () => {
+    it("passes parent output through", () => {
+      const c = div(button({ output: { buttonClick: "click" } }));
+      const { out } = testComponent(c);
+      assert(isStream(out.buttonClick));
     });
-    describe("non-wrapper elements", () => {
-      it("does not pass child component through", () => {
-        const c = a({}, button({ output: { btnClick: "click" } }));
-        const { out } = testComponent(c);
-        assert.isUndefined((<any>out).btnClick);
-      });
+    it("merges output from list of elements", () => {
+      const btn = button({ output: { fooClick: "click" } }, "Click me");
+      const btn2 = button({ output: { barClick: "click" } }, "Click me");
+      const c = div({}, [btn, btn2]);
+      const { out } = testComponent(c);
+      assert(isStream(out.fooClick));
+      assert(isStream(out.barClick));
+    });
+    it("merges output from list of elements alongside strings", () => {
+      const btn = button({ output: { fooClick: "click" } }, "Click me");
+      const btn2 = button({ output: { barClick: "click" } }, "Click me");
+      const c = div({}, [btn, "foo", btn2]);
+      const { out } = testComponent(c);
+      assert(isStream(out.fooClick));
+      assert(isStream(out.barClick));
+    });
+    it("merges own output with child output", () => {
+      const btn = button({ output: { fooClick: "click" } }, "Click me");
+      const myDiv = div({output: {divClick: "click"}}, [btn]);
+      const { out } = testComponent(myDiv);
+      assert(isStream(out.divClick));
+      assert(isStream(out.fooClick));
     });
   });
 

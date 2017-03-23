@@ -17,6 +17,15 @@ export function get<K extends string>(prop: K): any {
   return <V, Obj extends Record<K, V>>(obj: Obj): Obj[K] => obj[prop];
 }
 
+export function assign<A, B>(a: A, b: B): A & B {
+  for (const key of (Object.keys(b) as (keyof B)[])) {
+    if (!(key in a)) {
+      (a as any)[key] = b[key];
+    }
+  }
+  return a as any;
+}
+
 export function merge<A, B>(a: A, b: B): A & B {
   const c: { [key: string]: any } = {};
   for (const key of (Object.keys(a) as (keyof A)[])) {
