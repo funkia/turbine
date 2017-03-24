@@ -269,27 +269,30 @@ export type OutputRenamed<A, B extends OutputNames<A>> = {
 export type ChArr1<A> = [Ch<A>];
 export type ChArr2<A, B> = [Ch<A>, Ch<B>];
 export type ChArr3<A, B, C> = [Ch<A>, Ch<B>, Ch<C>];
+export type ChArr4<A, B, C, D> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>];
+export type ChArr5<A, B, C, D, E> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>];
+export type ChArr6<A, B, C, D, E, F> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>];
+export type ChArr9<A, B, C, D, E, F, G, H, I> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>];
 
 // `A` is the parents output
 export type ElementCreator<A> = {
   (): Cp<A>;
-  // When output is given
+  // Properties are given
   <B, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr1<B>): Cp<B & OutputRenamed<A, O>>;
   <B, C, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr2<B, C>): Cp<B & C & OutputRenamed<A, O>>;
+  <B, C, D, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr3<B, C, D>): Cp<B & C & D & OutputRenamed<A, O>>;
+  <B, C, D, E, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr4<B, C, D, E>): Cp<B & C & D & E & OutputRenamed<A, O>>;
+  <B, C, D, E, F, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr5<B, C, D, E, F>): Cp<B & C & D & E & F & OutputRenamed<A, O>>;
+  <B, C, D, E, F, G, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr6<B, C, D, E, F, G>): Cp<B & C & D & E & F & G & OutputRenamed<A, O>>;
   <O extends OutputNames<A>, B>(props: PropsOutput<A, O>, child?: Ch<B>): Cp<B & OutputRenamed<A, O>>;
-  // When properties are given
-  // <B>(props: Properties<A>, child: [Ch<B>]): Cp<A & B>;
-  // <B, C>(props: Properties<A>, child: [Ch<B>, Ch<C>]): Cp<A & B & C>;
-  <B, C, D>(props: Properties<A>, child: [Child<B>, Child<C>, Child<D>]): Cp<A & B & C & D>;
-  <B, C, D, E>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<A & B & C & D & E>;
-  <B, C, D, E, F>(props: Properties<A>, child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<A & B & C & D & E & F>;
   <B>(props: Properties<A>, child: Child<B>): Cp<B>;
   // Properties aren't given
-  <B, C>(child: [Ch<B>, Ch<C>]): Cp<A & B & C>;
-  <B, C, D>(child: [Ch<B>, Ch<C>, Ch<D>]): Cp<A & B & C & D>;
-  <B, C, D, E>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>]): Cp<A & B & C & D & E>;
-  <B, C, D, E, F>(child: [Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>]): Cp<A & B & C & D & E & F>;
-  <B, C, D, E, F, G, H, I, J>(child: [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>]): Cp<A & B & C & D & E & F & G & H & I & J>;
+  <B, C>(child: ChArr2<B, C>): Cp<A & B & C>;
+  <B, C, D>(child: ChArr3<B, C, D>): Cp<A & B & C & D>;
+  <B, C, D, E>(child: ChArr4<B, C, D, E>): Cp<A & B & C & D & E>;
+  <B, C, D, E, F>(child: ChArr5<B, C, D, E, F>): Cp<A & B & C & D & E & F>;
+  <B, C, D, E, F, G>(child: ChArr6<B, C, D, E, F, G>): Cp<A & B & C & D & E & F & G>;
+  <B, C, D, E, F, G, H, I, J>(child: ChArr9<B, C, D, E, F, G, H, I, J>): Cp<A & B & C & D & E & F & G & H & I & J>;
   <B>(child: Ch<B>): Cp<A & B>;
   (props: Properties<A>): Cp<A>;
 };

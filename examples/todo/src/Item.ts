@@ -2,7 +2,7 @@ import {combine, fromMaybe, lift, map, Maybe} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  combineList, keepWhen, toggle, Future, async, switcher, performStream, changes
+  keepWhen, toggle, Future, async, switcher, performStream, changes
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
