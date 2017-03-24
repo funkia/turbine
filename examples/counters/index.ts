@@ -2,11 +2,11 @@ import {foldr} from "jabz/foldable";
 import {lift} from "jabz/applicative";
 import {flatten} from "jabz/monad";
 import {
-  Now, sample, Behavior, stepper, scan, Stream, combine, map, combineList, switchStream, scanS
+  Now, sample, Behavior, scan, Stream, combine, map, combineList, switchStream, scanS
 } from "hareactive";
 
-import {Component, component, list, dynamic, text, runMain, elements} from "../../src";
-const {span, input, ul, li, p, br, button, div, h1} = elements;
+import {Component, component, list, runMain, elements} from "../../src";
+const {ul, li, p, br, button, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -43,11 +43,11 @@ const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOu
       "Counter ",
       count,
       " ",
-      button({output: {click: "incrementClick"}}, " + ", ),
+      button({output: {incrementClick: "click"}}, " + "),
       " ",
-      button({output: {click: "decrementClick"}}, " - "),
+      button({output: {decrementClick: "click"}}, " - "),
       " ",
-      button({output: {click: "deleteClick"}}, "x"),
+      button({output: {deleteClick: "click"}}, "x"),
       br
     ]);
   }

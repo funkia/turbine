@@ -1,5 +1,5 @@
 import {map, go} from "jabz";
-import {runMain, elements, loop} from "../../src";
+import {runMain, elements} from "../../src";
 const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);

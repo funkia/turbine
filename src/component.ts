@@ -119,7 +119,10 @@ class MfixComponentNow<A> extends Now<A> {
   }
 }
 
-export function loop<A>(f: ((a: A) => Component<A>) | ((a: A) => Iterator<Component<any>>), placeholderNames?: string[]): Component<A> {
+export function loop<A>(
+  f: ((a: A) => Component<A>) | ((a: A) => IterableIterator<Component<any>>),
+  placeholderNames?: string[]
+): Component<A> {
   if (isGeneratorFunction(f)) {
     f = fgo(f);
   }
@@ -173,13 +176,13 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
 }
 
 export function component<M extends ReactivesObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | ((v: V) => Iterator<Now<any>>),
-  view: ((m: M) => Child) | ((m: M) => Iterator<Component<any>>),
+  model: ((v: V) => Now<[M, O]>) | ((v: V) => IterableIterator<any>),
+  view: ((m: M) => Child<V>) | ((m: M) => IterableIterator<Component<any>>),
   toViewReactiveNames?: string[]
 ): Component<O> {
   const modelName = (<any>model).name;
   const viewName = (<any>view).name;
-  const m = isGeneratorFunction(model) ? (v: V) => fgo(model)(v) : model;
+  const m = isGeneratorFunction<V, any>(model) ? (v: V) => fgo(model)(v) : model;
   const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
   return new Component<O>((parent: Node) => new MfixNow<M, O>(
     (bs) => v(bs).content(parent).map((o: any) => addErrorHandler(modelName, viewName, o)).chain(m),
@@ -197,7 +200,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
         update(behavior.pull());
         if (isPulling) {
           requestAnimationFrame(pull);
-        } 
+        }
       }
       pull();
     },
@@ -210,7 +213,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
-export type Child = Component<any> | Showable | Behavior<Showable>
+export type Child<A = {}> = Component<A> | Showable | Behavior<Showable>
   | (() => Iterator<Component<any>>) | ChildList;
 
 // A dummy interface is required since TypeScript doesn't handle
@@ -232,9 +235,9 @@ export function text(s: Showable): Component<{}> {
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
-export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
+export function toComponent<A>(child: () => IterableIterator<Component<any>>): Component<any>;
 export function toComponent<A>(child: Array<Component<any>>): Component<{}>;
-export function toComponent<A>(child: Child): Component<any>;
+export function toComponent<A>(child: Child<A>): Component<A>;
 export function toComponent<A>(child: Child): Component<any> {
   if (isComponent(child)) {
     return child;

@@ -1,14 +1,14 @@
 import { Behavior, Stream } from "hareactive";
 import { Component, ChildList } from "./component";
-import { e } from "./dom-builder";
+import { e, streamDescription, behaviorDescription } from "./dom-builder";
 
 export const input = e("input", {
   actionDefinitions: {
     focus: (element): void => element.focus()
   },
-  behaviors: [
-    ["input", "inputValue", (evt: any) => evt.target.value, ({value}: HTMLInputElement) => value]
-  ]
+  behaviors: {
+    inputValue: behaviorDescription("input", (evt: any) => evt.target.value, (elm: any) => elm.value)
+  }
 });
 
 function getTargetChecked(event: any): boolean {
@@ -16,30 +16,27 @@ function getTargetChecked(event: any): boolean {
 }
 
 export const checkbox = e("input[type=checkbox]", {
-  behaviors: [
-    ["change", "checked", getTargetChecked, ({checked}: HTMLInputElement) => checked]
-  ],
-  streams: [
-    ["change", "checkedChange", getTargetChecked]
-  ]
+  behaviors: {
+    checked: behaviorDescription("change", getTargetChecked, (elm: any) => elm.checked)
+  },
+  streams: {
+    checkedChange: streamDescription("change", getTargetChecked)
+  }
 });
 
-// Elements with interesting output
 export const button = e("button");
 export const a = e("a");
 export const label = e("label");
-
-// Wrapper elements
 export const br = e("br")();
-export const span = e("span", { wrapper: true });
-export const div = e("div", { wrapper: true });
-export const p = e("p", { wrapper: true });
+export const span = e("span");
+export const div = e("div");
+export const p = e("p");
 export const h1 = e("h1");
-export const ul = e("ul", { wrapper: true });
-export const li = e("li", { wrapper: true });
-export const strong = e("strong", { wrapper: true });
-export const section = e("section", { wrapper: true });
-export const header = e("header", { wrapper: true });
-export const footer = e("footer", { wrapper: true });
+export const ul = e("ul");
+export const li = e("li");
+export const strong = e("strong");
+export const section = e("section");
+export const header = e("header");
+export const footer = e("footer");
 
 export { text } from "./component";

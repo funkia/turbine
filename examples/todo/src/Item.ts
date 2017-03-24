@@ -2,7 +2,7 @@ import {combine, fromMaybe, lift, map, Maybe} from "jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
-  combineList, keepWhen, toggle, Future, async, switcher, performStream, changes
+  keepWhen, toggle, Future, async, switcher, performStream, changes
 } from "hareactive";
 
 import {Component, component, elements} from "../../../src";
@@ -94,7 +94,7 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
         isComplete,
         isEditing,
         newName,
-	focusInput: startEditing
+        focusInput: startEditing
       }, {
         id, destroyItemId, completed: isComplete
       }] as [ToView, Output];
@@ -106,17 +106,17 @@ export default function item(toggleAll: Stream<boolean>, {name: initialName, id}
       }, [
         div({class: "view"}, [
           checkbox({
-            class: "toggle", output: {checkedChange: "toggleTodo"},
+            class: "toggle", output: {toggleTodo: "checkedChange"},
             props: {checked: isComplete}
           }),
-          label({output: {dblclick: "startEditing"}}, taskName),
-          button({class: "destroy", output: {click: "deleteClicked"}})
+          label({output: {startEditing: "dblclick"}}, taskName),
+          button({class: "destroy", output: {deleteClicked: "click"}})
         ]),
         input({
           class: "edit",
-	  props: {value: taskName},
-          output: {input: "newNameInput", keyup: "nameKeyup", blur: "nameBlur"},
-	  actions: {focus: focusInput}
+          props: {value: taskName},
+          output: {newNameInput: "input", nameKeyup: "keyup", nameBlur: "blur"},
+          actions: {focus: focusInput}
         })
       ]));
     }
