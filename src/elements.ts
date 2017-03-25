@@ -1,13 +1,15 @@
 import { Behavior, Stream } from "hareactive";
 import { Component, ChildList } from "./component";
-import { e, streamDescription, behaviorDescription } from "./dom-builder";
+import { element, streamDescription, behaviorDescription } from "./dom-builder";
 
-export const input = e("input", {
+export const input = element("input", {
   actionDefinitions: {
     focus: (element): void => element.focus()
   },
   behaviors: {
-    inputValue: behaviorDescription("input", (evt: any) => evt.target.value, (elm: any) => elm.value)
+    inputValue: behaviorDescription(
+      "input", (evt: any) => evt.target.value as string, (elm: any) => elm.value as string
+    )
   }
 });
 
@@ -15,7 +17,7 @@ function getTargetChecked(event: any): boolean {
   return event.target.checked;
 }
 
-export const checkbox = e("input[type=checkbox]", {
+export const checkbox = element("input[type=checkbox]", {
   behaviors: {
     checked: behaviorDescription("change", getTargetChecked, (elm: any) => elm.checked)
   },
@@ -24,19 +26,19 @@ export const checkbox = e("input[type=checkbox]", {
   }
 });
 
-export const button = e("button");
-export const a = e("a");
-export const label = e("label");
-export const br = e("br")();
-export const span = e("span");
-export const div = e("div");
-export const p = e("p");
-export const h1 = e("h1");
-export const ul = e("ul");
-export const li = e("li");
-export const strong = e("strong");
-export const section = e("section");
-export const header = e("header");
-export const footer = e("footer");
+export const button = element("button");
+export const a = element("a");
+export const label = element("label");
+export const br = element("br")();
+export const span = element("span");
+export const div = element("div");
+export const p = element("p");
+export const h1 = element("h1");
+export const ul = element("ul");
+export const li = element("li");
+export const strong = element("strong");
+export const section = element("section");
+export const header = element("header");
+export const footer = element("footer");
 
 export { text } from "./component";

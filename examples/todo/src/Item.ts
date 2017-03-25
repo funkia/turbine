@@ -5,7 +5,7 @@ import {
   keepWhen, toggle, Future, async, switcher, performStream, changes
 } from "hareactive";
 
-import {Component, component, elements} from "../../../src";
+import {Component, modelView, elements} from "../../../src";
 const {div, li, input, label, button, checkbox} = elements;
 
 import {setItemIO, getItemIO} from "./index";
@@ -54,7 +54,7 @@ export type Output = {
 };
 
 export default function item(toggleAll: Stream<boolean>, {name: initialName, id}: Input): Component<Output> {
-  return component<ToView, FromView, Output>(
+  return modelView<ToView, FromView, Output>(
     function* itemModel({toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName}: FromView) {
       const enterPress = filter(isKey(enter), nameKeyup);
       const enterNotPressed = toggle(true, startEditing, enterPress);

@@ -5,7 +5,7 @@ import {
   Now, sample, Behavior, scan, Stream, combine, map, combineList, switchStream, scanS
 } from "hareactive";
 
-import {Component, component, list, runMain, elements} from "../../src";
+import {Component, modelView, list, runMain, elements} from "../../src";
 const {ul, li, p, br, button, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
@@ -30,7 +30,7 @@ type CounterOut = {
   deleteS: Stream<Id>
 };
 
-const counter = (id: Id) => component<CounterModelOut, CounterViewOut, CounterOut> (
+const counter = (id: Id) => modelView<CounterModelOut, CounterViewOut, CounterOut> (
   function* counterModel({incrementClick, decrementClick, deleteClick}) {
     const increment = incrementClick.mapTo(1);
     const decrement = decrementClick.mapTo(-1);
@@ -92,6 +92,6 @@ function* mainView({sum, counterIds}: ToView): Iterator<Component<any>> {
   return {addCounter, listOut};
 }
 
-const main = component<ToView, ToModel, {}>(mainModel, mainView);
+const main = modelView<ToView, ToModel, {}>(mainModel, mainView);
 
 runMain("body", main);

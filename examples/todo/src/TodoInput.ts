@@ -3,8 +3,8 @@ import {
   Behavior, stepper
 } from "hareactive";
 
-import {loop, elements} from "../../../src";
-const {input} = elements;
+import { loop, elements } from "../../../src";
+const { input, span } = elements;
 
 const KEYCODE_ENTER = 13;
 const isEnterKey = (ev: any) => ev.keyCode === KEYCODE_ENTER;
@@ -15,22 +15,28 @@ type Looped = {
   value: Behavior<string>
 };
 
+input({ attrs: { placeholder: "foo" } }).chain(
+  ({ inputValue: a }) => input().chain(
+    ({ inputValue: b }) => span(["Combined text: ", a, b])
+  )
+);
+
 export type Out = {
   enterTodoS: Stream<string>
 };
 
-export default loop<Looped & Out>(function*({enterPressed, value}: Looped) {
+export default loop<Looped & Out>(function* ({ enterPressed, value }: Looped) {
   const enterTodoS = snapshot(value, enterPressed).filter(isValidValue);
   const clearedValue = stepper(
     "", combine(changes(value), enterPressed.mapTo(""))
   );
-  const {keyup, inputValue: value_} = yield input({
+  const { keyup, inputValue: value_ } = yield input({
     class: "new-todo",
-    props: {value: clearedValue},
+    props: { value: clearedValue },
     attrs: {
       autofocus: "true", autocomplete: "off", placeholder: "What needs to be done?"
     }
   });
   const enterPressed_ = keyup.filter(isEnterKey);
-  return {enterPressed: enterPressed_, value: value_, enterTodoS};
-}).map(({enterTodoS}) => ({enterTodoS}));
+  return { enterPressed: enterPressed_, value: value_, enterTodoS };
+}).map(({ enterTodoS }) => ({ enterTodoS }));

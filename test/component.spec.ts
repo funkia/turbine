@@ -7,7 +7,7 @@ import * as fakeRaf from "fake-raf";
 
 import {
   text, dynamic, Child,
-  toComponent, Component, component,
+  toComponent, Component, modelView,
   elements, loop, testComponent, list
 } from "../src";
 const {span, div, button, input} = elements;
@@ -117,7 +117,7 @@ describe("component specs", () => {
 
 describe("component", () => {
   it("simpel span component", () => {
-    const c = component(
+    const c = modelView(
       function model(): Now<any> {
         return Now.of([{}, {}] as [{}, {}]);
       },
@@ -133,7 +133,7 @@ describe("component", () => {
   it("view is function returning array of components", () => {
     type FromView = {inputValue: Behavior<any>};
     let fromView: FromView;
-    const c = component(
+    const c = modelView(
       function model(args: FromView): Now<any> {
         fromView = args;
         return Now.of([{}, {}] as [{}, {}]);
@@ -151,7 +151,7 @@ describe("component", () => {
     if (!supportsProxy) {
       return;
     }
-    const c = component(
+    const c = modelView(
       function fooComp({foo}: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
       function barView(): Component<any> { return Component.of({bar: "no foo?"}); }
     );

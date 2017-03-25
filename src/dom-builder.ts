@@ -297,7 +297,7 @@ export type ElementCreator<A> = {
   (props: Properties<A>): Cp<A>;
 };
 
-export function e<P extends InitialProperties>(tagName?: string, props?: P):
+export function element<P extends InitialProperties>(tagName?: string, props?: P):
   ElementCreator<InitialOutput<P>> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));

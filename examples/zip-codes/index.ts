@@ -3,7 +3,7 @@ import {
 } from "hareactive";
 import {combine, IO, withEffectsP, catchE, Either, left, right} from "jabz";
 
-import {Component, component, runMain, elements} from "../../src/index";
+import {Component, modelView, runMain, elements} from "../../src/index";
 const {span, br, input} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
@@ -68,6 +68,6 @@ function* view({status}: ToView): Iterator<Component<any>> {
   return {zipCode};
 }
 
-const main = component<ToView, ViewOut, {}>(model, view);
+const main = modelView<ToView, ViewOut, {}>(model, view);
 
 runMain("#mount", main);

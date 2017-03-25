@@ -119,7 +119,7 @@ class MfixComponentNow<A> extends Now<A> {
   }
 }
 
-export function loop<A>(
+export function loop<A extends ReactivesObject>(
   f: ((a: A) => Component<A>) | ((a: A) => IterableIterator<Component<any>>),
   placeholderNames?: string[]
 ): Component<A> {
@@ -175,7 +175,7 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-export function component<M extends ReactivesObject, V, O>(
+export function modelView<M extends ReactivesObject, V, O>(
   model: ((v: V) => Now<[M, O]>) | ((v: V) => IterableIterator<any>),
   view: ((m: M) => Child<V>) | ((m: M) => IterableIterator<Component<any>>),
   toViewReactiveNames?: string[]

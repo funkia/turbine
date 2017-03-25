@@ -4,7 +4,7 @@ import {
   sample, snapshot,
   Stream, switchStream, combineList, async, Future, switcher, plan, performStream, changes, snapshotWith
 } from "hareactive";
-import {component, elements, list} from "../../../src";
+import {modelView, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul} = elements;
 import {get} from "../../../src/utils";
 
@@ -100,4 +100,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-export const app = component(model, view);
+export const app = modelView(model, view);

@@ -2,7 +2,7 @@ import {
   Behavior, stepper, time, Stream, snapshot, Now, sample, map
 } from "hareactive";
 
-import {Component, component, runMain, list, elements, dynamic} from "../../src/index";
+import {Component, modelView, runMain, list, elements, dynamic} from "../../src/index";
 const {input, p, button, div, h1} = elements;
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
@@ -33,6 +33,6 @@ function* view({time, message}: ToView): Iterator<Component<any>> {
   return {snapClick};
 }
 
-const main = component<ToView, ViewOut, {}>(model, view);
+const main = modelView<ToView, ViewOut, {}>(model, view);
 
 runMain("#mount", main);
