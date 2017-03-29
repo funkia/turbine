@@ -5,8 +5,8 @@
 A purely functional frontend framework based on functional reactive
 programming. Experimental.
 
-[![Build Status](https://travis-ci.org/Funkia/funnel.svg?branch=master)](https://travis-ci.org/Funkia/funnel)
-[![codecov](https://codecov.io/gh/Funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/Funkia/funnel)
+[![Build Status](https://travis-ci.org/funkia/funnel.svg?branch=master)](https://travis-ci.org/funkia/funnel)
+[![codecov](https://codecov.io/gh/funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/funkia/funnel)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 
 # Table of contents
@@ -17,6 +17,7 @@ programming. Experimental.
 * [Examples](#examples)
 * [Tutorial](#tutorial)
 * [Contributing](#contributing)
+
 ## High level overview
 
 The goal of Funnel is to be a powerful framework for building frontend
