@@ -1,6 +1,6 @@
 {
   "name": "@funkia/funnel",
-  "version": "0.0.8",
+  "version": "0.0.9",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
   "jsnext:main": "dist/es6/index.js",
