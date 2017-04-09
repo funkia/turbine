@@ -1,7 +1,7 @@
 import {
   Behavior, Stream, Now, performStreamLatest, stepper, changes, split
-} from "hareactive";
-import {combine, IO, withEffectsP, catchE, Either, left, right} from "jabz";
+} from "@funkia/hareactive";
+import {combine, IO, withEffectsP, catchE, Either, left, right} from "@funkia/jabz";
 
 import {Component, modelView, runMain, elements} from "../../src/index";
 const {span, br, input} = elements;

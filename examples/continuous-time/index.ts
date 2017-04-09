@@ -1,6 +1,6 @@
 import {
   Behavior, stepper, time, Stream, snapshot, Now, sample, map
-} from "hareactive";
+} from "@funkia/hareactive";
 
 import {Component, modelView, runMain, list, elements, dynamic} from "../../src/index";
 const {input, p, button, div, h1} = elements;

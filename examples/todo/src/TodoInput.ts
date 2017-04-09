@@ -1,7 +1,7 @@
 import {
   Stream, snapshot, changes, combine,
   Behavior, stepper
-} from "hareactive";
+} from "@funkia/hareactive";
 
 import { loop, elements } from "../../../src";
 const { input, span } = elements;

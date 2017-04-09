@@ -10,8 +10,8 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "hareactive": "0.0.15",
-    "jabz": "0.0.18"
+    "@funkia/hareactive": "0.0.18",
+    "@funkia/jabz": "0.0.19"
   },
   "devDependencies": {
     "babel-polyfill": "^6.23.0",

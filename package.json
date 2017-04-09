@@ -27,14 +27,17 @@
     "url": "git+https://github.com/Funkia/funnel.git"
   },
   "keywords": [
+    "pure",
     "functional",
     "framework",
+    "frp",
+    "functional reactive programming",
     "typescript"
   ],
   "license": "MIT",
   "peerDependencies": {
-    "jabz": "0.0.18",
-    "hareactive": "0.0.15"
+    "@funkia/jabz": "0.0.19",
+    "@funkia/hareactive": "0.0.18"
   },
   "bugs": {
     "url": "https://github.com/Funkia/funnel/issues"
@@ -48,9 +51,9 @@
     "chai-dom": "^1.4.3",
     "codecov": "2.1.0",
     "fake-raf": "^1.0.1",
-    "hareactive": "0.0.15",
-    "jabz": "0.0.18",
-    "karma": "^1.5.0",
+    "@funkia/hareactive": "0.0.18",
+    "@funkia/jabz": "0.0.19",
+    "karma": "^1.6.0",
     "karma-chrome-launcher": "2.0.0",
     "karma-cli": "1.0.1",
     "karma-firefox-launcher": "^1.0.1",
@@ -58,11 +61,11 @@
     "karma-mocha-reporter": "^2.2.3",
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sauce-launcher": "1.1.0",
-    "karma-typescript": "^3.0.0-beta.2",
+    "karma-typescript": "^3.0.0",
     "mocha": "^3.2.0",
-    "ts-loader": "^2.0.2",
-    "typescript": "^2.3.0-dev.20170322",
-    "webpack": "^2.2.1",
+    "ts-loader": "^2.0.3",
+    "typescript": "^2.3.0-dev.20170407",
+    "webpack": "^2.3.3",
     "webpack2-externals-plugin": "^1.0.0",
     "xyz": "^2.1.0"
   },

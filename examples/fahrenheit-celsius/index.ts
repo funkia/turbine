@@ -1,5 +1,4 @@
-import {stepper} from "hareactive/behavior";
-import {Stream, combine} from "hareactive/stream";
+import {stepper, Stream, combine} from "@funkia/hareactive";
 
 import {runMain, elements, loop} from "../../src";
 const {input, div, label} = elements;

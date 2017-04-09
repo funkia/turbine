@@ -1,6 +1,6 @@
 import {
   Behavior, sink, isBehavior, Stream, empty, Now
-} from "hareactive";
+} from "@funkia/hareactive";
 import {
   Component, runComponentNow,
   viewObserve, Showable, Child, isChild, toComponent

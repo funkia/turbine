@@ -1,4 +1,4 @@
-import {map, go} from "jabz";
+import {map, go} from "@funkia/jabz";
 import {runMain, elements} from "../../src";
 const {span, input, div} = elements;
 

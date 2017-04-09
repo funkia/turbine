@@ -1,4 +1,4 @@
-import { Behavior, Stream } from "hareactive";
+import { Behavior, Stream } from "@funkia/hareactive";
 import { Component, ChildList } from "./component";
 import { element, streamDescription, behaviorDescription } from "./dom-builder";
 

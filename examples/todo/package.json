@@ -11,8 +11,8 @@
   "license": "MIT",
   "dependencies": {
     "todomvc-app-css": "^2.0.6",
-    "hareactive": "0.0.15",
-    "jabz": "0.0.18"
+    "@funkia/hareactive": "0.0.18",
+    "@funkia/jabz": "0.0.19"
   },
   "devDependencies": {
     "babel-core": "^6.14.0",

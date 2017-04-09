@@ -1,9 +1,7 @@
-import {foldr} from "jabz/foldable";
-import {lift} from "jabz/applicative";
-import {flatten} from "jabz/monad";
+import {foldr, lift, flatten} from "@funkia/jabz";
 import {
   Now, sample, Behavior, scan, Stream, combine, map, combineList, switchStream, scanS
-} from "hareactive";
+} from "@funkia/hareactive";
 
 import {Component, modelView, list, runMain, elements} from "../../src";
 const {ul, li, p, br, button, h1} = elements;

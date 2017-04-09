@@ -1,4 +1,4 @@
-import {just, Maybe, nothing, withEffects} from "jabz";
+import {just, Maybe, nothing, withEffects} from "@funkia/jabz";
 import {runMain} from "../../../src";
 import {app} from "./TodoApp";
 

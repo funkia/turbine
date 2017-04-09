@@ -1,9 +1,9 @@
-import {combine, fromMaybe, lift, map, Maybe} from "jabz";
+import {combine, fromMaybe, lift, map, Maybe} from "@funkia/jabz";
 import {
   Behavior, stepper,
   Stream, snapshot, filter,
   keepWhen, toggle, Future, async, switcher, performStream, changes
-} from "hareactive";
+} from "@funkia/hareactive";
 
 import {Component, modelView, elements} from "../../../src";
 const {div, li, input, label, button, checkbox} = elements;

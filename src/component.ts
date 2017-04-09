@@ -1,12 +1,9 @@
-import { sequence } from "jabz/traversable";
-import { Monad, monad } from "jabz/monad";
-import { go, fgo } from "jabz/monad";
+import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
   Now,
   Behavior, observe, sink, isBehavior,
-  Stream
-} from "hareactive";
-import { placeholder } from "hareactive/placeholder";
+  Stream, placeholder
+} from "@funkia/hareactive";
 
 import { merge } from "./utils";
 

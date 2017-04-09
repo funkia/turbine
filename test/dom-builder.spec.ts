@@ -3,7 +3,7 @@ import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import * as fakeRaf from "fake-raf";
-import { empty, fromFunction, isBehavior, isStream, publish, sink, Stream } from "hareactive";
+import { empty, fromFunction, isBehavior, isStream, publish, sink, Stream } from "@funkia/hareactive";
 
 import { id } from "../src/utils";
 import { testComponent, element, Component, elements } from "../src";

@@ -1,8 +1,8 @@
 import {assert, use, expect} from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
-import {fgo} from "jabz/monad";
-import {Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction} from "hareactive";
+import {fgo} from "@funkia/jabz";
+import {Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction} from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
 import {
