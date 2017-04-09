@@ -57,13 +57,16 @@ export class Component<A> implements Monad<A> {
 }
 
 /** Run component and the now-computation inside */
-export function runComponentNow<A>(parent: Node, c: Component<A>): A {
+export function runComponent<A>(parent: Node | string, c: Component<A>): A {
+  if (typeof parent === "string") {
+    parent = document.querySelector(parent);
+  }
   return c.content(parent).run();
 }
 
 export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
   const dom = document.createElement("div");
-  const out = runComponentNow(dom, c);
+  const out = runComponent(dom, c);
   return {
     out,
     dom
@@ -268,7 +271,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
         return [undefined, child] as [A, Showable];
       }
       const fragment = document.createDocumentFragment();
-      const a = runComponentNow(fragment, <Component<A>>toComponent(child));
+      const a = runComponent(fragment, <Component<A>>toComponent(child));
       return [a, fragment] as [A, DocumentFragment];
     });
 
@@ -331,7 +334,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
         let stuff = keyToElm[key];
         if (stuff === undefined) {
           const fragment = document.createDocumentFragment();
-          const out = runComponentNow(fragment, this.compFn(a));
+          const out = runComponent(fragment, this.compFn(a));
           // Assumes component only adds a single element
           stuff = { out, elm: fragment.firstChild };
         }

@@ -2,7 +2,7 @@ import {
   Behavior, stepper, time, Stream, snapshot, Now, sample, map
 } from "@funkia/hareactive";
 
-import {Component, modelView, runMain, list, elements, dynamic} from "../../src/index";
+import {Component, modelView, runComponent, list, elements, dynamic} from "../../src/index";
 const {input, p, button, div, h1} = elements;
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
@@ -35,4 +35,4 @@ function* view({time, message}: ToView): Iterator<Component<any>> {
 
 const main = modelView<ToView, ViewOut, {}>(model, view);
 
-runMain("#mount", main);
+runComponent("#mount", main);

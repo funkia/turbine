@@ -1,5 +1,5 @@
 import {just, Maybe, nothing, withEffects} from "@funkia/jabz";
-import {runMain} from "../../../src";
+import {runComponent} from "../../../src";
 import {app} from "./TodoApp";
 
 export const getItemIO = withEffects((key: string): Maybe<any> => {
@@ -11,4 +11,4 @@ export const setItemIO = withEffects((key: string, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));
 });
 
-runMain("body", app);
+runComponent("body", app);

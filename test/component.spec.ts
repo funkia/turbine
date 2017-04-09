@@ -1,16 +1,16 @@
-import {assert, use, expect} from "chai";
+import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
-import {fgo} from "@funkia/jabz";
-import {Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction} from "@funkia/hareactive";
+import { fgo } from "@funkia/jabz";
+import { Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction } from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
 import {
   text, dynamic, Child,
   toComponent, Component, modelView,
-  elements, loop, testComponent, list
+  elements, loop, testComponent, list, runComponent
 } from "../src";
-const {span, div, button, input} = elements;
+const { span, div, button, input } = elements;
 
 const supportsProxy = "Proxy" in window;
 
@@ -19,14 +19,14 @@ describe("component specs", () => {
     it("convert behavior of string to component", () => {
       const b = sink("Hello");
       const component = toComponent(b);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello");
       b.push("world");
       expect(dom).to.have.text("world");
     });
     it("converts an array of components to component", () => {
       const component = toComponent([span("Hello"), div("There"), button("Click me")]);
-      const {dom, out} = testComponent(component);
+      const { dom, out } = testComponent(component);
 
       expect(out).to.have.property("click");
       expect(dom).to.have.length(3);
@@ -38,12 +38,12 @@ describe("component specs", () => {
   describe("text", () => {
     it("converts string to component", () => {
       const component = text("Hello, dom!");
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello, dom!");
     });
     it("converts number to component", () => {
       const component = text(200);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.text("200");
     });
   });
@@ -51,7 +51,7 @@ describe("component specs", () => {
     it("handles push behavior of strings", () => {
       const b = sink("Hello");
       const component = dynamic(b);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello");
       b.push("world");
       expect(dom).to.have.text("world");
@@ -61,7 +61,7 @@ describe("component specs", () => {
       let value = "foo";
       const b = fromFunction(() => value);
       const component = dynamic(b);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.text("foo");
       value = "bar";
       expect(dom).to.have.text("foo");
@@ -74,7 +74,7 @@ describe("component specs", () => {
       const comp2 = span("World");
       const b = sink(comp1);
       const component = dynamic(b);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       expect(dom).to.have.length(1);
       expect(dom.querySelector("div")).to.exist;
       expect(dom.querySelector("div")).to.have.text("Hello");
@@ -87,29 +87,29 @@ describe("component specs", () => {
     it("works with placeholder behavior", () => {
       const b = placeholder();
       const component = dynamic(b);
-      const {dom} = testComponent(component);
+      const { dom } = testComponent(component);
       b.replaceWith(sink("Hello"));
       expect(dom).to.have.text("Hello");
     });
   });
 
   describe("loop", () => {
-    type Looped = {name: Behavior<string>};
+    type Looped = { name: Behavior<string> };
     it("works with explicit fgo and looped behavior", () => {
-      const comp = loop(fgo(function*({name}: Looped): IterableIterator<Component<any>> {
+      const comp = loop(fgo(function* ({ name }: Looped): IterableIterator<Component<any>> {
         yield div(name);
-        ({inputValue: name} = yield input({props: {value: "Foo"}}));
-        return {name};
+        ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+        return { name };
       }));
-      const {dom} = testComponent(comp);
+      const { dom } = testComponent(comp);
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
     });
     it("can be called directly with generator function", () => {
-      const comp = loop(function*({name}: Looped): IterableIterator<Component<any>> {
+      const comp = loop(function* ({ name }: Looped): IterableIterator<Component<any>> {
         yield div(name);
-        ({inputValue: name} = yield input({props: {value: "Foo"}}));
-        return {name};
+        ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+        return { name };
       });
     });
   });
@@ -125,13 +125,13 @@ describe("component", () => {
         return span("World");
       }
     );
-    const {dom} = testComponent(c);
+    const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("World");
   });
 
   it("view is function returning array of components", () => {
-    type FromView = {inputValue: Behavior<any>};
+    type FromView = { inputValue: Behavior<any> };
     let fromView: FromView;
     const c = modelView(
       function model(args: FromView): Now<any> {
@@ -141,7 +141,7 @@ describe("component", () => {
         span("Hello"),
         input()
       ]);
-    const {dom} = testComponent(c);
+    const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
     assert(isBehavior(fromView.inputValue));
@@ -152,8 +152,8 @@ describe("component", () => {
       return;
     }
     const c = modelView(
-      function fooComp({foo}: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
-      function barView(): Component<any> { return Component.of({bar: "no foo?"}); }
+      function fooComp({ foo }: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
+      function barView(): Component<any> { return Component.of({ bar: "no foo?" }); }
     );
     assert.throws(() => {
       testComponent(c);
@@ -166,14 +166,14 @@ describe("list", () => {
   it("has correct initial order", () => {
     const initiel = ["Hello ", "there", "!"]
     const listB = sink(initiel);
-    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    const { dom } = testComponent(list(createSpan, (s) => s, listB));
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
   });
   it("reorders elements", () => {
     const initiel = ["Hello ", "there", "!"]
     const listB = sink(initiel);
-    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    const { dom } = testComponent(list(createSpan, (s) => s, listB));
     expect(dom).to.have.length(3);
     const elements = dom.childNodes;
     publish(["!", "there", "Hello "], listB);
@@ -185,12 +185,26 @@ describe("list", () => {
   it("removes element", () => {
     const initiel = ["Hello ", "there", "!"]
     const listB = sink(initiel);
-    const {dom} = testComponent(list(createSpan, (s) => s, listB));
+    const { dom } = testComponent(list(createSpan, (s) => s, listB));
     const toBeRemoved = dom.childNodes[1];
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
     publish(["Hello ", "!"], listB);
     expect(dom).to.have.length(2);
     expect(dom).to.not.contain(toBeRemoved);
+  });
+});
+
+describe("runComponent", () => {
+  it("attach component to element in document.body", () => {
+    const div = document.createElement("div");
+    div.id = "container";
+    document.body.appendChild(div);
+
+    const comp = span("Hello world");
+    runComponent("#container", comp);
+
+    expect(document.querySelector("span")).to.exist;
+    expect(document.querySelector("span")).to.have.text("Hello world");
   });
 });

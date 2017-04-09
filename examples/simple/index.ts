@@ -1,5 +1,5 @@
 import {map, go} from "@funkia/jabz";
-import {runMain, elements} from "../../src";
+import {runComponent, elements} from "../../src";
 const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -14,4 +14,4 @@ const main = go(function*() {
 });
 
 // `runMain` should be the only impure function in application code
-runMain("#mount", main);
+runComponent("#mount", main);

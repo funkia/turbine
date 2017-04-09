@@ -3,7 +3,7 @@ import {
   Now, sample, Behavior, scan, Stream, combine, map, combineList, switchStream, scanS
 } from "@funkia/hareactive";
 
-import {Component, modelView, list, runMain, elements} from "../../src";
+import {Component, modelView, list, runComponent, elements} from "../../src";
 const {ul, li, p, br, button, h1} = elements;
 
 const add = (n: number, m: number) => n + m;
@@ -92,4 +92,4 @@ function* mainView({sum, counterIds}: ToView): Iterator<Component<any>> {
 
 const main = modelView<ToView, ToModel, {}>(mainModel, mainView);
 
-runMain("body", main);
+runComponent("body", main);

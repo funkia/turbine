@@ -3,7 +3,7 @@ import {
 } from "@funkia/hareactive";
 import {combine, IO, withEffectsP, catchE, Either, left, right} from "@funkia/jabz";
 
-import {Component, modelView, runMain, elements} from "../../src/index";
+import {Component, modelView, runComponent, elements} from "../../src/index";
 const {span, br, input} = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
@@ -70,4 +70,4 @@ function* view({status}: ToView): Iterator<Component<any>> {
 
 const main = modelView<ToView, ViewOut, {}>(model, view);
 
-runMain("#mount", main);
+runComponent("#mount", main);

@@ -1,6 +1,6 @@
 import {stepper, Stream, combine} from "@funkia/hareactive";
 
-import {runMain, elements, loop} from "../../src";
+import {runComponent, elements, loop} from "../../src";
 const {input, div, label} = elements;
 
 type Looped = {
@@ -34,4 +34,4 @@ const main = loop(function*({fahrenChange, celsiusChange}: Looped) {
 });
 
 // `runMain` should be the only impure function in application code
-runMain("#mount", main);
+runComponent("#mount", main);

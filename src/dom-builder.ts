@@ -2,7 +2,7 @@ import {
   Behavior, sink, isBehavior, Stream, empty, Now
 } from "@funkia/hareactive";
 import {
-  Component, runComponentNow,
+  Component, runComponent,
   viewObserve, Showable, Child, isChild, toComponent
 } from "./component";
 import { id, rename, mergeDeep, assign } from "./utils";
@@ -215,7 +215,7 @@ class CreateDomNow<A> extends Now<A> {
       }
     }
     if (this.children !== undefined) {
-      const childOutput = runComponentNow(elm, toComponent(this.children));
+      const childOutput = runComponent(elm, toComponent(this.children));
       assign(output, childOutput);
     }
     if (this.props.output !== undefined) {
