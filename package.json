@@ -3,7 +3,7 @@
   "version": "0.0.9",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
-  "jsnext:main": "dist/es6/index.js",
+  "module": "dist/es6/index.js",
   "typings": "dist/defs/index.d.ts",
   "directories": {
     "dist": "dist"
