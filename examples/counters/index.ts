@@ -86,7 +86,7 @@ function* mainView({sum, counterIds}: ToView): Iterator<Component<any>> {
   const {click: addCounter} = yield button("Add counter");
   yield br;
   yield br;
-  const listOut = yield ul(list(counter, (n: number) => n, counterIds));
+  const {listOut} = yield ul(list(counter, (n: number) => n.toString(), counterIds).map((o) => ({listOut: o})));
   return {addCounter, listOut};
 }
 

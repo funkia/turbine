@@ -1,5 +1,5 @@
 import {
-  Behavior, sink, isBehavior, Stream, empty, Now
+  Behavior, sink, isBehavior, Stream, Now, streamFromEvent
 } from "@funkia/hareactive";
 import {
   Component, runComponent,
@@ -205,7 +205,7 @@ class CreateDomNow<A> extends Now<A> {
               enumerable: true,
               get: (): Stream<any> => {
                 if (a === undefined) {
-                  a = streamFromEvent(evt, extractor, elm);
+                  a = streamFromEvent(evt, elm, extractor);
                 }
                 return a;
               }
@@ -321,16 +321,4 @@ function behaviorFromEvent<A>(
   const b = sink<A>(initial);
   dom.addEventListener(eventName, (ev) => b.push(extractor(ev)));
   return b;
-}
-
-function streamFromEvent<A>(
-  eventName: string,
-  extractor: (evt: any) => A,
-  dom: Node
-): Stream<A> {
-  const s = empty<A>();
-  dom.addEventListener(eventName, (ev) => {
-    s.push(extractor(ev));
-  });
-  return s;
 }

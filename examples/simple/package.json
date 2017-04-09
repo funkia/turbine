@@ -10,7 +10,7 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "@funkia/hareactive": "0.0.18",
+    "@funkia/hareactive": "0.0.19",
     "@funkia/jabz": "0.0.19"
   },
   "devDependencies": {
