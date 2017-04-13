@@ -1,6 +1,6 @@
 {
   "name": "@funkia/funnel",
-  "version": "0.0.10",
+  "version": "0.0.11",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
   "module": "dist/es6/index.js",
@@ -24,7 +24,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/Funkia/funnel.git"
+    "url": "git+https://github.com/funkia/funnel.git"
   },
   "keywords": [
     "pure",

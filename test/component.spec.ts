@@ -116,7 +116,7 @@ describe("component specs", () => {
 });
 
 describe("component", () => {
-  it("simpel span component", () => {
+  it("simple span component", () => {
     const c = modelView(
       function model(): Now<any> {
         return Now.of([{}, {}] as [{}, {}]);

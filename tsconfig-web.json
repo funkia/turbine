@@ -1,6 +1,7 @@
 {
   "extends": "./tsconfig-cmjs.json",
   "compilerOptions": {
+    "target": "es5",
     "declarationDir": "./defs"
   },
   "include": [
