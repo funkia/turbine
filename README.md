@@ -18,19 +18,29 @@ programming. Experimental.
 * [Tutorial](#tutorial)
 * [Contributing](#contributing)
 
-## High level overview
+## Why Funnel?
 
-The goal of Funnel is to be a powerful framework for building frontend
-applications in a purely functional way. Funnel is based on classic
-FRP and we benefit from its highly concise way of declaring reactive
-dataflow. Funnel is heavily inspired by functional techniques found in
-Haskell that we combine with dynamic features found in JavaScript. We
-want a functional framework that is highly expressive, fast, and a
-pleasure to use.
+The JavaScript world is full of frameworks. So why another one?
+Because we want something _different_. We want something that is
+purely functional without compromises. Something that takes the best
+lessons from existing JavaScript frameworks and couples them with the
+powerful techniques found in functional languages like Haskell. We
+want a framework that is highly expressive. Because when functional
+programming is at it's best it gives you more power, not less. Funnel
+is supposed to be approachable for typical JavaScript developers while
+still preserving the benefits that comes from embracing purely
+functional programming.
+
+We have done our best to realize our goal. But we are not done yet. We
+hope you will find Funnel interesting, try it and maybe even help us
+making it even better.
+
+## High level overview
 
 Here our some of our key features.
 
-* Purely functional.
+* Purely functional. A Funnel app contains exactly one impure function
+  invocation.
 * Leverage TypeScript and runtime checking to improve the developing
   experience.
 * Based on classic FRP. Behaviors represents values that change over
@@ -43,18 +53,20 @@ Here our some of our key features.
 * Constructed DOM elements reacts directly to behaviors and streams.
   This avoids the overhead of using virtual DOM and should lead to
   great performance.
-* Side-effects are expressed with a declarative IO-like monad. This
-  allows for easy testing of code with side-effects. Furthermore, the
+* Side-effects are expressed with a declarative IO monad. This allows
+  for easy testing of code with side-effects. Furthermore, the
   IO-monad is integrated with FRP.
 * The entire dataflow through applications is explicit and easy to
   follow.
 * Our libraries are available both as CommonJS and ES2015 modules.
-  This allows for tree-shaking to the extend possible.
+  This allows for tree-shaking.
 
 Here are some of the features we want to implement and goals we're
 working towards.
 
-* Easy and concise testing of time-dependent FRP code.
+* Declarative and concise testing of time-dependent FRP code.
+* Performance. We think Funnel can be made very efficient. But we are
+  not yet at a point where we focus on performance.
 * Support for server side rendering.
 * Browser devtools for easier development and debugging.
 * Hot-module replacement (if possible given our design).
