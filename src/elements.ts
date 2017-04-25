@@ -38,6 +38,9 @@ export const ul = element("ul");
 export const li = element("li");
 export const strong = element("strong");
 export const section = element("section");
+export const nav = element("nav");
+export const aside = element("aside");
+export const article = element("article");
 export const header = element("header");
 export const footer = element("footer");
 
