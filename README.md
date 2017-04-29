@@ -114,8 +114,8 @@ example work.
 
 ## Examples
 
-A series of examples that demonstrate how to use Funnel. Approximately
-listed in order of increasing complexity.
+Here is a series of examples that demonstrate how to use Funnel.
+Approximately listed in order of increasing complexity.
 
 * [Simple](/examples/simple) — Very simple example of an
   email validator.
@@ -133,9 +133,24 @@ listed in order of increasing complexity.
 
 ## Tutorial
 
-This tutorial explains most of the concepts and API in Funnel. Please
-open an issue if you have questions regarding the tutorial or ideas
-for improvement.
+In this tutorial we will build a simple application with a list of
+counters. The application will be simple but not completely trivial.
+Along the way most of the key concepts in Funnel will be explained. We
+will se how to create HTML, how to create custom components, how a
+component can be nested and how it can share state with its parent.
+
+Please open an issue if you have questions regarding the tutorial or
+ideas for improvements.
+
+The final result and the intermediate states can be seen by cloning
+this git repository, going into the directory with the counters
+example and running webpack to serve the application.
+
+```
+git clone https://github.com/funkia/funnel/
+cd funnel/examples/counters
+npm run start
+```
 
 ### FRP
 
@@ -143,7 +158,7 @@ Funnel builds on top of the FRP library Hareactive. The two key
 concepts from FRP are _behavior_ and _stream_. They are documented in
 more detail in the [Hareactive
 readme](https://github.com/Funkia/hareactive). But the most important
-things to understand is
+things to understand are behavior and stream.
 
 * `Behavior` represents values that change over time. For instance,
   the position of the mouse or the number of times a user has clicked
@@ -153,21 +168,21 @@ things to understand is
 
 ### What is `Component`
 
- On top of the FRP primitives Funnel adds `Component`. Component is
- the key concept in Funnel. Once you understand `Component`—and how to
- use it you understand Funnel. A Funnel app is just one big component.
+On top of the FRP primitives Funnel adds `Component`. Component is the
+key concept in Funnel. Once you understand `Component`—and how to use
+it—you understand Funnel. A Funnel app is just one big component.
 
  Here is a high-level overview of what a component is.
 
-* __Components can contain logic__ expressed through operations on
+* Components can __contain logic__ expressed through operations on
   behaviors and streams.
-* __Components are encapsulated__ and have completely private state.
-* __Components produce output__ through which they selectively decide
+* Components are __encapsulated__ and have completely private state.
+* Components __produce output__ through which they selectively decide
   what state they share with their parent.
-* __Components write DOM elements__ as children to their parent. They
+* Components __write DOM elements__ as children to their parent. They
   can write zero, one or more DOM elements.
-* __Components can declare side-effects__ expressed as `IO`-actions.
-* __Components are composable__—one component can be combined with
+* Components can __declare side-effects__ expressed as `IO`-actions.
+* Components are __composable__—one component can be combined with
   another component and the result is a third component.
 
 ### Creating HTML-elements
@@ -176,20 +191,18 @@ Funnel includes functions for creating components that represent
 standard HTML-elements. When you create your own components they will
 be made of these.
 
-For each HTML-element there is a function for creating a component
-that represents it. The element functions accept two arguments, both
-of which are optional. The first is an object describing various
-things like attributes, classes on the element, etc. The second
-argument is a child component. For instance, to create a div with a
-span child we would write.
+The element functions accept two arguments, both of which are
+optional. The first is an object describing various things like
+attributes, classes, etc. The second argument is a child component.
+For instance, to create a div with a span child we would write.
 
 ```typescript
 const myDiv = div({class: "foo"}, span("Some text"));
 ```
 
 The element functions are overloaded. So instead of giving `span` a
-component as child we can just give it a string. The element functions
-also accepts an array of child elements like this.
+component as child we can give it a string. The element functions also
+accepts an array of child elements like this.
 
 ```typescript
 const myDiv = div({class: "foo"}, [
@@ -198,23 +211,39 @@ const myDiv = div({class: "foo"}, [
 ])
 ```
 
-Using this we can build arbitrarily complex HTML.
+Using this we can build arbitrarily complex HTML. As an example we
+will build a simple view for a counter in our counter-application.
 
-```typescript
-const myForm = form([
-  div({class: "form-group"}, [
-    label("Email address"),
-    input({attrs: {type: "email", placeholder: "email@address.com"}})
-  ]),
-  div({class: "checkbox"}, [
-    label([
-      input({attrs: {type: "checkbox"}}, "Want spam?")
-    ])
-  ])
+```ts
+import { elements } from "../../../src";
+const { br, div, button } = elements;
+
+// Counter
+const counterView = div([
+  "Counter ",
+  1,
+  " ",
+  button("+"),
+  " ",
+  button("-")
 ]);
+
+runComponent("body", counterView);
 ```
 
-#### Dynamic HTML
+We define `counterView` as div-element with some text and two buttons
+inside. Since `div` returns a component `counterView` is a component.
+And a Funnel application is just a component so we have a complete
+application. We run the application on the last line when we call
+`runComponent`. It is an impure function that takes a selector, a
+component and runs the component with the found element as parent. You
+can view the entire code in `version1.ts`.
+
+### Dynamic HTML
+
+The `counterView` above is completely static. The buttons do nothing
+and we hard-coded the value `1` into the view. Our next task is to
+make the program interactive.
 
 Anywhere where we can give the element functions a constant value of a
 certain type we can alternatively give them a behavior with a value of
@@ -228,10 +257,30 @@ const mySpan = span(stringBehavior);
 This will construct a component representing a span element with text
 content that is kept up to date with the value of the behavior.
 
-#### Output from HTML components
+To make the count in our counter view dynamic we turn it into a
+function that takes a behavior of a number and inserts it into the
+view.
 
-Component is represented by a generic type `Component<A>`. The `A` represents
-the output type of the component.
+```js
+const counterView = ({ count }: CounterViewInput) => div([
+  "Counter ",
+  count,
+  " ",
+  button("+"),
+  " ",
+  button("-"),
+]);
+```
+
+Because it will be easier going forward `counterView` takes an object
+with a `count` property.
+
+### Output from HTML components
+
+The above covers the _input_ to the counter view. We now need to get
+_output_ from it. All components in Funnel can produce output.
+Components are represented by a generic type `Component<A>`. The `A`
+represents the output of the component.
 
 As an example, a component that represents an input element has output
 that contains a behavior of the current string value in the input box.
@@ -240,52 +289,139 @@ that contains a behavior of the current string value in the input box.
 const usernameInput = input({attrs: {placeholder: "Username"}});
 ```
 
-`usernameInput` has the type `Component<Output>` where `Output` is an
-object containing the output that an `input` element produces. Among
-other things, an `input` element produces a string-valued behavior
-named `inputValue` that contains the current content of the `input`
-element. So, the type of `usernameInput` above is something like
-`Component<{inputValue: Behavior<string>, ...}>`. The dots are there
-to indicate the the component has other output as well.
+Here `usernameInput` has the type `Component<Output>` where `Output`
+is an object containing the output that an `input` element produces.
+Among other things, an `input` element produces a string-valued
+behavior named `inputValue` that contains the current content of the
+`input` element. So, the type of `usernameInput` above is something
+like `Component<{inputValue: Behavior<string>, ...}>`. The dots are
+there to indicate the the component has other output as well.
 
-We can get to the output of a component in several ways. One way is to
-map over the component.
+We want our counter view to produce two streams as output. One stream
+should be from whenever the first button is clicked the the other
+stream clicks from the second button. That is, the view's output
+should the type `{increment: Behavior<number>, decrement:
+Behavior<number>}` The simplest way to get achieve that looks like
+this:
 
-```ts
-const usernameInput =
-  input({attrs: {placeholder: "Username"}})
-    .map((output) => output.inputValue.map((s) => s.length));
+```js
+const counterView = ({ count }: CounterViewInput) => div([
+  "Counter ",
+  count,
+  " ",
+  button({ output: { incrementClick: "click" } }, "+"),
+  " ",
+  button({ output: { decrementClick: "click" } }, "-"),
+]);
 ```
 
-Here we create a component with the `input` function. We then invoke
-`map` on the component. The function to `map` receives the output from
-the component. We then call `map` on the behavior `inputValue` and
-take the length of the string. The result is that `usernameInput` has
-the type `Component<Behavior<number>>` because it's mapped output is a
+The `output` object given to the `button` functions tells them what
+output to produce. They will each output an object, the first with a
+stream named `incrementClick` and the later with one named
+`decrementClick`. The `div` function will combine all the objects
+output by the components in the array passed to it and output that.
+The result is that `counterView` returns a component that produces two
+streams as output.
+
+### Adding a model
+
+We now need to add a model with some logic to our counter view. The
+model needs to handle the increment and decrement stream and turn them
+into a behavior that represents the current count.
+
+Funnel offers the function `modelView` for creating components with
+logic. `modelView` takes two arguments. The first describes the logic
+and the second the view. This keeps the logic neatly separated from
+the view.
+
+The second argument to `modelView`, the view, is a function that
+returns a component. We already have such a function: `counterView`.
+
+The first argument is a function that returns a `Now`-computation. You
+don't have to fully understand `Now`. One of the things it does is to
+make it possible to create stateful behaviors. The model function will
+as input receive the output from the component that the view function
+returns. The result of the `Now`-computation must be a pair. The first
+value in the pair will be passed on to the view function and the
+second value will be the output of the component that `modelView`
+returns. Here is how we use to create our counter component.
+
+```ts
+function* counterModel(
+  { incrementClick, decrementClick }: CounterModelInput
+) {
+  const increment = incrementClick.mapTo(1);
+  const decrement = decrementClick.mapTo(-1);
+  const changes = combine(increment, decrement);
+  const count = yield sample(scan((n, m) => n + m, 0, changes));
+  return [{ count }, { count }];
+}
+
+const counter = modelView(counterModel, counterView);
+```
+
+Note that there is a cyclic dependency between the model and the view.
+The figure below illustrates this.
+
+![Component figure](https://rawgit.com/funkia/funnel/master/figures/model-view.svg)
+
+We now have a fully functional counter. You have now seen how to
+create a simple component with encapsulated state and logic. The
+current code can be seen in `version2.ts`.
+
+### Creating a list of counters
+
+Our next step is to create a list of counters. WIP.
+
+## API Documentation
+
+The API documentation is incomplete. See also the
+[examples](#examples), the [tutorial](#tutorial), the [Hareactive
+documentation](https://github.com/funkia/hareactive) and this tutorial
+about the
+[`IO`-monad](https://github.com/funkia/jabz/blob/master/docs/io-tutorial.md).
+
+### Component
+
+#### `Component#map`
+
+Mapping over a component is a way of applying a function to the output
+of a component. If a component has output of type `A` then we can map
+a function from `A` to `B` over the component and get a new component
+whose output is of type `B`.
+
+In the example below `input` creates a component with an object as
+output. The object contains a behavior named `inputValue`. The
+function given to `map` receives the output from the component. 
+
+We then call `map` on the behavior `inputValue` and take the length of
+the string. The result is that `usernameInput` has the type
+`Component<Behavior<number>>` because it's mapped output is a
 number-valued behavior whose value is the current length of the text
 in the input element.
 
-### `chain` on `Component`
+```ts
+const usernameInput =
+  input({class: "form-control"})
+    .map((output) => output.inputValue.map((s) => s.length));
+```
+
+#### `Component#chain`
 
 `map` makes it possible to transform and change the output from a
 component. However, it does not make it possible to take output from
 one component and pipe it into another component. That is where
-`chain` enters the picture.
+`chain` enters the picture. The type of the `chain` method is as
+follows.
 
 ```typescript
 chain((output: Output) => Component<NewOutput>): Component<NewOutput>;
 ```
 
 The `chain` method on a components with output `Output` takes a
-function that has `Output` as argument and returns a new component.
-Here is an example.
-
-```typescript
-input().chain((inputOutput) => span(inputOutput.inputValue));
-```
-
-An invocation `component.chain(fn)` returns a new component that works
-like this:
+function that takes `Output` as argument and returns a new component.
+Here is an example. An invocation `component.chain(fn)` returns a new
+component that works like this:
 
 * The output from `component` is passed to `fn`.
 * `fn` returns a new component, let's call it `component2`
@@ -293,7 +429,13 @@ like this:
   the parent.
 * The output is the output from `component2`.
 
-So, the above example boils down to this:
+Here is an example.
+
+```typescript
+input().chain((inputOutput) => span(inputOutput.inputValue));
+```
+
+The above example boils down to this:
 
 ```typescript
 Create input component   Create span component with text content
@@ -336,10 +478,10 @@ every `yield`ed value it calls `chain` with a function that continues
 the generator function with the value that `chain` passes it. So, when
 we `yield` a `Component<A>` we will get an `A` back.
 
-### `loop` for handling cyclic dependencies
+### `loop`
 
-Sometimes situations arise where there is a cyclic dependency between two
-components.
+Sometimes situations arise where there is a cyclic dependency between
+two components.
 
 For instance, you may have a function that creates a component that
 shows the value of an input string-value behavior and outputs a
@@ -379,62 +521,6 @@ and/or behaviors as values.
 Visually it looks like this.
 
 ![loop figure](https://rawgit.com/funkia/funnel/master/figures/component-loop.svg)
-
-### Building components with separated logic and view
-
-Funnel offers the function `modelView` for creating components with
-complex logic. `modelView` takes two arguments. The first describes
-the logic and the second the view. This separates the logic from the
-view. 
-
-The second argument, the view. Is a function that returns a component.
-The first argument is a function that returns a `Now`-computation.
-This function will as input receive the output from the component that
-the view function returns. The result of the `Now`-computation must be
-a pair. The first value in the pair will be passed to the view
-function and the second value will be the output from the component
-that `modelView` returns. Here is an example.
-
-```ts
-function counterView({ count }: ViewInput) {
-  return div([
-    button({ output: { incrementClick: "click" } }, " + "),
-    count,
-    button({ output: { decrementClick: "click" } }, " - ")
-  ]).map(({ incrementClick, decrementClick }) => ({
-    increment: incrementClick.mapTo(1),
-    decrement: decrementClick.mapTo(-1)
-  }));
-}
-
-function* counterModel({ increment, decrement }: ModelInput) {
-  const count = yield sample(scan((n, m) => n + m, 0, combine(increment, decrement)));
-  return [{ count }, { count }];
-}
-
-const counter = modelView(counterModel, counterView);
-```
-
-Here `counterView` takes an object with a property called `count` that
-must be a string-valued behavior. It then return a component whose
-output has the the type `{increment: Behavior<number>, decrement:
-Behavior<number>}`. This object is passed as input to `counterModel`.
-This function then accumulates the increments and decrement into a
-`count` behavior. This `count` behavior is finally returned both to
-the view and as the output from the component.
-
-Note that there is a cyclic dependency between the model and the view.
-The figure below illustrates this.
-
-![Component figure](https://rawgit.com/funkia/funnel/master/figures/model-view.svg)
-
-## API Documentation
-
-Nothing here yet. See the [examples](#examples), the
-[tutorial](#tutorial), the [Hareactive
-documentation](https://github.com/funkia/hareactive) and this tutorial
-about the
-[`IO`-monad](https://github.com/funkia/jabz/blob/master/docs/io-tutorial.md).
 
 ## Contributing
 
