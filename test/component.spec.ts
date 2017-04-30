@@ -163,17 +163,16 @@ describe("component", () => {
 
 describe("list", () => {
   const createSpan = (content: string) => span(content);
+  const initial = ["Hello ", "there", "!"]
   it("has correct initial order", () => {
-    const initiel = ["Hello ", "there", "!"]
-    const listB = sink(initiel);
-    const { dom } = testComponent(list(createSpan, (s) => s, listB));
+    const listB = sink(initial);
+    const { dom } = testComponent(list(createSpan, listB));
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
   });
   it("reorders elements", () => {
-    const initiel = ["Hello ", "there", "!"]
-    const listB = sink(initiel);
-    const { dom } = testComponent(list(createSpan, (s) => s, listB));
+    const listB = sink(initial);
+    const { dom } = testComponent(list(createSpan, listB));
     expect(dom).to.have.length(3);
     const elements = dom.childNodes;
     publish(["!", "there", "Hello "], listB);
@@ -183,15 +182,20 @@ describe("list", () => {
     expect(dom).to.contain(elements[2]);
   });
   it("removes element", () => {
-    const initiel = ["Hello ", "there", "!"]
-    const listB = sink(initiel);
-    const { dom } = testComponent(list(createSpan, (s) => s, listB));
+    const listB = sink(initial);
+    const { dom } = testComponent(list(createSpan, listB));
     const toBeRemoved = dom.childNodes[1];
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
     publish(["Hello ", "!"], listB);
     expect(dom).to.have.length(2);
     expect(dom).to.not.contain(toBeRemoved);
+  });
+  it("outputs object with property", () => {
+    const listB = sink(initial);
+    const { out } = testComponent(list(createSpan, listB, "foobar"));
+    console.log(out);
+    assert.notEqual(out.foobar, undefined);
   });
 });
 

@@ -5,7 +5,7 @@ import {
   Stream, placeholder
 } from "@funkia/hareactive";
 
-import { merge } from "./utils";
+import { merge, id } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -312,9 +312,10 @@ type ComponentStuff<A> = {
 class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
   constructor(
     private parent: Node,
-    private getKey: (a: A, index: number) => string,
     private compFn: (a: A) => Component<B>,
-    private list: Behavior<A[]>
+    private list: Behavior<A[]>,
+    private getKey: (a: A, index: number) => string,
+    private name: string | undefined
   ) { super(); }
   run(): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
@@ -327,7 +328,6 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
       const newKeyToElm: { [key: string]: ComponentStuff<B> } = {};
       const newArray: B[] = [];
       // Re-add existing elements and new elements
-
       for (let i = 0; i < newAs.length; i++) {
         const a = newAs[i];
         const key = this.getKey(a, i);
@@ -352,12 +352,28 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
       keyToElm = newKeyToElm;
       resultB.push(newArray);
     });
-    return resultB;
+    return <any>(this.name === undefined ? resultB : { [this.name]: resultB });
   }
 }
 
-export function list<A>(
-  c: (a: A) => Component<any>, getKey: (a: A, index: number) => string, l: Behavior<A[]>
-): Component<{}> {
-  return new Component((p) => new ComponentListNow(p, getKey, c, l));
+export function list<A, B, Name extends string>(
+  componentCreator: (a: A) => Component<any>,
+  list: Behavior<A[]>,
+  name: Name,
+  key?: (a: A, index: number) => Showable
+): Component<{[key in Name]: Behavior<B[]> }>;
+export function list<A, B>(
+  componentCreator: (a: A) => Component<any>,
+  list: Behavior<A[]>,
+  key?: (a: A, index: number) => Showable
+): Component<Behavior<B[]>>;
+export function list<A, B>(
+  c: (a: A) => Component<any>, list: Behavior<A[]>, optional1: any
+): Component<Behavior<B[]>> {
+  const last = arguments[arguments.length - 1];
+  const getKey = typeof last === "function" ? last : id;
+  const name = typeof optional1 === "string" ? optional1 : undefined;
+  return <any>(new Component(
+    (parent) => new ComponentListNow(parent, c, list, getKey, name)
+  ));
 }
