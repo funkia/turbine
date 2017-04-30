@@ -91,7 +91,7 @@ is valid.
 
 ```js
 import {map} from "@funkia/jabz";
-import {runMain, elements, loop} from "@funkia/funnel";
+import {runComponent, elements, loop} from "@funkia/funnel";
 const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -106,7 +106,7 @@ const main = go(function*() {
 });
 
 // `runMain` should be the only impure function in application code
-runMain("#mount", main);
+runComponent("#mount", main);
 ```
 
 See the [tutorial](#tutorial) below which explains how the above
@@ -215,7 +215,7 @@ Using this we can build arbitrarily complex HTML. As an example we
 will build a simple view for a counter in our counter-application.
 
 ```ts
-import { elements } from "../../../src";
+import { elements, runComponent } from "@funkia/funnel";
 const { br, div, button } = elements;
 
 // Counter
@@ -261,7 +261,7 @@ To make the count in our counter view dynamic we turn it into a
 function that takes a behavior of a number and inserts it into the
 view.
 
-```js
+```ts
 const counterView = ({ count }: CounterViewInput) => div([
   "Counter ",
   count,
@@ -304,7 +304,7 @@ should the type `{increment: Behavior<number>, decrement:
 Behavior<number>}` The simplest way to get achieve that looks like
 this:
 
-```js
+```ts
 const counterView = ({ count }: CounterViewInput) => div([
   "Counter ",
   count,
