@@ -64,7 +64,7 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
     const initial = fromMaybe([], maybeList);
     return sample(scan(apply, initial, modifications));
   }));
-  const todoNames: Behavior<ItemParams[]> = switcher(Behavior.of([]), restoredTodoNames);
+  const todoNames: Behavior<ItemParams[]> = yield sample(switcher(Behavior.of([]), restoredTodoNames));
   yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
   return [{itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted}, {}];
 }
@@ -85,10 +85,10 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
           props: {checked: areAllCompleted},
           output: {toggleAll: "checkedChange"}
         }),
-        ul({class: "todo-list"}, function*() {
-          const itemOutputs = yield list(item.bind(undefined, toggleAll), ({id}) => id.toString(), todoNames);
-          return {itemOutputs};
-        })
+        ul(
+          {class: "todo-list"},
+          list((n) => item(toggleAll, n), todoNames, "itemOutputs", get("id"))
+        )
       ]),
       todoFooter({todosB: itemOutputs, areAnyCompleted})
     ]),
