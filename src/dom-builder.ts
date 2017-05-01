@@ -272,6 +272,8 @@ export type ChArr3<A, B, C> = [Ch<A>, Ch<B>, Ch<C>];
 export type ChArr4<A, B, C, D> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>];
 export type ChArr5<A, B, C, D, E> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>];
 export type ChArr6<A, B, C, D, E, F> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>];
+export type ChArr7<A, B, C, D, E, F, G> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>];
+export type ChArr8<A, B, C, D, E, F, G, H> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>];
 export type ChArr9<A, B, C, D, E, F, G, H, I> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>];
 
 // `A` is the parents output
@@ -292,6 +294,8 @@ export type ElementCreator<A> = {
   <B, C, D, E>(child: ChArr4<B, C, D, E>): Cp<A & B & C & D & E>;
   <B, C, D, E, F>(child: ChArr5<B, C, D, E, F>): Cp<A & B & C & D & E & F>;
   <B, C, D, E, F, G>(child: ChArr6<B, C, D, E, F, G>): Cp<A & B & C & D & E & F & G>;
+  <B, C, D, E, F, G, H>(child: ChArr7<B, C, D, E, F, G, H>): Cp<A & B & C & D & E & F & G & H>;
+  <B, C, D, E, F, G, H, I>(child: ChArr8<B, C, D, E, F, G, H, I>): Cp<A & B & C & D & E & F & G & H & I>;
   <B, C, D, E, F, G, H, I, J>(child: ChArr9<B, C, D, E, F, G, H, I, J>): Cp<A & B & C & D & E & F & G & H & I & J>;
   <B>(child: Ch<B>): Cp<A & B>;
   (props: Properties<A>): Cp<A>;

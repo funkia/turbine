@@ -67,7 +67,7 @@
       "check-whitespace"
     ],
     "one-variable-per-declaration": [
-      true,
+      false,
       "ignore-for-loop"
     ],
     "quotemark": [
