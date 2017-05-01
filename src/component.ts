@@ -175,17 +175,30 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
+export type ModelReturn<M, O> = Now<[M, O]> | Iterator<Now<any> | [M, O]>;
+export type Model<V, M, O> = (v: V) => ModelReturn<M, O>;
+export type Model1<V, M, O, A> = (v: V, a: A) => ModelReturn<M, O>;
+export type View<M, V> = (m: M) => (Child<V> | Iterator<Component<any>>);
+export type View1<M, V, A> = (m: M, a: A) => (Child<V> | Iterator<Component<any>>);
+
 export function modelView<M extends ReactivesObject, V, O>(
-  model: ((v: V) => Now<[M, O]>) | ((v: V) => IterableIterator<any>),
-  view: ((m: M) => Child<V>) | ((m: M) => IterableIterator<Component<any>>),
+  model: Model<V, M, O>, view: View<M, V>,
   toViewReactiveNames?: string[]
-): Component<O> {
-  const modelName = (<any>model).name;
-  const viewName = (<any>view).name;
-  const m = isGeneratorFunction<V, any>(model) ? (v: V) => fgo(model)(v) : model;
-  const v = isGeneratorFunction(view) ? (md: M) => fgo(view)(md) : (md: M) => toComponent(view(md));
-  return new Component<O>((parent: Node) => new MfixNow<M, O>(
-    (bs) => v(bs).content(parent).map((o: any) => addErrorHandler(modelName, viewName, o)).chain(m),
+): () => Component<O>;
+export function modelView<M extends ReactivesObject, V, O, A>(
+  model: Model1<V, M, O, A>, view: View1<M, V, A>,
+  toViewReactiveNames?: string[]
+): (a: A) => Component<O>;
+export function modelView<M extends ReactivesObject, V, O>(
+  model: any, view: any, toViewReactiveNames?: string[]
+): (...args: any[]) => Component<O> {
+  const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
+  const v = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
+  return (...args: any[]) => new Component<O>((parent: Node) => new MfixNow<M, O>(
+    (bs) => v(bs, ...args)
+      .content(parent)
+      .map((o: any) => addErrorHandler(model.name, view.name, o))
+      .chain((b: any) => m(b, ...args)),
     toViewReactiveNames
   ).map(snd));
 }
@@ -235,7 +248,7 @@ export function text(s: Showable): Component<{}> {
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
-export function toComponent<A>(child: () => IterableIterator<Component<any>>): Component<any>;
+export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
 export function toComponent<A>(child: Array<Component<any>>): Component<{}>;
 export function toComponent<A>(child: Child<A>): Component<A>;
 export function toComponent<A>(child: Child): Component<any> {
