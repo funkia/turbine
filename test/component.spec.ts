@@ -115,7 +115,7 @@ describe("component specs", () => {
   });
 });
 
-describe("component", () => {
+describe("modelView", () => {
   it("simple span component", () => {
     const c = modelView(
       function model(): Now<any> {
@@ -124,12 +124,29 @@ describe("component", () => {
       function view(): Component<any> {
         return span("World");
       }
-    );
+    )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("World");
   });
-
+  it("passes argument to model", () => {
+    const pair = <A, B>(a: A, b: B): [A, B] => ([a, b]);
+    const c = modelView(
+      ({ click }, n: number) => Now.of(pair({ n: Behavior.of(n) }, 12)),
+      ({ n }) => span(n)
+    );
+    const { dom } = testComponent(c(12));
+    expect(dom.querySelector("span")).to.have.text(("12"));
+  });
+  it("passes argument to view", () => {
+    const pair = <A, B>(a: A, b: B): [A, B] => ([a, b]);
+    const c = modelView(
+      ({ click }) => Now.of(pair({}, {})),
+      ({ }, n: number) => span(n)
+    );
+    const { dom } = testComponent(c(7));
+    expect(dom.querySelector("span")).to.have.text(("7"));
+  });
   it("view is function returning array of components", () => {
     type FromView = { inputValue: Behavior<any> };
     let fromView: FromView;
@@ -140,13 +157,12 @@ describe("component", () => {
       }, (): Child<FromView> => [
         span("Hello"),
         input()
-      ]);
+      ])();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
     assert(isBehavior(fromView.inputValue));
   });
-
   it("throws an error message if the view doesn't return the needed properties", () => {
     if (!supportsProxy) {
       return;
@@ -154,7 +170,7 @@ describe("component", () => {
     const c = modelView(
       function fooComp({ foo }: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
       function barView(): Component<any> { return Component.of({ bar: "no foo?" }); }
-    );
+    )();
     assert.throws(() => {
       testComponent(c);
     }, /fooComp/);
