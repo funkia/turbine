@@ -1,5 +1,5 @@
 {
-  "name": "@funkia/funnel",
+  "name": "@funkia/turbine",
   "version": "0.0.11",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
@@ -18,13 +18,13 @@
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run build",
-    "release-major": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment major",
-    "release-minor": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment minor",
-    "release-patch": "./node_modules/.bin/xyz --repo git@github.com:funkia/funnel.git --increment patch"
+    "release-major": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment major",
+    "release-minor": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment minor",
+    "release-patch": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment patch"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/funkia/funnel.git"
+    "url": "git+https://github.com/funkia/turbine.git"
   },
   "keywords": [
     "pure",
@@ -40,9 +40,9 @@
     "@funkia/hareactive": "0.0.19"
   },
   "bugs": {
-    "url": "https://github.com/Funkia/funnel/issues"
+    "url": "https://github.com/funkia/turbine/issues"
   },
-  "homepage": "https://github.com/Funkia/funnel#readme",
+  "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
     "@types/chai": "^3.4.35",
     "@types/chai-dom": "0.0.5",

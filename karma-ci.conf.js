@@ -46,7 +46,7 @@ module.exports = function(config) {
     },
     reporters: ["saucelabs", "karma-typescript"],
     sauceLabs: {
-      testName: "Funnel - Travis CI Karma",
+      testName: "Turbine - Travis CI Karma",
       tunnelIdentifier: process.env.TRAVIS_JOB_NUMBER,
       startConnect: false,
       verbose: true

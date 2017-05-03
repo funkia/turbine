@@ -6,14 +6,14 @@ var UglifyJsPlugin = webpack.optimize.UglifyJsPlugin;
 
 var config = {
   entry: {
-    "funnel": __dirname + "/src/index.ts",
-    "funnel.min": __dirname + "/src/index.ts"
+    "turbine": __dirname + "/src/index.ts",
+    "turbine.min": __dirname + "/src/index.ts"
   },
   devtool: "source-map",
   output: {
     path: __dirname + "/dist",
     filename: "[name].js",
-    library: "funnel",
+    library: "turbine",
     libraryTarget: "var",
     umdNamedDefine: true
   },

@@ -94,7 +94,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
-      p("Written with Funnel"),
+      p("Written with Turbine"),
       p("Part of TodoMVC")
     ])
   ];

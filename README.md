@@ -1,12 +1,12 @@
 <img align="right" src="https://avatars0.githubusercontent.com/u/21360882?v=3&s=200">
 
-# Funnel
+# Turbine
 
 A purely functional frontend framework based on functional reactive
 programming. Experimental.
 
-[![Build Status](https://travis-ci.org/funkia/funnel.svg?branch=master)](https://travis-ci.org/funkia/funnel)
-[![codecov](https://codecov.io/gh/funkia/funnel/branch/master/graph/badge.svg)](https://codecov.io/gh/funkia/funnel)
+[![Build Status](https://travis-ci.org/funkia/turbine.svg?branch=master)](https://travis-ci.org/funkia/turbine)
+[![codecov](https://codecov.io/gh/funkia/turbine/branch/master/graph/badge.svg)](https://codecov.io/gh/funkia/turbine)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 
 # Table of contents
@@ -18,7 +18,7 @@ programming. Experimental.
 * [Tutorial](#tutorial)
 * [Contributing](#contributing)
 
-## Why Funnel?
+## Why Turbine?
 
 The JavaScript world is full of frameworks. So why another one?
 Because we want something _different_. We want something that is
@@ -26,26 +26,26 @@ purely functional without compromises. Something that takes the best
 lessons from existing JavaScript frameworks and couples them with the
 powerful techniques found in functional languages like Haskell. We
 want a framework that is highly expressive. Because when functional
-programming is at it's best it gives you more power, not less. Funnel
+programming is at it's best it gives you more power, not less. Turbine
 is supposed to be approachable for typical JavaScript developers while
 still preserving the benefits that comes from embracing purely
 functional programming.
 
 We have done our best to realize our goal. But we are not done yet. We
-hope you will find Funnel interesting, try it and maybe even help us
+hope you will find Turbine interesting, try it and maybe even help us
 making it even better.
 
 ## High level overview
 
 Here our some of our key features.
 
-* Purely functional. A Funnel app contains exactly one impure function
+* Purely functional. A Turbine app contains exactly one impure function
   invocation.
 * Leverage TypeScript and runtime checking to improve the developing
   experience.
 * Based on classic FRP. Behaviors represents values that change over
-  time and streams provide reactivity. Funnel uses the FRP
-  library [Hareactive](https://github.com/Funkia/hareactive).
+  time and streams provide reactivity. Turbine uses the FRP
+  library [Hareactive](https://github.com/funkia/hareactive).
 * A component-based architecture. Components are encapsulated and
   composable. Components are monads and are typically used and
   composed with do-notation (we implement do-notation with
@@ -65,7 +65,7 @@ Here are some of the features we want to implement and goals we're
 working towards.
 
 * Declarative and concise testing of time-dependent FRP code.
-* Performance. We think Funnel can be made very efficient. But we are
+* Performance. We think Turbine can be made very efficient. But we are
   not yet at a point where we focus on performance.
 * Support for server side rendering.
 * Browser devtools for easier development and debugging.
@@ -74,15 +74,15 @@ working towards.
 ## Installation
 
 ```sh
-npm install @funkia/funnel @funkia/hareactive @funkia/jabz
+npm install @funkia/turbine @funkia/hareactive @funkia/jabz
 ```
 
-[Hareactive](https://github.com/Funkia/hareactive) and
-[Jabz](https://github.com/Funkia/jabz) are peer dependencies that
-Funnel uses. Hareactive is the FRP library that we use and Jabz
+[Hareactive](https://github.com/funkia/hareactive) and
+[Jabz](https://github.com/funkia/jabz) are peer dependencies that
+Turbine uses. Hareactive is the FRP library that we use and Jabz
 provides some very useful functional abstractions.
 
-Alternatively, for trying out Funnel you may want to see our [Funnel starter kit](https://github.com/funkia/funnel-starter).
+Alternatively, for trying out Turbine you may want to see our [Turbine starter kit](https://github.com/funkia/turbine-starter).
 
 ## Example
 
@@ -91,7 +91,7 @@ is valid.
 
 ```js
 import {map} from "@funkia/jabz";
-import {runComponent, elements, loop} from "@funkia/funnel";
+import {runComponent, elements, loop} from "@funkia/turbine";
 const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -114,7 +114,7 @@ example work.
 
 ## Examples
 
-Here is a series of examples that demonstrate how to use Funnel.
+Here is a series of examples that demonstrate how to use Turbine.
 Approximately listed in order of increasing complexity.
 
 * [Simple](/examples/simple) — Very simple example of an
@@ -135,7 +135,7 @@ Approximately listed in order of increasing complexity.
 
 In this tutorial we will build a simple application with a list of
 counters. The application will be simple but not completely trivial.
-Along the way most of the key concepts in Funnel will be explained. We
+Along the way most of the key concepts in Turbine will be explained. We
 will se how to create HTML, how to create custom components, how a
 component can be nested and how it can share state with its parent.
 
@@ -147,17 +147,17 @@ this git repository, going into the directory with the counters
 example and running webpack to serve the application.
 
 ```
-git clone https://github.com/funkia/funnel/
-cd funnel/examples/counters
+git clone https://github.com/funkia/turbine/
+cd turbine/examples/counters
 npm run start
 ```
 
 ### FRP
 
-Funnel builds on top of the FRP library Hareactive. The two key
+Turbine builds on top of the FRP library Hareactive. The two key
 concepts from FRP are _behavior_ and _stream_. They are documented in
 more detail in the [Hareactive
-readme](https://github.com/Funkia/hareactive). But the most important
+readme](https://github.com/funkia/hareactive). But the most important
 things to understand are behavior and stream.
 
 * `Behavior` represents values that change over time. For instance,
@@ -168,9 +168,9 @@ things to understand are behavior and stream.
 
 ### What is `Component`
 
-On top of the FRP primitives Funnel adds `Component`. Component is the
-key concept in Funnel. Once you understand `Component`—and how to use
-it—you understand Funnel. A Funnel app is just one big component.
+On top of the FRP primitives Turbine adds `Component`. Component is the
+key concept in Turbine. Once you understand `Component`—and how to use
+it—you understand Turbine. A Turbine app is just one big component.
 
  Here is a high-level overview of what a component is.
 
@@ -187,7 +187,7 @@ it—you understand Funnel. A Funnel app is just one big component.
 
 ### Creating HTML-elements
 
-Funnel includes functions for creating components that represent
+Turbine includes functions for creating components that represent
 standard HTML-elements. When you create your own components they will
 be made of these.
 
@@ -215,7 +215,7 @@ Using this we can build arbitrarily complex HTML. As an example we
 will build a simple view for a counter in our counter-application.
 
 ```ts
-import { elements, runComponent } from "@funkia/funnel";
+import { elements, runComponent } from "@funkia/turbine";
 const { br, div, button } = elements;
 
 // Counter
@@ -233,7 +233,7 @@ runComponent("body", counterView);
 
 We define `counterView` as div-element with some text and two buttons
 inside. Since `div` returns a component `counterView` is a component.
-And a Funnel application is just a component so we have a complete
+And a Turbine application is just a component so we have a complete
 application. We run the application on the last line when we call
 `runComponent`. It is an impure function that takes a selector, a
 component and runs the component with the found element as parent. You
@@ -278,7 +278,7 @@ with a `count` property.
 ### Output from HTML components
 
 The above covers the _input_ to the counter view. We now need to get
-_output_ from it. All components in Funnel can produce output.
+_output_ from it. All components in Turbine can produce output.
 Components are represented by a generic type `Component<A>`. The `A`
 represents the output of the component.
 
@@ -329,7 +329,7 @@ We now need to add a model with some logic to our counter view. The
 model needs to handle the increment and decrement stream and turn them
 into a behavior that represents the current count.
 
-Funnel offers the function `modelView` for creating components with
+Turbine offers the function `modelView` for creating components with
 logic. `modelView` takes two arguments. The first describes the logic
 and the second the view. This keeps the logic neatly separated from
 the view.
@@ -363,7 +363,7 @@ const counter = modelView(counterModel, counterView);
 Note that there is a cyclic dependency between the model and the view.
 The figure below illustrates this.
 
-![Component figure](https://rawgit.com/funkia/funnel/master/figures/model-view.svg)
+![Component figure](https://rawgit.com/funkia/turbine/master/figures/model-view.svg)
 
 We now have a fully functional counter. You have now seen how to
 create a simple component with encapsulated state and logic. The
@@ -520,11 +520,11 @@ and/or behaviors as values.
 
 Visually it looks like this.
 
-![loop figure](https://rawgit.com/funkia/funnel/master/figures/component-loop.svg)
+![loop figure](https://rawgit.com/funkia/turbine/master/figures/component-loop.svg)
 
 ## Contributing
 
-Funnel is developed by Funkia. We develop functional libraries. You
+Turbine is developed by Funkia. We develop functional libraries. You
 can be a part of it too. Share your feedback and ideas. We also love
 PRs.
 
