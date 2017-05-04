@@ -2,7 +2,7 @@ import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import { fgo } from "@funkia/jabz";
-import { Behavior, isBehavior, sink, placeholder, Now, publish, fromFunction } from "@funkia/hareactive";
+import { Behavior, isBehavior, sinkBehavior, placeholder, Now, publish, fromFunction } from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
 import {
@@ -17,7 +17,7 @@ const supportsProxy = "Proxy" in window;
 describe("component specs", () => {
   describe("toComponent", () => {
     it("convert behavior of string to component", () => {
-      const b = sink("Hello");
+      const b = sinkBehavior("Hello");
       const component = toComponent(b);
       const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello");
@@ -49,7 +49,7 @@ describe("component specs", () => {
   });
   describe("dynamic", () => {
     it("handles push behavior of strings", () => {
-      const b = sink("Hello");
+      const b = sinkBehavior("Hello");
       const component = dynamic(b);
       const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello");
@@ -72,7 +72,7 @@ describe("component specs", () => {
     it("handles behavior of component", () => {
       const comp1 = div("Hello");
       const comp2 = span("World");
-      const b = sink(comp1);
+      const b = sinkBehavior(comp1);
       const component = dynamic(b);
       const { dom } = testComponent(component);
       expect(dom).to.have.length(1);
@@ -85,10 +85,10 @@ describe("component specs", () => {
       expect(dom.querySelector("span")).to.have.text("World");
     });
     it("works with placeholder behavior", () => {
-      const b = placeholder();
+      const b = placeholder<Child>();
       const component = dynamic(b);
       const { dom } = testComponent(component);
-      b.replaceWith(sink("Hello"));
+      b.replaceWith(sinkBehavior("Hello"));
       expect(dom).to.have.text("Hello");
     });
   });
@@ -178,16 +178,17 @@ describe("modelView", () => {
 });
 
 describe("list", () => {
+  const initiel = ["Hello ", "there", "!"];
   const createSpan = (content: string) => span(content);
   const initial = ["Hello ", "there", "!"]
   it("has correct initial order", () => {
-    const listB = sink(initial);
+    const listB = sinkBehavior(initial);
     const { dom } = testComponent(list(createSpan, listB));
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
   });
   it("reorders elements", () => {
-    const listB = sink(initial);
+    const listB = sinkBehavior(initial);
     const { dom } = testComponent(list(createSpan, listB));
     expect(dom).to.have.length(3);
     const elements = dom.childNodes;
@@ -198,7 +199,7 @@ describe("list", () => {
     expect(dom).to.contain(elements[2]);
   });
   it("removes element", () => {
-    const listB = sink(initial);
+    const listB = sinkBehavior(initial);
     const { dom } = testComponent(list(createSpan, listB));
     const toBeRemoved = dom.childNodes[1];
     expect(dom).to.have.length(3);
@@ -208,9 +209,8 @@ describe("list", () => {
     expect(dom).to.not.contain(toBeRemoved);
   });
   it("outputs object with property", () => {
-    const listB = sink(initial);
+    const listB = sinkBehavior(initial);
     const { out } = testComponent(list(createSpan, listB, "foobar"));
-    console.log(out);
     assert.notEqual(out.foobar, undefined);
   });
 });

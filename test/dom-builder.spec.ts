@@ -3,7 +3,7 @@ import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import * as fakeRaf from "fake-raf";
-import { empty, fromFunction, isBehavior, isStream, publish, sink, Stream } from "@funkia/hareactive";
+import { sinkStream, fromFunction, isBehavior, isStream, publish, sinkBehavior, Stream } from "@funkia/hareactive";
 
 import { id } from "../src/utils";
 import { testComponent, element, Component, elements } from "../src";
@@ -138,7 +138,7 @@ describe("dom-builder: e()", () => {
           boldText: (element: HTMLElement, value: string) => element.innerHTML = `<b>${value}</b>`
         }
       });
-      const s: Stream<string> = empty();
+      const s = sinkStream<string>();
       const { dom } = testComponent(myComponent({ actions: { boldText: s } }));
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.html("");
@@ -154,7 +154,7 @@ describe("dom-builder: e()", () => {
           boldText: (element: HTMLElement, value: number) => element.textContent = value.toString()
         }
       });
-      const numberB = sink(0);
+      const numberB = sinkBehavior(0);
       const { dom } = testComponent(myComponent({ setters: { boldText: numberB } }));
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.text("0");
@@ -226,7 +226,7 @@ describe("dom-builder: e()", () => {
       expect(dom.querySelector("span")).to.have.attribute("style", "background-color: green;")
     });
     it("sets style from behaviors", () => {
-      const colorB = sink("red");
+      const colorB = sinkBehavior("red");
       const spanFac = element("span", {
         style: {
           backgroundColor: colorB
@@ -248,7 +248,7 @@ describe("dom-builder: e()", () => {
       expect(aElm).to.have.attribute("href", "/foo");
     });
     it("sets attributes from behaviors", () => {
-      const hrefB = sink("/foo");
+      const hrefB = sinkBehavior("/foo");
       const { dom } = testComponent(element("a", { attrs: { href: hrefB } })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("href", "/foo");
@@ -261,7 +261,7 @@ describe("dom-builder: e()", () => {
       expect(aElm).to.have.attribute("contenteditable", "");
     });
     it("removes boolean attribute correctly", () => {
-      const checkedB = sink(false);
+      const checkedB = sinkBehavior(false);
       const { dom } = testComponent(element("a", { attrs: { checked: checkedB } })());
       const aElm = dom.firstChild;
       expect(aElm).to.not.have.attribute("checked");
@@ -279,7 +279,7 @@ describe("dom-builder: e()", () => {
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
     });
     it("sets properties from behaviors", () => {
-      const htmlB = sink("<b>Hi</b>");
+      const htmlB = sinkBehavior("<b>Hi</b>");
       const { dom } = testComponent(element("a", { props: { innerHTML: htmlB } })());
       const aElm = <Element>dom.firstChild;
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
@@ -358,7 +358,7 @@ describe("dom-builder: e()", () => {
 
   describe("classToggle", () => {
     it("toggles classe based on behavior", () => {
-      const boolB = sink(false);
+      const boolB = sinkBehavior(false);
       const span = elements.span({
         classToggle: { foo: boolB }
       });

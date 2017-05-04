@@ -1,7 +1,7 @@
 import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
   Now,
-  Behavior, observe, sink, isBehavior,
+  Behavior, observe, sinkBehavior, isBehavior,
   Stream, placeholder
 } from "@funkia/hareactive";
 
@@ -333,7 +333,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
   run(): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
-    const resultB = sink<B[]>([]);
+    const resultB = sinkBehavior<B[]>([]);
     const end = document.createComment("list end");
     let keyToElm: { [key: string]: ComponentStuff<B> } = {};
     this.parent.appendChild(end);
