@@ -44,7 +44,7 @@ function* model({zipCode}: ViewOut): Iterator<Now<any>> {
   const [validZipCodeChange, invalidZipCodeChange] = split(isValidZip, zipCodeChange);
   // A stream of IO requests for each time the zipCode changes
   const requests = validZipCodeChange.map(fetchZip);
-  // A stream of results optained from performing the IO requests
+  // A stream of results obtained from performing the IO requests
   const results: Stream<Either<string, ZipResult>> = yield performStreamLatest(requests);
   const status = stepper(
     "",
@@ -68,6 +68,6 @@ function* view({status}: ToView): Iterator<Component<any>> {
   return {zipCode};
 }
 
-const main = modelView<ToView, ViewOut, {}>(model, view);
+const main = modelView<ToView, ViewOut, {}>(model, view)();
 
 runComponent("#mount", main);

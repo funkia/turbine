@@ -33,6 +33,6 @@ function* view({time, message}: ToView): Iterator<Component<any>> {
   return {snapClick};
 }
 
-const main = modelView<ToView, ViewOut, {}>(model, view);
+const main = modelView<ToView, ViewOut, {}>(model, view)();
 
 runComponent("#mount", main);

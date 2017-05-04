@@ -23,7 +23,7 @@ const main = loop(function*({fahrenChange, celsiusChange}: Looped) {
     input({props: {value: fahren}, output: {fahrenInput: "input"}})
   ]);
   const {celsiusInput} = yield div([
-    label("Celcious"),
+    label("Celsius"),
     input({props: {value: celsius}, output: {celsiusInput: "input"}})
   ]);
 

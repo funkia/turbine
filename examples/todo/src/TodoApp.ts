@@ -100,4 +100,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-export const app = modelView(model, view);
+export const app = modelView(model, view)();

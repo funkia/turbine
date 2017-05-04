@@ -1,5 +1,5 @@
-import {Behavior} from "@funkia/hareactive";
-import {elements} from "../../../src";
+import {Behavior, Stream} from "@funkia/hareactive";
+import {Component, elements} from "../../../src";
 const {span, button, ul, li, a, footer, strong} = elements;
 import {get} from "../../../src/utils";
 
