@@ -31,7 +31,7 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
  * make it a monad in different way than Now.
  */
 @monad
-export class Component<A> implements Monad<A> {
+export class Component<A = any> implements Monad<A> {
   constructor(public content: (n: Node) => Now<A>) { }
   static of<B>(b: B): Component<B> {
     return new Component(() => Now.of(b));
@@ -175,13 +175,13 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-export type ModelReturn<M, O> = Now<[M, O]> | Iterator<Now<any> | [M, O]>;
+export type ModelReturn<M, O> = Now<[M, O]> | Iterator<any>;
 export type Model<V, M, O> = (v: V) => ModelReturn<M, O>;
 export type Model1<V, M, O, A> = (v: V, a: A) => ModelReturn<M, O>;
-export type View<M, V> = (m: M) => (Child<V> | Iterator<Component<any>>);
-export type View1<M, V, A> = (m: M, a: A) => (Child<V> | Iterator<Component<any>>);
+export type View<M, V> = ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>);
+export type View1<M, V, A> = ((m: M, a: A) => Child<V>) | ((m: M, a: A) => Iterator<Component<any>>);
 
-export function modelView<M extends ReactivesObject, V, O>(
+export function modelView<M extends ReactivesObject, V = {}, O = M>(
   model: Model<V, M, O>, view: View<M, V>,
   toViewReactiveNames?: string[]
 ): () => Component<O>;
@@ -227,7 +227,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
 export type Child<A = {}> = Component<A> | Showable | Behavior<Showable>
-  | (() => Iterator<Component<any>>) | ChildList;
+  | (() => Iterator<any>) | ChildList;
 
 // A dummy interface is required since TypeScript doesn't handle
 // recursive type aliases
@@ -248,7 +248,7 @@ export function text(s: Showable): Component<{}> {
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
-export function toComponent<A>(child: () => Iterator<Component<any>>): Component<any>;
+export function toComponent<A>(child: () => Iterator<any>): Component<any>;
 export function toComponent<A>(child: Array<Component<any>>): Component<{}>;
 export function toComponent<A>(child: Child<A>): Component<A>;
 export function toComponent<A>(child: Child): Component<any> {
@@ -257,7 +257,7 @@ export function toComponent<A>(child: Child): Component<any> {
   } else if (isBehavior(child)) {
     return dynamic(child);
   } else if (isGeneratorFunction(child)) {
-    return go(child);
+    return go(<any>child);
   } else if (isShowable(child)) {
     return text(child);
   } else if (Array.isArray(child)) {

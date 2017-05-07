@@ -279,6 +279,9 @@ export type ChArr9<A, B, C, D, E, F, G, H, I> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<
 // `A` is the parents output
 export type ElementCreator<A> = {
   (): Cp<A>;
+  // We cannot know what a generator function outputs
+  (generator: Generator): Cp<any>
+  <O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, generator: Generator): Cp<any>
   // Properties are given
   <B, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr1<B>): Cp<B & OutputRenamed<A, O>>;
   <B, C, O extends OutputNames<A> = {}>(props: PropsOutput<A, O>, child?: ChArr2<B, C>): Cp<B & C & OutputRenamed<A, O>>;
@@ -297,6 +300,7 @@ export type ElementCreator<A> = {
   <B, C, D, E, F, G, H>(child: ChArr7<B, C, D, E, F, G, H>): Cp<A & B & C & D & E & F & G & H>;
   <B, C, D, E, F, G, H, I>(child: ChArr8<B, C, D, E, F, G, H, I>): Cp<A & B & C & D & E & F & G & H & I>;
   <B, C, D, E, F, G, H, I, J>(child: ChArr9<B, C, D, E, F, G, H, I, J>): Cp<A & B & C & D & E & F & G & H & I & J>;
+
   <B>(child: Ch<B>): Cp<A & B>;
   (props: Properties<A>): Cp<A>;
 };
