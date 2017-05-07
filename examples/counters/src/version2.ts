@@ -1,6 +1,6 @@
 import { combine } from "@funkia/jabz";
-import { elements, modelView } from "../../../src";
 import { Behavior, sample, scan, Stream } from "@funkia/hareactive";
+import { elements, modelView } from "../../../src";
 const { br, div, button } = elements;
 
 type CounterModelInput = {

@@ -9,12 +9,7 @@
   },
   "author": "",
   "license": "MIT",
-  "dependencies": {
-    "@funkia/hareactive": "0.0.19",
-    "@funkia/jabz": "0.0.19"
-  },
   "devDependencies": {
-    "typescript": "^2.3.0-dev.20170407",
     "babel-core": "^6.24.1",
     "babel-loader": "^6.4.1",
     "babel-polyfill": "^6.23.0",

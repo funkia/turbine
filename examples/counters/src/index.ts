@@ -1,4 +1,4 @@
-import { flatten, foldr, go, lift, combine } from "@funkia/jabz";
+import { go, lift, combine } from "@funkia/jabz";
 import {
   Behavior, combineList, map, Now, sample, scan, scanS,
   stepper, Stream, switchStream
@@ -28,13 +28,21 @@ function selectorButton(n: AppId, selected: Behavior<AppId>): Component<Stream<A
   }, `Version ${n}`).map(({ click }) => click.mapTo(n));
 }
 
-const versionSelector = modelView(
+type FromView = {
+  selectVersion: Stream<AppId>
+};
+
+type FromModel = {
+  selected: Behavior<AppId>
+};
+
+const versionSelector = modelView<FromModel, FromView>(
   function ({ selectVersion }) {
     const selected = stepper("1", selectVersion);
-    return Now.of([{ selected }, { selected }]);
+    return Now.of([{ selected }, { selected }] as [FromModel, FromModel]);
   },
-  function ({ selected }) {
-    return div({class: "btn-group"}, function* () {
+  function ({ selected }): Component {
+    return div({ class: "btn-group" }, function* () {
       const
         select1 = yield selectorButton("1", selected),
         select2 = yield selectorButton("2", selected),
