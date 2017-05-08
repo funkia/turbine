@@ -46,7 +46,7 @@ export function mergeDeep(...objects: any[]): any { // .length of function is 2
         const key = keys[i];
         const nextItem = source[key];
         if (Array.isArray(source[key]) && Array.isArray(result[key])) {
-          result[key] = arrayConcat(result[key], source[key])
+          result[key] = arrayConcat(result[key], source[key]);
         } else if (isObject(source[key])) {
           const subKeys: string[] = Object.keys(source[key]);
           result[key] = result[key] || {};
@@ -61,7 +61,7 @@ export function mergeDeep(...objects: any[]): any { // .length of function is 2
     }
   }
   return result;
-};
+}
 
 // Note this function mutates `source`
 export function rename(
@@ -74,4 +74,4 @@ export function rename(
   }
 }
 
-export function id<A>(a: A): A { return a; };
+export function id<A>(a: A): A { return a; }
