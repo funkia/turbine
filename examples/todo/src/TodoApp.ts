@@ -8,6 +8,7 @@ import {modelView, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul} = elements;
 import {get} from "../../../src/utils";
 
+// component imports
 import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams} from "./Item";
 import todoFooter, { Params as FooterParams } from "./TodoFooter";
@@ -74,6 +75,8 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
     section({class: "todoapp"}, [
       header({class: "header"}, [
         h1("todos"),
+
+        // component placed inline
         todoInput
       ]),
       section({

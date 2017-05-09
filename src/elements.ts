@@ -7,8 +7,15 @@ export const input = element("input", {
     focus: (element): void => element.focus()
   },
   behaviors: {
+
+    // declare input value as behavior
     inputValue: behaviorDescription(
-      "input", (evt: any) => evt.target.value as string, (elm: any) => elm.value as string
+      // label to reference by
+      "input", 
+      // transform event into target value
+      (evt: any) => evt.target.value as string,
+      // transform element into its value
+      (elm: any) => elm.value as string
     )
   }
 });
