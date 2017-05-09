@@ -68,6 +68,8 @@ export default loop<Looped & Out>(
     });
     // const enterPressed_ = keyup.filter(isEnterKey);
 
+    // Just this plain object?
+    // What about the vnode?
     return { 
 
       // ENTER key stream

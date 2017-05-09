@@ -76,7 +76,8 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
       header({class: "header"}, [
         h1("todos"),
 
-        // component placed inline
+        // ({ enterPressed, value }) => { enterTodoS }
+        // How does this generate the input vnode?
         todoInput
       ]),
       section({

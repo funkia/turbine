@@ -318,7 +318,6 @@ export function element<P extends InitialProperties>(
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
 
-  // 
   function createElement(
     newPropsOrChildren?: InitialProperties | Child, 
     newChildrenOrUndefined?: Child

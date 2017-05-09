@@ -2,6 +2,7 @@ import { Behavior, Stream } from "@funkia/hareactive";
 import { Component, ChildList } from "./component";
 import { element, streamDescription, behaviorDescription } from "./dom-builder";
 
+// input element creator
 export const input = element("input", {
   actionDefinitions: {
     focus: (element): void => element.focus()
