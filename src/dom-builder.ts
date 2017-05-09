@@ -156,6 +156,7 @@ function handleCustom(
   }
 }
 
+// Q: Can classes be replaced by pure function factories?
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
@@ -225,6 +226,7 @@ class CreateDomNow<A> extends Now<A> {
     return output;
   }
 }
+
 
 function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
   const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
@@ -307,7 +309,7 @@ export type ElementCreator<A> = {
 };
 
 
-// main element creator
+// wrapper for createElement
 export function element<P extends InitialProperties>(
   tagName?: string, 
   props?: P
@@ -315,14 +317,30 @@ export function element<P extends InitialProperties>(
 
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
-  function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
+
+  // 
+  function createElement(
+    newPropsOrChildren?: InitialProperties | Child, 
+    newChildrenOrUndefined?: Child
+  ): Component<DefaultOutput> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, props, newPropsOrChildren));
+      return new Component(
+        (p) => new CreateDomNow<DefaultOutput>(
+          p, parsedTagName, 
+          props, newPropsOrChildren
+        )
+      );
     } else {
       const newProps = mergeDeep(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, newProps, newChildrenOrUndefined));
+      return new Component(
+        (p) => new CreateDomNow<DefaultOutput>(
+          p, parsedTagName, 
+          newProps, newChildrenOrUndefined
+        )
+      );
     }
   }
+
   return createElement as any;
 
 }
