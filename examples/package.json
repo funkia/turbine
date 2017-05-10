@@ -1,0 +1,29 @@
+{
+  "name": "turbine-examples",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.ts",
+  "scripts": {
+    "counters": "webpack-dev-server --content-base counters counters/src/index.ts",
+    "continuous-time": "webpack-dev-server --content-base continuous-time continuous-time/index.ts",
+    "fahrenheit-celsius": "webpack-dev-server --content-base fahrenheit-celsius fahrenheit-celsius/index.ts",
+    "simple": "webpack-dev-server --content-base simple simple/index.ts",
+    "todo": "webpack-dev-server --content-base todo todo/src/index.ts",
+    "zip-codes": "webpack-dev-server --content-base zip-codes zip-codes/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Funkia",
+  "license": "MIT",
+  "dependencies": {
+    "todomvc-app-css": "^2.1.0"
+  },
+  "devDependencies": {
+    "babel-polyfill": "6.23.0",
+    "ts-loader": "2.0.1",
+    "babel-core": "6.23.1",
+    "babel-loader": "6.4.0",
+    "babel-preset-es2015": "6.22.0",
+    "webpack": "2.2.1",
+    "webpack-dev-server": "2.4.1"
+  }
+}

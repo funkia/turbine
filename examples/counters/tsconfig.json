@@ -1,15 +1,6 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "noImplicitAny": true,
-    "sourceMap": true,
-    "experimentalDecorators": true
-  },
+  "extends": "../tsconfig.json",
   "include": [
-    "src/**/*.ts"
-  ],
-  "exclude": [
-    "node_modules"
+    "**/*.ts"
   ]
 }

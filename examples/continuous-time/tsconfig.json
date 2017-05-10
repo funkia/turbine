@@ -1,14 +1,6 @@
 {
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "noImplicitAny": true,
-    "sourceMap": true
-  },
-  "include":[
+  "extends": "../tsconfig.json",
+  "include": [
     "index.ts"
-  ],
-  "exclude": [
-    "node_modules"
   ]
 }
