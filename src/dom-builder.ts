@@ -156,6 +156,7 @@ function handleCustom(
   }
 }
 
+// Q: Can classes be replaced by pure function factories?
 class CreateDomNow<A> extends Now<A> {
   constructor(
     private parent: Node,
@@ -226,6 +227,7 @@ class CreateDomNow<A> extends Now<A> {
   }
 }
 
+
 function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
   const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
   const result: InitialProperties = {};
@@ -276,6 +278,7 @@ export type ChArr7<A, B, C, D, E, F, G> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch
 export type ChArr8<A, B, C, D, E, F, G, H> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>];
 export type ChArr9<A, B, C, D, E, F, G, H, I> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>];
 
+
 // `A` is the parents output
 export type ElementCreator<A> = {
   (): Cp<A>;
@@ -305,19 +308,40 @@ export type ElementCreator<A> = {
   (props: Properties<A>): Cp<A>;
 };
 
-export function element<P extends InitialProperties>(tagName?: string, props?: P):
-  ElementCreator<InitialOutput<P>> {
+
+// wrapper for createElement
+export function element<P extends InitialProperties>(
+  tagName?: string, 
+  props?: P
+): ElementCreator<InitialOutput<P>> {
+
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
-  function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
+
+  function createElement(
+    newPropsOrChildren?: InitialProperties | Child, 
+    newChildrenOrUndefined?: Child
+  ): Component<DefaultOutput> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, props, newPropsOrChildren));
+      return new Component(
+        (p) => new CreateDomNow<DefaultOutput>(
+          p, parsedTagName, 
+          props, newPropsOrChildren
+        )
+      );
     } else {
       const newProps = mergeDeep(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, newProps, newChildrenOrUndefined));
+      return new Component(
+        (p) => new CreateDomNow<DefaultOutput>(
+          p, parsedTagName, 
+          newProps, newChildrenOrUndefined
+        )
+      );
     }
   }
+
   return createElement as any;
+
 }
 
 function behaviorFromEvent<A>(
