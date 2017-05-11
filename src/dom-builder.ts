@@ -1,5 +1,5 @@
 import {
-  Behavior, sinkBehavior, isBehavior, Stream, Now, streamFromEvent
+  Behavior, sinkBehavior, isBehavior, Stream, Now, streamFromEvent, behaviorFromEvent
 } from "@funkia/hareactive";
 import {
   Component, runComponent,
@@ -189,7 +189,7 @@ class CreateDomNow<A> extends Now<A> {
             enumerable: true,
             get: (): Behavior<any> => {
               if (a === undefined) {
-                a = behaviorFromEvent(evt, initial, extractor, elm);
+                a = behaviorFromEvent(elm, evt, initial, extractor);
               }
               return a;
             }
@@ -318,15 +318,4 @@ export function element<P extends InitialProperties>(tagName?: string, props?: P
     }
   }
   return createElement as any;
-}
-
-function behaviorFromEvent<A>(
-  eventName: string,
-  initial: A,
-  extractor: (evt: any) => A,
-  dom: Node
-): Behavior<A> {
-  const b = sinkBehavior<A>(initial);
-  dom.addEventListener(eventName, (ev) => b.push(extractor(ev)));
-  return b;
 }

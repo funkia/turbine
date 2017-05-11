@@ -2,13 +2,11 @@
   "compilerOptions": {
     "target": "es6",
     "module": "commonjs",
+    "moduleResolution": "node",
     "noImplicitAny": true,
     "sourceMap": true,
     "experimentalDecorators": true
   },
-  "include": [
-    "**/*.ts"
-  ],
   "exclude": [
     "node_modules"
   ]
