@@ -22,11 +22,11 @@ export function streamDescription<A, N extends EventName>(
 
 export type StreamDescriptions = {
   [name: string]: StreamDescription<any>
-}
+};
 
 export type OutputStream<T extends StreamDescriptions> = {
   [K in keyof T]: Stream<T[K][2]>
-}
+};
 
 export type BehaviorDescription<A> = [EventName, (evt: any) => A, (elm: HTMLElement) => A, A];
 
@@ -38,11 +38,11 @@ export function behaviorDescription<A, N extends EventName>(
 
 export type BehaviorDescriptions = {
   [name: string]: BehaviorDescription<any>
-}
+};
 
 export type BehaviorOutput<T extends BehaviorDescriptions> = {
   [K in keyof T]: Behavior<T[K][3]>
-}
+};
 
 export type ActionDefinitions = {
   [name: string]: (element: HTMLElement, value: any) => void
@@ -58,7 +58,7 @@ export type Setters = {
 
 export type Style = {
   [N in keyof CSSStyleDeclaration]?: Behavior<CSSStyleDeclaration[N]> | CSSStyleDeclaration[N]
-}
+};
 
 export type InitialProperties = {
   streams?: StreamDescriptions,
@@ -81,7 +81,7 @@ export type InitialProperties = {
 
 export type DefaultOutput = {
   [E in EventName]: Stream<HTMLElementEventMap[E]>
-}
+};
 
 export type InitialOutput<P extends InitialProperties> =
   OutputStream<(P & {streams: {}})["streams"]> & BehaviorOutput<(P & {behaviors: {}})["behaviors"]> & DefaultOutput;
@@ -162,7 +162,7 @@ class CreateDomNow<A> extends Now<A> {
     private tagName: string,
     private props?: Properties<A> & {output?: OutputNames<A>},
     private children?: Child
-  ) { super(); };
+  ) { super(); }
   run(): A {
     let output: any = {};
     const elm = document.createElement(this.tagName);
@@ -254,7 +254,7 @@ function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
 
 export type OutputNames<A> = {
   [name: string]: (keyof A)
-}
+};
 
 export type Properties<A> = InitialProperties;
 
@@ -276,6 +276,7 @@ export type ChArr7<A, B, C, D, E, F, G> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch
 export type ChArr8<A, B, C, D, E, F, G, H> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>];
 export type ChArr9<A, B, C, D, E, F, G, H, I> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>, Ch<F>, Ch<G>, Ch<H>, Ch<I>];
 
+export type Generator = IterableIterator<any>;
 // `A` is the parents output
 export type ElementCreator<A> = {
   (): Cp<A>;
