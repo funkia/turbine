@@ -20,6 +20,3 @@ name of the directory the example is located in. For example:
 ```
 npm run counters
 ```
-
-The TodoMVC example has additional dependencies that has to be
-installed by running `npm install` inside the `todo` directory.

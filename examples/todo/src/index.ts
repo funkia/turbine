@@ -1,3 +1,4 @@
+import "todomvc-app-css/index.css";
 import {just, Maybe, nothing, withEffects} from "@funkia/jabz";
 import {runComponent} from "../../../src";
 import {app} from "./TodoApp";

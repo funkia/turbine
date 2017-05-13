@@ -36,7 +36,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@funkia/hareactive": "0.0.22",
+    "@funkia/hareactive": "0.0.30",
     "@funkia/jabz": "0.0.19"
   },
   "bugs": {
@@ -44,17 +44,17 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "0.0.22",
+    "@funkia/hareactive": "0.0.30",
     "@funkia/jabz": "0.0.19",
     "@types/chai": "^3.4.35",
     "@types/chai-dom": "0.0.5",
     "@types/mocha": "^2.2.40",
     "chai": "3.5.0",
     "chai-dom": "^1.4.3",
-    "codecov": "2.1.0",
+    "codecov": "^2.2.0",
     "fake-raf": "^1.0.1",
     "karma": "^1.6.0",
-    "karma-chrome-launcher": "2.0.0",
+    "karma-chrome-launcher": "^2.1.1",
     "karma-cli": "1.0.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "1.3.0",
