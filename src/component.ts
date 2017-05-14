@@ -57,11 +57,11 @@ export class Component<A = any> implements Monad<A> {
 }
 
 /** Run component and the now-computation inside */
-export function runComponent<A>(parent: Node | string, c: Component<A>): A {
+export function runComponent<A>(parent: Node | string, c: Child<A>): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent);
   }
-  return c.content(parent).run();
+  return toComponent(c).content(parent).run();
 }
 
 export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
