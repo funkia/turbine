@@ -1,4 +1,5 @@
-import { elements } from "../../../src";
+import { Stream } from "@funkia/hareactive";
+import { elements, Component } from "../../../src";
 const { br, div, button } = elements;
 
 // Counter

@@ -66,7 +66,7 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   }));
   const todoNames: Behavior<ItemParams[]> = yield sample(switcher(Behavior.of([]), restoredTodoNames));
   yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
-  return [{itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted}, {}];
+  return {itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted};
 }
 
 function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView) {

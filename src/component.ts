@@ -129,14 +129,14 @@ export function loop<A extends ReactivesObject>(
   return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent, placeholderNames));
 }
 
-class MfixNow<M extends ReactivesObject, O> extends Now<[M, O]> {
+class MfixNow<M extends ReactivesObject> extends Now<M> {
   constructor(
-    private fn: (m: M) => Now<[M, O]>,
+    private fn: (m: M) => Now<M>,
     private placeholderNames?: string[]
   ) {
     super();
-  };
-  run(): [M, O] {
+  }
+  run(): M {
     let placeholders: any;
     if (supportsProxy) {
       placeholders = new Proxy({}, placeholderProxyHandler);
@@ -148,13 +148,13 @@ class MfixNow<M extends ReactivesObject, O> extends Now<[M, O]> {
         }
       }
     }
-    const [behaviors, out] = this.fn(placeholders).run();
+    const behaviors = this.fn(placeholders).run();
     // Tie the recursive knot
     for (const name of Object.keys(behaviors)) {
       (placeholders[name]).replaceWith(behaviors[name]);
     }
-    return [behaviors, out];
-  };
+    return behaviors;
+  }
 }
 
 function addErrorHandler(modelName: string, viewName: string, obj: any): any {
@@ -175,32 +175,30 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-export type ModelReturn<M, O> = Now<[M, O]> | Iterator<any>;
-export type Model<V, M, O> = (v: V) => ModelReturn<M, O>;
-export type Model1<V, M, O, A> = (v: V, a: A) => ModelReturn<M, O>;
+export type ModelReturn<M> = Now<M> | Iterator<any>;
+export type Model<V, M> = (v: V) => ModelReturn<M>;
+export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
 export type View<M, V> = ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>);
 export type View1<M, V, A> = ((m: M, a: A) => Child<V>) | ((m: M, a: A) => Iterator<Component<any>>);
 
-export function modelView<M extends ReactivesObject, V = {}, O = M>(
-  model: Model<V, M, O>, view: View<M, V>,
-  toViewReactiveNames?: string[]
-): () => Component<O>;
-export function modelView<M extends ReactivesObject, V, O, A>(
-  model: Model1<V, M, O, A>, view: View1<M, V, A>,
-  toViewReactiveNames?: string[]
-): (a: A) => Component<O>;
-export function modelView<M extends ReactivesObject, V, O>(
+export function modelView<M extends ReactivesObject, V = {}>(
+  model: Model<V, M>, view: View<M, V>, toViewReactiveNames?: string[]
+): () => Component<M>;
+export function modelView<M extends ReactivesObject, V, A>(
+  model: Model1<V, M, A>, view: View1<M, V, A>, toViewReactiveNames?: string[]
+): (a: A) => Component<M>;
+export function modelView<M extends ReactivesObject, V>(
   model: any, view: any, toViewReactiveNames?: string[]
-): (...args: any[]) => Component<O> {
+): (...args: any[]) => Component<M> {
   const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
   const v = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
-  return (...args: any[]) => new Component<O>((parent: Node) => new MfixNow<M, O>(
+  return (...args: any[]) => new Component<M>((parent: Node) => new MfixNow<M>(
     (bs) => v(bs, ...args)
       .content(parent)
       .map((o: any) => addErrorHandler(model.name, view.name, o))
       .chain((b: any) => m(b, ...args)),
     toViewReactiveNames
-  ).map(snd));
+  ));
 }
 
 export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): void {

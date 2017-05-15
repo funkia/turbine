@@ -1,6 +1,6 @@
 import { combine } from "@funkia/jabz";
 import { Behavior, sample, scan, Stream } from "@funkia/hareactive";
-import { elements, modelView } from "../../../src";
+import { elements, modelView, Component } from "../../../src";
 const { br, div, button } = elements;
 
 type CounterModelInput = {
@@ -19,7 +19,7 @@ function* counterModel(
   const decrement = decrementClick.mapTo(-1);
   const changes = combine(increment, decrement);
   const count = yield sample(scan((n, m) => n + m, 0, changes));
-  return [{ count }, { count }];
+  return { count };
 }
 
 const counterView = ({ count }: CounterViewInput) => div([

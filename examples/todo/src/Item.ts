@@ -88,15 +88,16 @@ function* itemModel(
 
   const destroyItem = combine(deleteClicked, nameChange.filter((s) => s === ""));
   const destroyItemId = destroyItem.mapTo(id);
-  return [{
+  return {
     taskName: taskName_,
     isComplete,
     isEditing,
     newName,
-    focusInput: startEditing
-  }, {
-    id, destroyItemId, completed: isComplete
-  }] as [ToView, Output];
+    focusInput: startEditing,
+    id,
+    destroyItemId,
+    completed: isComplete
+  };
 }
 
 function itemView({ taskName, isComplete, isEditing, newName, focusInput }: ToView) {
