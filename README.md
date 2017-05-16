@@ -5,17 +5,19 @@
 A purely functional frontend framework based on functional reactive
 programming. Experimental.
 
+[![Gitter](https://img.shields.io/gitter/room/funkia/General.svg)](https://gitter.im/funkia/General)
 [![Build Status](https://travis-ci.org/funkia/turbine.svg?branch=master)](https://travis-ci.org/funkia/turbine)
 [![codecov](https://codecov.io/gh/funkia/turbine/branch/master/graph/badge.svg)](https://codecov.io/gh/funkia/turbine)
 [![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 
 # Table of contents
 
+* [Why Turbine?](#why-turbine)
 * [High level overview](#high-level-overview)
 * [Installation](#installation)
-* [Example](#example)
 * [Examples](#examples)
 * [Tutorial](#tutorial)
+* [API](#api)
 * [Contributing](#contributing)
 
 ## Why Turbine?
@@ -26,7 +28,7 @@ purely functional without compromises. Something that takes the best
 lessons from existing JavaScript frameworks and couples them with the
 powerful techniques found in functional languages like Haskell. We
 want a framework that is highly expressive. Because when functional
-programming is at it's best it gives you more power, not less. Turbine
+programming is at its best it gives you more power, not less. Turbine
 is supposed to be approachable for typical JavaScript developers while
 still preserving the benefits that comes from embracing purely
 functional programming.
@@ -39,8 +41,7 @@ making it even better.
 
 Here our some of our key features.
 
-* Purely functional. A Turbine app contains exactly one impure function
-  invocation.
+* Purely functional. A Turbine app is made up of only pure functions.
 * Leverage TypeScript and runtime checking to improve the developing
   experience.
 * Based on classic FRP. Behaviors represents values that change over
@@ -71,6 +72,71 @@ working towards.
 * Browser devtools for easier development and debugging.
 * Hot-module replacement (if possible given our design).
 
+## Principles
+
+This section describes some of the key principles and ideas underlying
+the design of Turbine.
+
+### Purely functional
+
+Turbine is purely functional. We mean that in the most strict sense of
+the term. In a Turbine app every single expression is pure. This gives
+a huge benefit in how easy it is to understand and maintain a Turbine
+app is.
+
+One benefit of the complete purity is that every function in Turbine
+supports what is called "referential transparency". This means that an
+expression can always be replaced with its value.
+
+As a simple example, say you have the following code:
+
+```js
+const view = div([
+  myComponent({foo: "bar", something: 12}),
+  myComponent({foo: "bar", something: 12})
+]);
+```
+
+One may notice that `myComponent` is called twice with the exact same
+arguments. Since all functions in a Turbine app are pure `myComponent`
+is no exception. Hence, we can make the following simple refactoring.
+
+```js
+const component = myComponent({foo: "bar", something: 12}),
+const view = div([
+  component,
+  component
+]);
+```
+
+Such refactorings can always be safely done in Turbine.
+
+### Completely explicit dataflow
+
+One significant challenge when writing an interactive frontend
+application is how to manage the dataflow through an application.
+
+Many modern frameworks have recognized this problem and made fairly
+good attempts to solve them. But, in our opinion they all have "gaps"
+where understanding the dataflow is tricky.
+
+In Turbine we have strived to create an architecture where the
+dataflow is easy to follow and understand. For us this means that when
+looking at any piece of code it should be possible to see if what
+other parts of the application it affects and what other parts it is
+affected by.
+
+One manifestation of this principle is that in Turbine it see very
+simple to see how the model affects the view and how the view affects
+the model. The figure below illustrates this.
+
+![modelView figure](https://rawgit.com/funkia/turbine/improve-documentation/figures/explicit-dataflow.svg)
+
+The arrows represents dataflow between the model and the view. Note
+how these "conceptual arrows" are clearly expressed in the code. For
+instance by looking at the buttons we can see that they produce
+output.
+
 ## Installation
 
 ```sh
@@ -82,15 +148,15 @@ npm install @funkia/turbine @funkia/hareactive @funkia/jabz
 Turbine uses. Hareactive is the FRP library that we use and Jabz
 provides some very useful functional abstractions.
 
-Alternatively, for trying out Turbine you may want to see our [Turbine starter kit](https://github.com/funkia/turbine-starter).
+Alternatively, for trying out Turbine you may want to see our [Turbine
+starter kit](https://github.com/funkia/turbine-starter).
 
-## Example
+## Examples
 
 The example below creates an input field and print whether or not it
 is valid.
 
 ```js
-import {map} from "@funkia/jabz";
 import {runComponent, elements, loop} from "@funkia/turbine";
 const {span, input, div} = elements;
 
@@ -99,7 +165,7 @@ const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 const main = go(function*() {
   yield span("Please enter an email address: ");
   const {inputValue: email} = yield input();
-  const isValid = map(isValidEmail, email);
+  const isValid = email.map(isValidEmail);
   yield div([
     "The address is ", map((b) => b ? "valid" : "invalid", isValid)
   ]);
@@ -112,24 +178,22 @@ runComponent("#mount", main);
 See the [tutorial](#tutorial) below which explains how the above
 example work.
 
-## Examples
-
 Here is a series of examples that demonstrate how to use Turbine.
 Approximately listed in order of increasing complexity.
 
-* [Simple](/examples/simple) — Very simple example of an
-  email validator.
-* [Fahrenheit celsius](/examples/fahrenheit-celsius) — A
-  converter between fahrenheit and celsius.
-* [Zip codes](/examples/zip-codes) — A zip code validator.
-  Shows one way of doing HTTP-requests with the IO-monad.
-* [Continuous time](/examples/continuous-time) —
-  Shows how to utilize continuous time.
-* [Counters](/examples/counters) — A list of counters.
-  Demonstrates nested components, managing a list of components and
-  how child components can communicate with parent components.
-* [Todo](/examples/counters) — An implementation of the
-  classic TodoMVC application. Note: Routing is not implemented yet.
+* [Simple](/examples/simple) — Very simple example of an email
+  validator.
+* [Fahrenheit celsius](/examples/fahrenheit-celsius) — A converter
+  between fahrenheit and celsius.
+* [Zip codes](/examples/zip-codes) — A zip code validator. Shows one
+  way of doing HTTP-requests with the IO-monad.
+* [Continuous time](/examples/continuous-time) — Shows how to utilize
+  continuous time.
+* [Counters](/examples/counters) — A list of counters. Demonstrates
+  nested components, managing a list of components and how child
+  components can communicate with parent components.
+* [Todo](/examples/counters) — An implementation of the classic
+  TodoMVC application. Note: Routing is not implemented yet.
 
 ## Tutorial
 
@@ -362,7 +426,7 @@ const counter = modelView(counterModel, counterView)();
 Note that there is a cyclic dependency between the model and the view.
 The figure below illustrates this.
 
-![Component figure](https://rawgit.com/funkia/turbine/master/figures/model-view.svg)
+![modelView figure](https://rawgit.com/funkia/turbine/master/figures/model-view.svg)
 
 We now have a fully functional counter. You have now seen how to
 create a simple component with encapsulated state and logic. The
@@ -372,7 +436,60 @@ current code can be seen in `version2.ts`.
 
 Our next step is to create a list of counters. WIP.
 
-## API Documentation
+## Documentation
+
+### Understanding generator functions
+
+At first Turbine's use of generator functions may seem peculiar. But
+it is just a nicer way to call [`chain`](#componentchain) methods.
+
+Three types in Turbine have a `chain`-method: `Component`, `Now` and
+`Behavior`. `chain` is used to compose structures together such that the result
+from one structure can be used in the next.
+
+For instance, when we use `chain` on components we can combine
+elements as we'd like and pipe output from one component into the
+next. The code below combines two `input` elements with a `span`
+element that shows the concatenation of the text in the two input
+fields.
+
+```typescript
+input({ attrs: { placeholder: "foo" } }).chain(
+  ({ inputValue: a }) => input().chain(
+    ({ inputValue: b }) => span(["Combined text: ", a, b])
+  )
+);
+```
+
+However, the above code is very awkward as each invocation of `chain`
+adds an extra layer of nesting. To solve the problem we use
+generators.
+
+```typescript
+go(function*() {
+  const {inputValue: a} = yield input();
+  const {inputValue: b} = yield input();
+  yield span(["Combined text: ", a, b]);
+});
+```
+
+The above code does exactly the same as the previous example. But it
+is a lot easier to read!
+
+The `go` function works like this. We yield a value with a `chain`
+method. `go` then calls `chain` on the yielded value. The function
+that `go` gives to `chain` continues the generator function with the
+value that `chain` passes it. The end result is a value of the same
+type that we yield inside the generator function.
+
+So, when we `yield` a `Component<A>` we will get an `A` back inside
+the generator function. And in the end `go` will return a component.
+
+Whenever you give a generator function to a function in Turbine it
+will call `go` on it behind the scenes. That is just for your
+convenience.
+
+## API
 
 The API documentation is incomplete. See also the
 [examples](#examples), the [tutorial](#tutorial), the [Hareactive
@@ -448,35 +565,6 @@ The result is an input element followed by a span element. When
 something is written in the input the text in the span element is
 updated accordingly.
 
-With `chain` we can combine as many elements as we'd like. The code
-below combines two `input` elements with a `span` that show the
-concatenation of the text in the two input fields.
-
-```typescript
-input({ attrs: { placeholder: "foo" } }).chain(
-  ({ inputValue: a }) => input().chain(
-    ({ inputValue: b }) => span(["Combined text: ", a, b])
-  )
-);
-```
-
-However, the above code is very awkward as each invocation of `chain`
-adds an extra layer of nesting. To solve the problem we use
-generators.
-
-```typescript
-do(function*() {
-  const {inputValue: a} = yield input();
-  const {inputValue: b} = yield input();
-  yield span(["Combined text: ", a, b]);
-});
-```
-
-That is a lot easier to read! The `do` function works like this: for
-every `yield`ed value it calls `chain` with a function that continues
-the generator function with the value that `chain` passes it. So, when
-we `yield` a `Component<A>` we will get an `A` back.
-
 ### `loop`
 
 Sometimes situations arise where there is a cyclic dependency between
@@ -496,7 +584,7 @@ the second showed output from the first. With `loop` we can do it like
 this:
 
 ```typescript
-loop(({output1, output2}) => do(function*() {
+loop(({output1, output2}) => go(function*() {
   const output1_ = yield myComponent(output2);
   const output2_ = yield myComponent(output1);
   return {output1: output1_, output2: output2_};
@@ -520,6 +608,41 @@ and/or behaviors as values.
 Visually it looks like this.
 
 ![loop figure](https://rawgit.com/funkia/turbine/master/figures/component-loop.svg)
+
+### `modelView`
+
+The `modelView` functions makes it possible to create components where
+the view is decoupled from the model and it's logic.
+
+`modelView` takes two arguments:
+
+* The model which is a function that returns a `Now` computation. The
+  `Now` computation is run when the component is being created.
+* The view which is a function that returns a `Component`.
+
+`modelView` establishes a circular dependency between the model and
+the view. The model returns a `Now` computation and the result of this
+computation is passed into the view function. The view function then
+returns a component. The output of the component is passed to the
+model function.
+
+Visually the circular dependency looks like this.
+
+![modelView figure](https://rawgit.com/funkia/turbine/master/figures/model-view.svg)
+
+`modelView` returns a _function_ that returns a component. The arguments
+given to this function will be passed along to both the model and the
+view functions. This makes it easy to create components that takes
+input.
+
+```js
+const myComponent = modelView(
+  (outputFromView, arg1, arg2) => ...,
+  (outputFromModel, arg1, arg2) => ...
+);
+
+myComponent("foo", "bar");
+```
 
 ## Contributing
 
