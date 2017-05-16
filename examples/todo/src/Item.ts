@@ -7,7 +7,7 @@ import {
 import { Component, modelView, elements } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
 
-import { setItemIO, getItemIO } from "./index";
+import { setItemIO, getItemIO, removeItemIO } from "./index";
 
 const enter = 13;
 const esc = 27;
@@ -88,6 +88,10 @@ function* itemModel(
 
   const destroyItem = combine(deleteClicked, nameChange.filter((s) => s === ""));
   const destroyItemId = destroyItem.mapTo(id);
+
+  // Remove persist todo item
+  yield performStream(destroyItem.mapTo(removeItemIO(persistKey)));
+
   return {
     taskName: taskName_,
     isComplete,
