@@ -23,11 +23,11 @@ type CounterOutput = {
 
 function* counterModel(
   { incrementClick, decrementClick }: CounterModelInput
-): ModelReturn<CounterViewInput, CounterOutput> {
+): ModelReturn<CounterViewInput> {
   const increment = incrementClick.mapTo(1);
   const decrement = decrementClick.mapTo(-1);
   const count = yield sample(scan(add, 0, combine(increment, decrement)));
-  return [{ count }, { count }];
+  return { count };
 }
 
 const counterView = ({ count }: CounterViewInput) => div([
@@ -56,7 +56,7 @@ function* counterListModel({ addCounter, listOut }: ModelInput): Iterator<Now<an
     nextId: Stream<number> = yield sample(scanS(add, 2, addCounter.mapTo(1))),
     appendCounterFn = map((id) => (ids: number[]) => ids.concat([id]), nextId),
     counterIds = yield sample(scan(apply, [0], appendCounterFn));
-  return [{ counterIds }, {}];
+  return { counterIds };
 }
 
 function* counterListView({ sum, counterIds }: ViewInput): Iterator<Component<any>> {

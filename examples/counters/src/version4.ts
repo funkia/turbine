@@ -1,4 +1,3 @@
-import { IOValue } from "@funkia/jabz/dist";
 import { foldr, lift, flatten } from "@funkia/jabz";
 import {
   Now, sample, Behavior, scan, Stream, combine, map, combineList,
@@ -37,7 +36,7 @@ function* counterModel(
   const decrement = decrementClick.mapTo(-1);
   const deleteS = deleteClick.mapTo(id);
   const count = yield sample(scan(add, 0, combine(increment, decrement)));
-  return [{ count }, { count, deleteS }];
+  return { count, deleteS };
 }
 
 function counterView({ count }: CounterModelOut): Component<CounterModelInput> {
@@ -81,7 +80,7 @@ function* mainModel({ addCounter, listOut }: ToModel): Iterator<Now<any>> {
     combine(appendCounterFn, removeCounterIdFn);
   const counterIds =
     yield sample(scan(apply, [0, 1, 2], modifications));
-  return [{ counterIds, sum }, {}];
+  return { counterIds, sum };
 }
 
 function* mainView({ sum, counterIds }: ToView): Iterator<Component<any>> {
@@ -89,8 +88,7 @@ function* mainView({ sum, counterIds }: ToView): Iterator<Component<any>> {
   yield p(["Sum ", sum]);
   const { click: addCounter } = yield button({ class: "btn btn-primary" }, "Add counter");
   const { listOut } = yield ul(list((id) => counter(id), counterIds, "listOut"));
-
   return { addCounter, listOut };
 }
 
-export const counterList = modelView<ToView, ToModel, {}>(mainModel, mainView)();
+export const counterList = modelView<ToView, ToModel>(mainModel, mainView)();

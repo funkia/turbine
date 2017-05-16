@@ -12,4 +12,8 @@ export const setItemIO = withEffects((key: string, value: any) => {
   localStorage.setItem(key, JSON.stringify(value));
 });
 
+export const removeItemIO = withEffects((key: string) => {
+  localStorage.removeItem(key);
+});
+
 runComponent("body", app);

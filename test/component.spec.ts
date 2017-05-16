@@ -119,7 +119,7 @@ describe("modelView", () => {
   it("simple span component", () => {
     const c = modelView(
       function model(): Now<any> {
-        return Now.of([{}, {}] as [{}, {}]);
+        return Now.of({});
       },
       function view(): Component<any> {
         return span("World");
@@ -130,18 +130,16 @@ describe("modelView", () => {
     expect(dom.querySelector("span")).to.have.text("World");
   });
   it("passes argument to model", () => {
-    const pair = <A, B>(a: A, b: B): [A, B] => ([a, b]);
     const c = modelView(
-      ({ click }, n: number) => Now.of(pair({ n: Behavior.of(n) }, 12)),
+      ({ click }, n: number) => Now.of({ n: Behavior.of(n)}),
       ({ n }) => span(n)
     );
     const { dom } = testComponent(c(12));
     expect(dom.querySelector("span")).to.have.text(("12"));
   });
   it("passes argument to view", () => {
-    const pair = <A, B>(a: A, b: B): [A, B] => ([a, b]);
     const c = modelView(
-      ({ click }) => Now.of(pair({}, {})),
+      ({ click }) => Now.of({}),
       ({ }, n: number) => span(n)
     );
     const { dom } = testComponent(c(7));
@@ -153,7 +151,7 @@ describe("modelView", () => {
     const c = modelView(
       function model(args: FromView): Now<any> {
         fromView = args;
-        return Now.of([{}, {}] as [{}, {}]);
+        return Now.of({});
       }, (): Child<FromView> => [
         span("Hello"),
         input()
@@ -168,7 +166,7 @@ describe("modelView", () => {
       return;
     }
     const c = modelView(
-      function fooComp({ foo }: any): Now<any> { return Now.of([{}, {}] as [{}, {}]); },
+      function fooComp({ foo }: any): Now<any> { return Now.of({}); },
       function barView(): Component<any> { return Component.of({ bar: "no foo?" }); }
     )();
     assert.throws(() => {

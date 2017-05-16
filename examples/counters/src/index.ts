@@ -39,7 +39,7 @@ type FromModel = {
 const versionSelector = modelView<FromModel, FromView>(
   function ({ selectVersion }) {
     const selected = stepper("1", selectVersion);
-    return Now.of([{ selected }, { selected }] as [FromModel, FromModel]);
+    return Now.of({ selected });
   },
   function ({ selected }): Component {
     return div({ class: "btn-group" }, function* () {

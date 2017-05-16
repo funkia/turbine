@@ -341,9 +341,8 @@ The first argument is a function that returns a `Now`-computation. You
 don't have to fully understand `Now`. One of the things it does is to
 make it possible to create stateful behaviors. The model function will
 as input receive the output from the component that the view function
-returns. The result of the `Now`-computation must be a pair. The first
-value in the pair will be passed on to the view function and the
-second value will be the output of the component that `modelView`
+returns. The result of the `Now`-computation will be passed on to the 
+view function and will be the output of the component that `modelView` 
 returns. Here is how we use to create our counter component.
 
 ```ts
@@ -354,10 +353,10 @@ function* counterModel(
   const decrement = decrementClick.mapTo(-1);
   const changes = combine(increment, decrement);
   const count = yield sample(scan((n, m) => n + m, 0, changes));
-  return [{ count }, { count }];
+  return { count };
 }
 
-const counter = modelView(counterModel, counterView);
+const counter = modelView(counterModel, counterView)();
 ```
 
 Note that there is a cyclic dependency between the model and the view.
