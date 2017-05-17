@@ -162,7 +162,7 @@ const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
-function main*() {
+function* main() {
   yield span("Please enter an email address: ");
   const {inputValue: email} = yield input();
   const isValid = email.map(isValidEmail);
@@ -171,7 +171,7 @@ function main*() {
   ]);
 }
 
-// `runMain` should be the only impure function in application code
+// `runComponent` should be the only impure function in application code
 runComponent("#mount", main);
 ```
 
