@@ -23,7 +23,7 @@ var config = {
       loader: "ts-loader",
       exclude: /node_modules/,
       options: {
-        configFileName: "./tsconfig-web.json"
+        configFileName: "./tsconfig-build.json"
       }
     }]
   },

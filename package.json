@@ -9,18 +9,18 @@
     "dist": "dist"
   },
   "scripts": {
-    "test": "./node_modules/.bin/karma start --single-run",
-    "test-watch": "./node_modules/.bin/karma start",
-    "codecov": "./node_modules/.bin/codecov -f coverage/**/json",
-    "build-web": "./node_modules/.bin/webpack",
-    "build-es6": "./node_modules/.bin/tsc -P tsconfig-es6.json",
-    "build-cmjs": "./node_modules/.bin/tsc -P tsconfig-cmjs.json",
+    "test": "karma start --single-run",
+    "test-watch": "karma start",
+    "codecov": "codecov -f coverage/**/json",
+    "build-web": "webpack",
+    "build-es6": "tsc -P tsconfig-build.json --module ES6 --outDir dist/es6 --declaration true --declarationDir ./dist/defs",
+    "build-cmjs": "tsc -P tsconfig-build.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run build",
-    "release-major": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment major",
-    "release-minor": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment minor",
-    "release-patch": "./node_modules/.bin/xyz --repo git@github.com:funkia/turbine.git --increment patch"
+    "release-major": "xyz --repo git@github.com:funkia/turbine.git --increment major",
+    "release-minor": "xyz --repo git@github.com:funkia/turbine.git --increment minor",
+    "release-patch": "xyz --repo git@github.com:funkia/turbine.git --increment patch"
   },
   "repository": {
     "type": "git",
@@ -36,7 +36,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@funkia/hareactive": "0.0.30",
+    "@funkia/hareactive": "0.0.31",
     "@funkia/jabz": "0.0.19"
   },
   "bugs": {
@@ -44,7 +44,7 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "0.0.30",
+    "@funkia/hareactive": "0.0.31",
     "@funkia/jabz": "0.0.19",
     "@types/chai": "^3.4.35",
     "@types/chai-dom": "0.0.5",

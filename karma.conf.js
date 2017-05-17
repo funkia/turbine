@@ -1,21 +1,25 @@
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ["mocha", "karma-typescript"],
     files: [
-      {pattern: "src/**/*.ts"},
-      {pattern: "test/**/*.ts"}
+      { pattern: "src/**/*.ts" },
+      { pattern: "test/**/*.ts" }
     ],
     preprocessors: {
       "src/**/*.ts": ["karma-typescript"],
       "test/**/*.ts": ["karma-typescript"]
     },
     reporters: ["mocha", "karma-typescript"],
-    browsers: ["Chrome", "Chromium", "Firefox"],
+    browsers: ["Chrome"],
     karmaTypescriptConfig: {
-      tsconfig: "tsconfig-test.json",
+      tsconfig: "tsconfig.json",
       reports: {
-	html: "coverage",
-	text: ""
+        html: "coverage",
+        text: ""
+      },
+      exclude: ["examples"],
+      compilerOptions: {
+        module: "commonjs"
       }
     }
   });

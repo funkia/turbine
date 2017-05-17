@@ -1,9 +1,10 @@
 import {
-  Behavior, sinkBehavior, isBehavior, Stream, Now, streamFromEvent, behaviorFromEvent
+  Behavior, sinkBehavior, isBehavior, Stream, Now, streamFromEvent,
+  behaviorFromEvent
 } from "@funkia/hareactive";
 import {
-  Component, runComponent,
-  viewObserve, Showable, Child, isChild, toComponent
+  Component, runComponent, viewObserve, Showable, Child, isChild,
+  toComponent
 } from "./component";
 import { id, rename, mergeDeep, assign } from "./utils";
 
