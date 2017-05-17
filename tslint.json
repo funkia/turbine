@@ -1,4 +1,5 @@
 {
+  "defaultSeverity": "warning",
   "rules": {
     "align": [
       true,
@@ -28,10 +29,7 @@
     "no-arg": true,
     "no-bitwise": true,
     "no-conditional-assignment": true,
-    "no-consecutive-blank-lines": [
-      true,
-      2
-    ],
+    "no-consecutive-blank-lines": true,
     "no-console": [
       true,
       "debug",
@@ -41,12 +39,10 @@
       "trace"
     ],
     "no-construct": true,
-    "no-parameter-properties": false,
     "no-debugger": true,
     "no-duplicate-variable": true,
-    "no-empty": true,
     "no-eval": true,
-    "no-inferrable-types": [false],
+    "no-inferrable-types": false,
     "no-internal-module": true,
     "no-null-keyword": true,
     "no-reference": true,
@@ -55,7 +51,7 @@
     "no-string-literal": true,
     "no-trailing-whitespace": true,
     "no-unused-expression": true,
-    "no-use-before-declare": true,
+    "no-unused-variable": [true, {"ignore-pattern": "^_"}],
     "no-var-keyword": true,
     "no-var-requires": true,
     "one-line": [
@@ -67,7 +63,7 @@
       "check-whitespace"
     ],
     "one-variable-per-declaration": [
-      false,
+      true,
       "ignore-for-loop"
     ],
     "quotemark": [

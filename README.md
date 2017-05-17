@@ -130,7 +130,7 @@ One manifestation of this principle is that in Turbine it see very
 simple to see how the model affects the view and how the view affects
 the model. The figure below illustrates this.
 
-![modelView figure](https://rawgit.com/funkia/turbine/improve-documentation/figures/explicit-dataflow.svg)
+![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.svg)
 
 The arrows represents dataflow between the model and the view. Note
 how these "conceptual arrows" are clearly expressed in the code. For
@@ -162,14 +162,14 @@ const {span, input, div} = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
-const main = go(function*() {
+function main*() {
   yield span("Please enter an email address: ");
   const {inputValue: email} = yield input();
   const isValid = email.map(isValidEmail);
   yield div([
     "The address is ", map((b) => b ? "valid" : "invalid", isValid)
   ]);
-});
+}
 
 // `runMain` should be the only impure function in application code
 runComponent("#mount", main);
