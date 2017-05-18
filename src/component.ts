@@ -27,7 +27,7 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
 /**
  * A component is a function from a parent DOM node to a now
  * computation I.e. something like `type Component<A> = (p: Node) =>
- * Now<A>`. We don't define it as a type alias because we wan't to
+ * Now<A>`. We don't define it as a type alias because we want to
  * make it a monad in different way than Now.
  */
 @monad
@@ -241,7 +241,7 @@ export function text(s: Showable): Component<{}> {
     parent.appendChild(document.createTextNode(s.toString()));
     return Now.of({});
   });
-};
+}
 
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;

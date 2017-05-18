@@ -1,6 +1,5 @@
 import {
-  Stream, snapshot, changes, combine,
-  Behavior, stepper
+  Stream, snapshot, changes, combine, Behavior, stepper
 } from "@funkia/hareactive";
 
 import { loop, elements } from "../../../src";

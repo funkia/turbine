@@ -302,7 +302,6 @@ export type ElementCreator<A> = {
   <B, C, D, E, F, G, H>(child: ChArr7<B, C, D, E, F, G, H>): Cp<A & B & C & D & E & F & G & H>;
   <B, C, D, E, F, G, H, I>(child: ChArr8<B, C, D, E, F, G, H, I>): Cp<A & B & C & D & E & F & G & H & I>;
   <B, C, D, E, F, G, H, I, J>(child: ChArr9<B, C, D, E, F, G, H, I, J>): Cp<A & B & C & D & E & F & G & H & I & J>;
-
   <B>(child: Ch<B>): Cp<A & B>;
   (props: Properties<A>): Cp<A>;
 };

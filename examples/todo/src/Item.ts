@@ -7,7 +7,7 @@ import {
 import { Component, modelView, elements } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
 
-import { setItemIO, getItemIO, removeItemIO } from "./index";
+import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 
 const enter = 13;
 const esc = 27;
@@ -55,7 +55,7 @@ export type Output = {
 function* itemModel(
   { toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName }: FromView,
   toggleAll: Stream<boolean>, { name: initialName, id }: Input
-) {
+): any {
   const enterPress = filter(isKey(enter), nameKeyup);
   const enterNotPressed = toggle(true, startEditing, enterPress);
   const cancel = filter(isKey(esc), nameKeyup);
@@ -70,18 +70,13 @@ function* itemModel(
 
   // Restore potentially persisted todo item
   const persistKey = `todoItem:${id}`;
-  const savedItem: Future<Maybe<PersistedItem>> = yield async(getItemIO(persistKey));
-  const restoredTodo: Future<Item> = savedItem.map((maybeItem) => {
-    const initial = fromMaybe({ taskName: initialName, isComplete: false }, maybeItem);
-    return {
-      taskName: stepper(initial.taskName, nameChange),
-      isComplete: stepper(initial.isComplete, combine(toggleTodo, toggleAll))
-    };
-  });
+  const savedItem = yield sample(itemBehavior(persistKey));
+  const initial = savedItem === null ? { taskName: initialName, isComplete: false } : savedItem;
 
-  // Switch to the behaviors created from restored values
-  const taskName_ = yield sample(switcher(Behavior.of(initialName), restoredTodo.map(o => o.taskName)));
-  const isComplete = yield sample(switcher(Behavior.of(false), restoredTodo.map(o => o.isComplete)));
+  // Initialize task to restored values
+  const taskName_ = stepper(initial.taskName, nameChange);
+  const isComplete = stepper(initial.isComplete, combine(toggleTodo, toggleAll));
+
   // Persist todo item
   const item = lift((taskName, isComplete) => ({ taskName, isComplete }), taskName_, isComplete);
   yield performStream(changes(item).map((i: PersistedItem) => setItemIO(persistKey, i)));
@@ -93,14 +88,8 @@ function* itemModel(
   yield performStream(destroyItem.mapTo(removeItemIO(persistKey)));
 
   return {
-    taskName: taskName_,
-    isComplete,
-    isEditing,
-    newName,
-    focusInput: startEditing,
-    id,
-    destroyItemId,
-    completed: isComplete
+    taskName: taskName_, isComplete, isEditing, newName, focusInput:
+    startEditing, id, destroyItemId, completed: isComplete
   };
 }
 

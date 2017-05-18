@@ -13,7 +13,7 @@ programming. Experimental.
 # Table of contents
 
 * [Why Turbine?](#why-turbine)
-* [High level overview](#high-level-overview)
+* [High-level overview](#high-level-overview)
 * [Installation](#installation)
 * [Examples](#examples)
 * [Tutorial](#tutorial)
@@ -37,7 +37,7 @@ We have done our best to realize our goal. But we are not done yet. We
 hope you will find Turbine interesting, try it and maybe even help us
 making it even better.
 
-## High level overview
+## High-level overview
 
 Here our some of our key features.
 
@@ -57,7 +57,7 @@ Here our some of our key features.
 * Side-effects are expressed with a declarative IO monad. This allows
   for easy testing of code with side-effects. Furthermore, the
   IO-monad is integrated with FRP.
-* The entire dataflow through applications is explicit and easy to
+* The entire data flow through applications is explicit and easy to
   follow.
 * Our libraries are available both as CommonJS and ES2015 modules.
   This allows for tree-shaking.
@@ -80,9 +80,9 @@ the design of Turbine.
 ### Purely functional
 
 Turbine is purely functional. We mean that in the most strict sense of
-the term. In a Turbine app every single expression is pure. This gives
-a huge benefit in how easy it is to understand and maintain a Turbine
-app is.
+the term. In a Turbine app, every single expression is pure. This
+gives a huge benefit in how easy it is to understand and maintain a
+Turbine app is.
 
 One benefit of the complete purity is that every function in Turbine
 supports what is called "referential transparency". This means that an
@@ -111,17 +111,13 @@ const view = div([
 
 Such refactorings can always be safely done in Turbine.
 
-### Completely explicit dataflow
+### Completely explicit data flow
 
 One significant challenge when writing an interactive frontend
-application is how to manage the dataflow through an application.
+application is how to manage the data flow through an application.
 
-Many modern frameworks have recognized this problem and made fairly
-good attempts to solve them. But, in our opinion they all have "gaps"
-where understanding the dataflow is tricky.
-
-In Turbine we have strived to create an architecture where the
-dataflow is easy to follow and understand. For us this means that when
+In Turbine we have strived to create an architecture where the data
+flow is easy to follow and understand. For us, this means that when
 looking at any piece of code it should be possible to see if what
 other parts of the application it affects and what other parts it is
 affected by.
@@ -132,9 +128,9 @@ the model. The figure below illustrates this.
 
 ![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.svg)
 
-The arrows represents dataflow between the model and the view. Note
+The arrows represent data flow between the model and the view. Note
 how these "conceptual arrows" are clearly expressed in the code. For
-instance by looking at the buttons we can see that they produce
+instance, by looking at the buttons we can see that they produce
 output.
 
 ### Declarative models
@@ -231,10 +227,10 @@ Approximately listed in order of increasing complexity.
 
 ## Tutorial
 
-In this tutorial we will build a simple application with a list of
+In this tutorial, we will build a simple application with a list of
 counters. The application will be simple but not completely trivial.
-Along the way most of the key concepts in Turbine will be explained. We
-will se how to create HTML, how to create custom components, how a
+Along the way, most of the key concepts in Turbine will be explained.
+We will see how to create HTML, how to create custom components, how a
 component can be nested and how it can share state with its parent.
 
 Please open an issue if you have questions regarding the tutorial or
@@ -300,7 +296,7 @@ const myDiv = div({class: "foo"}, span("Some text"));
 
 The element functions are overloaded. So instead of giving `span` a
 component as child we can give it a string. The element functions also
-accepts an array of child elements like this.
+accept an array of child elements like this.
 
 ```typescript
 const myDiv = div({class: "foo"}, [
@@ -389,18 +385,18 @@ const usernameInput = input({attrs: {placeholder: "Username"}});
 
 Here `usernameInput` has the type `Component<Output>` where `Output`
 is an object containing the output that an `input` element produces.
-Among other things, an `input` element produces a string-valued
+Among other things, an `input` element produces a string valued
 behavior named `inputValue` that contains the current content of the
 `input` element. So, the type of `usernameInput` above is something
 like `Component<{inputValue: Behavior<string>, ...}>`. The dots are
-there to indicate the the component has other output as well.
+there to indicate that the component has other output as well.
 
 We want our counter view to produce two streams as output. One stream
-should be from whenever the first button is clicked the the other
-stream clicks from the second button. That is, the view's output
-should the type `{increment: Behavior<number>, decrement:
-Behavior<number>}` The simplest way to get achieve that looks like
-this:
+should be from whenever the first button is clicked and the other
+stream should contain clicks from the second button. That is, the
+view's output should the type `{increment: Behavior<number>,
+decrement: Behavior<number>}` The simplest way to get achieve that
+looks like this:
 
 ```ts
 const counterView = ({ count }: CounterViewInput) => div([
@@ -468,7 +464,40 @@ current code can be seen in `version2.ts`.
 
 ### Creating a list of counters
 
-Our next step is to create a list of counters. WIP.
+Our next step is to create a list of counters. To do that we will
+create a new component called `counterList`. The component will
+contain a list of `counter` components as well as a button for adding
+counters to the list.
+
+Let's begin by defining a view function that creates a header and a
+button.
+
+```js
+function* counterListView(): {
+  yield h1("Counters");
+  const { click: addCounter } = yield button({ class: "btn btn-primary" }, "Add counter");
+  return { addCounter };
+}
+```
+
+We hook the view up to a model using `modelView`. Again, the model
+function receives the return value from the view function.
+
+```js
+function* counterListModel({ addCounter }) {
+  return [{}, {}];
+}
+
+function* counterListView(): {
+  yield h1("Counters");
+  const { click: addCounter } = yield button({ class: "btn btn-primary" }, "Add counter");
+  return { addCounter };
+}
+
+const counterList = modelView(counterListModel, counterListView);
+```
+
+To create a dynamic list of counter we have to use the `list` function.
 
 ## Documentation
 
@@ -646,7 +675,7 @@ Visually it looks like this.
 ### `modelView`
 
 The `modelView` functions makes it possible to create components where
-the view is decoupled from the model and it's logic.
+the view is decoupled from the model and its logic.
 
 `modelView` takes two arguments:
 
@@ -664,10 +693,10 @@ Visually the circular dependency looks like this.
 
 ![modelView figure](https://rawgit.com/funkia/turbine/master/figures/model-view.svg)
 
-`modelView` returns a _function_ that returns a component. The arguments
-given to this function will be passed along to both the model and the
-view functions. This makes it easy to create components that takes
-input.
+`modelView` returns a _function_ that returns a component. The
+arguments given to this function will be passed along to both the
+model and the view functions. This makes it easy to create components
+that take input.
 
 ```js
 const myComponent = modelView(
