@@ -137,6 +137,40 @@ how these "conceptual arrows" are clearly expressed in the code. For
 instance by looking at the buttons we can see that they produce
 output.
 
+### Declarative models
+
+Imperative programming is about _doing_. Functional programming is
+about _being_. This mean that ideally a functional program should be
+about defining what things are. That property is what makes functional
+programs declarative.
+
+Below is a model from the [counters example](/examples/counters).
+Notice how the model consists of nothing but a series of `const`
+statements.
+
+```js
+function* counterModel({ incrementClick, decrementClick, deleteClick }) {
+  const increment = incrementClick.mapTo(1);
+  const decrement = decrementClick.mapTo(-1);
+  const deleteS = deleteClick.mapTo(id);
+  const count = yield sample(scan(add, 0, combine(increment, decrement)));
+  return { count, deleteS };
+}
+```
+
+Each line is a declaration of a piece of the state. All models in
+Turbine follows this pattern. This makes state in a Turbine app very
+easy to understand. One can look at a single definition and be certain
+that it tells everything there is to know about that specific piece of
+state.
+
+This is in sharp contrast to frameworks that mutate state or
+frameworks where state is stepped forward by reducer functions. With
+such approaches a single piece of state can potentially be affected
+and changed in several places. That can make it hard to understand how
+the state evolves. The benefits of having a definition as a
+single source of truth is lost.
+
 ## Installation
 
 ```sh
