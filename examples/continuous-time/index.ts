@@ -22,14 +22,14 @@ function model({ snapClick }: ViewOut): Now<any> {
     snapshot(time, snapClick)
   );
   const message = stepper("You've not clicked the button yet", msgFromClick);
-  return Now.of({time});
+  return Now.of({time, message});
 }
 
 function* view({ time, message }: ToView): Iterator<Component<any>> {
   yield h1("Continuous time example");
-  yield p(dynamic(map(formatTime, time)));
+  yield p(map(formatTime, time));
   const { click: snapClick } = yield p(button("Click to snap time"));
-  yield p(dynamic(message));
+  yield p(message);
   return { snapClick };
 }
 
