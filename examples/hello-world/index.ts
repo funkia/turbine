@@ -15,7 +15,7 @@ const main = function* () {
   // will store the behavior of the input values in the 'name' variable
   const { inputValue: name } = yield input({
     attrs: {
-      autofocus: "true", 
+      autofocus: true, 
       placeholder: "Your name?"
     }
   })
