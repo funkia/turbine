@@ -222,7 +222,7 @@ Approximately listed in order of increasing complexity.
 * [Counters](/examples/counters) — A list of counters. Demonstrates
   nested components, managing a list of components and how child
   components can communicate with parent components.
-* [Todo](/examples/counters) — An implementation of the classic
+* [Todo](/examples/todo) — An implementation of the classic
   TodoMVC application. Note: Routing is not implemented yet.
 
 ## Tutorial
