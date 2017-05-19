@@ -187,7 +187,16 @@ class CreateDomNow<A> extends Now<A> {
           let a: Behavior<any> = undefined;
           const initial = initialFn(elm);
           Object.defineProperty(output, name, {
-            enumerable: true,
+            enumerable: false,
+            configurable: true,
+            set: function<A>(value: A): void {
+              Object.defineProperty(output, name, {
+                enumerable: true,
+                get: (): A => {
+                  return value;
+                }
+              });
+            },
             get: (): Behavior<any> => {
               if (a === undefined) {
                 a = behaviorFromEvent(elm, evt, initial, extractor);
@@ -203,7 +212,16 @@ class CreateDomNow<A> extends Now<A> {
           let a: Stream<any> = undefined;
           if (output[name] === undefined) {
             Object.defineProperty(output, name, {
-              enumerable: true,
+              enumerable: false,
+              configurable: true,
+              set: function<A>(value: A): void {
+                Object.defineProperty(output, name, {
+                  enumerable: true,
+                  get: (): A => {
+                    return value;
+                  }
+                });
+              },
               get: (): Stream<any> => {
                 if (a === undefined) {
                   a = streamFromEvent(elm, evt, extractor);

@@ -25,7 +25,7 @@ describe("component specs", () => {
       expect(dom).to.have.text("world");
     });
     it("converts an array of components to component", () => {
-      const component = toComponent([span("Hello"), div("There"), button("Click me")]);
+      const component = toComponent([span("Hello"), div("There"), button({output: {click: "click"}}, "Click me")]);
       const { dom, out } = testComponent(component);
 
       expect(out).to.have.property("click");
@@ -145,6 +145,7 @@ describe("modelView", () => {
     const { dom } = testComponent(c(7));
     expect(dom.querySelector("span")).to.have.text(("7"));
   });
+
   it("view is function returning array of components", () => {
     type FromView = { inputValue: Behavior<any> };
     let fromView: FromView;
@@ -154,13 +155,14 @@ describe("modelView", () => {
         return Now.of({});
       }, (): Child<FromView> => [
         span("Hello"),
-        input()
+        input({output: {inputValue: "inputValue"}})
       ])();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
     assert(isBehavior(fromView.inputValue));
   });
+
   it("throws an error message if the view doesn't return the needed properties", () => {
     if (!supportsProxy) {
       return;

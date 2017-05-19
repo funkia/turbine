@@ -5,7 +5,7 @@ const {input, div, label} = elements;
 
 type Looped = {
   fahrenChange: Stream<string>,
-  celsiusChange: Stream<string>,
+  celsiusChange: Stream<string>
 };
 
 const getValue = (ev: any) => ev.currentTarget.value;

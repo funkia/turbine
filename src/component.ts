@@ -253,7 +253,7 @@ export function toComponent<A>(child: Child): Component<any> {
   if (isComponent(child)) {
     return child;
   } else if (isBehavior(child)) {
-    return dynamic(child);
+    return dynamic(child).mapTo({});
   } else if (isGeneratorFunction(child)) {
     return go(<any>child);
   } else if (isShowable(child)) {
