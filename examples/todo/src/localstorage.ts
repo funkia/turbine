@@ -12,3 +12,7 @@ export const setItemIO = withEffects((key: string, value: any) => {
 export const removeItemIO = withEffects((key: string) => {
   localStorage.removeItem(key);
 });
+
+export const removeItemsIO = withEffects((keys: string[]) => {
+  keys.forEach(key => localStorage.removeItem(key));
+});
