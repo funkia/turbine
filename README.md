@@ -126,7 +126,7 @@ One manifestation of this principle is that in Turbine it see very
 simple to see how the model affects the view and how the view affects
 the model. The figure below illustrates this.
 
-![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.svg)
+![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.png)
 
 The arrows represent data flow between the model and the view. Note
 how these "conceptual arrows" are clearly expressed in the code. For
