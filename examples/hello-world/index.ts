@@ -1,19 +1,12 @@
-const { go, lift, combine } = require("@funkia/jabz")
-const {runComponent, elements, modelView} = require("../../src")
+import {map, go} from "@funkia/jabz"
+import {runComponent, elements} from "../../src"
+const {label, input, div} = elements
 
-const {span, input, div} = elements
+function* main() {
+  yield label('Please enter your name:')
+  // yield input()
+  return input()
+}
 
-const Node = div(`Hello from static Node!`)
-// const Fn = () => div(`Hello from Function!`)
-
-// const App = [
-// 	Node,
-// 	Fn
-// ]
-
-const main = go(function* () {
-  yield div(`Hello`);
-  return {};
-});
-
-runComponent("#mount", main)
+// `runMain` should be the only impure function in application code
+runComponent("#mount", main);
