@@ -1,4 +1,4 @@
-import {combine, fromMaybe, lift, Maybe, traverse, fgo} from "@funkia/jabz";
+import {combine, fromMaybe, lift, Maybe, traverse, fgo, sequence, IO} from "@funkia/jabz";
 import {
   Behavior, scan, map, sample, snapshot, Stream, switchStream,
   combineList, async, Future, switcher, plan, performStream, changes,
@@ -10,11 +10,11 @@ const {h1, p, header, footer, section, checkbox, ul} = elements;
 import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams, itemIdToPersistKey} from "./Item";
 import todoFooter, { Params as FooterParams } from "./TodoFooter";
-import {setItemIO, itemBehavior, removeItemsIO} from "./localstorage";
+import {setItemIO, itemBehavior, removeItemIO} from "./localstorage";
 
 const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
-const contains = <A>(a: A, list: A[]) => list.indexOf(a) !== -1;
+const includes = <A>(a: A, list: A[]) => list.indexOf(a) !== -1;
 
 type FromView = {
   toggleAll: Stream<boolean>,
@@ -43,16 +43,16 @@ function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
   ).map((list) => list.filter(((o) => o.completed)).map((o) => o.id));
 }
 
-type ModifyingListModel<A, B> = {
-  addS: Stream<A>,
+type ListModel<A, B> = {
+  prependItemS: Stream<A>,
   removeKeyListS: Stream<B[]>,
   itemToKey: (a: A) => B,
   initial: A[]
 };
 // This model handles the modification of the list of Todos
-function modifyingListModel<A, B>({ addS, removeKeyListS, itemToKey, initial }: ModifyingListModel<A, B>) {
-  const prependS = addS.map(item => (list: A[]) => combine([item], list));
-  const removeS = removeKeyListS.map(keys => (list: A[]) => list.filter(item => !contains(itemToKey(item), keys)));
+function ListModel<A, B>({ prependItemS, removeKeyListS, itemToKey, initial }: ListModel<A, B>) {
+  const prependS = prependItemS.map(item => (list: A[]) => [item].concat(list));
+  const removeS = removeKeyListS.map(keys => (list: A[]) => list.filter(item => !includes(itemToKey(item), keys)));
   const modifications = combine(removeS, prependS);
   return sample(scan(apply, initial, modifications));
 }
@@ -71,14 +71,16 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
 
   const clearCompletedIdS = snapshot(completedIds, clearCompleted);
   const removeListS = combine(deleteS.map(a => [a]), clearCompletedIdS);
-  const todoNames = yield modifyingListModel({
-    addS: newTodoS,
+  const todoNames = yield ListModel({
+    prependItemS: newTodoS,
     removeKeyListS: removeListS,
     itemToKey: getItemId,
     initial: restoredTodoName
   });
 
-  yield performStream(clearCompletedIdS.map(ids => removeItemsIO(ids.map(itemIdToPersistKey))));
+  yield performStream(
+    clearCompletedIdS.map(ids => sequence(IO, ids.map(id => removeItemIO(itemIdToPersistKey(id))))
+  ));
   yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
 
   const areAllCompleted =
