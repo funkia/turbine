@@ -1,3 +1,5 @@
+// In this example the input value will be automatically updated as user types
+
 import { runComponent, elements } from "../../src"
 const { label, span, input, div } = elements
 
