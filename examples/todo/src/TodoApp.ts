@@ -6,10 +6,11 @@ import {
 } from "@funkia/hareactive";
 import {modelView, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul} = elements;
+import { Router } from "@funkia/rudolph";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams} from "./Item";
-import todoFooter, { Params as FooterParams } from "./TodoFooter";
+import todoFooter, {Params as FooterParams } from "./TodoFooter";
 import {setItemIO, itemBehavior} from "./localstorage";
 
 const isEmpty = (list: any[]) => list.length === 0;
@@ -42,7 +43,9 @@ function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
   ).map((list) => list.filter(((o) => o.completed)).map((o) => o.id));
 }
 
-function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
+function* model({
+  enterTodoS, toggleAll, clearCompleted, itemOutputs
+}: FromView) {
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
   const newTodoS: Stream<ItemParams> = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
 
@@ -69,7 +72,7 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   return {itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted};
 }
 
-function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView) {
+function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView, router: Router) {
   return [
     section({class: "todoapp"}, [
       header({class: "header"}, [
@@ -87,10 +90,10 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
         }),
         ul(
           {class: "todo-list"},
-          list((n) => item(toggleAll, n), todoNames, "itemOutputs", (o) => o.id)
+          list((n) => item(toggleAll, n, router), todoNames, "itemOutputs", (o) => o.id)
         )
       ]),
-      todoFooter({todosB: itemOutputs, areAnyCompleted})
+      todoFooter(itemOutputs, areAnyCompleted, router)
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
@@ -100,4 +103,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-export const app = modelView(model, view)();
+export const app = modelView(model, view);

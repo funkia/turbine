@@ -223,7 +223,7 @@ Approximately listed in order of increasing complexity.
   nested components, managing a list of components and how child
   components can communicate with parent components.
 * [Todo](/examples/todo) — An implementation of the classic
-  TodoMVC application. Note: Routing is not implemented yet.
+  TodoMVC application.
 
 ## Tutorial
 
