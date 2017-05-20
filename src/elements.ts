@@ -26,6 +26,7 @@ export const checkbox = element("input[type=checkbox]", {
   }
 });
 
+export const canvas = element("canvas");
 export const button = element("button");
 export const a = element("a");
 export const label = element("label");
@@ -34,6 +35,11 @@ export const span = element("span");
 export const div = element("div");
 export const p = element("p");
 export const h1 = element("h1");
+export const h2 = element("h2");
+export const h3 = element("h3");
+export const h4 = element("h4");
+export const h5 = element("h5");
+export const h6 = element("h6");
 export const ul = element("ul");
 export const li = element("li");
 export const strong = element("strong");
