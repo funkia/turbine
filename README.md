@@ -170,16 +170,14 @@ single source of truth is lost.
 ## Installation
 
 ```sh
-npm install @funkia/turbine @funkia/hareactive @funkia/jabz
+npm install @funkia/turbine @funkia/hareactive
 ```
 
-[Hareactive](https://github.com/funkia/hareactive) and
-[Jabz](https://github.com/funkia/jabz) are peer dependencies that
-Turbine uses. Hareactive is the FRP library that we use and Jabz
-provides some very useful functional abstractions.
+[Hareactive](https://github.com/funkia/hareactive) is a peer
+dependency. It is the FRP library that that Turbine is based upon.
 
-Alternatively, for trying out Turbine you may want to see our [Turbine
-starter kit](https://github.com/funkia/turbine-starter).
+Alternatively, for quickly trying out Turbine you may want to see our
+[Turbine starter kit](https://github.com/funkia/turbine-starter).
 
 ## Examples
 
@@ -557,8 +555,7 @@ convenience.
 The API documentation is incomplete. See also the
 [examples](#examples), the [tutorial](#tutorial), the [Hareactive
 documentation](https://github.com/funkia/hareactive) and this tutorial
-about the
-[`IO`-monad](https://github.com/funkia/jabz/blob/master/docs/io-tutorial.md).
+about [IO](https://github.com/funkia/io).
 
 ### Component
 

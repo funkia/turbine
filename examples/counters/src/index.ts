@@ -53,7 +53,7 @@ const versionSelector = modelView<FromModel, FromView>(
   }
 );
 
-const main = go(function* (): Iterator<Component<any>> {
+const main = go(function* () {
   const { selected } = yield versionSelector();
   const currentApp = selected.map((n: AppId) => numberToApp[n]);
   yield div(dynamic(currentApp));

@@ -18,7 +18,7 @@ function isShowable(s: any): s is Showable {
 function fst<A, B>(a: [A, B]): A { return a[0]; }
 function snd<A, B>(a: [A, B]): B { return a[1]; }
 
-export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
+export function isGeneratorFunction<A, T>(fn: any): fn is ((...a: any[]) => IterableIterator<T>) {
   return fn !== undefined
     && fn.constructor !== undefined
     && fn.constructor.name === "GeneratorFunction";
@@ -67,10 +67,7 @@ export function runComponent<A>(parent: Node | string, c: Child<A>): A {
 export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
   const dom = document.createElement("div");
   const out = runComponent(dom, c);
-  return {
-    out,
-    dom
-  };
+  return { out, dom };
 }
 
 export function isComponent(c: any): c is Component<any> {
@@ -181,7 +178,7 @@ export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
 export type View<M, V> = ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>);
 export type View1<M, V, A> = ((m: M, a: A) => Child<V>) | ((m: M, a: A) => Iterator<Component<any>>);
 
-export function modelView<M extends ReactivesObject, V = {}>(
+export function modelView<M extends ReactivesObject, V>(
   model: Model<V, M>, view: View<M, V>, toViewReactiveNames?: string[]
 ): () => Component<M>;
 export function modelView<M extends ReactivesObject, V, A>(
@@ -191,7 +188,7 @@ export function modelView<M extends ReactivesObject, V>(
   model: any, view: any, toViewReactiveNames?: string[]
 ): (...args: any[]) => Component<M> {
   const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
-  const v = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
+  const v: any = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
   return (...args: any[]) => new Component<M>((parent: Node) => new MfixNow<M>(
     (bs) => v(bs, ...args)
       .content(parent)

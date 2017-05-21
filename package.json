@@ -36,8 +36,10 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@funkia/hareactive": "0.0.31",
-    "@funkia/jabz": "0.0.19"
+    "@funkia/hareactive": "0.0.31"
+  },
+  "dependencies": {
+    "@funkia/jabz": "0.0.22"
   },
   "bugs": {
     "url": "https://github.com/funkia/turbine/issues"
@@ -45,7 +47,6 @@
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
     "@funkia/hareactive": "0.0.31",
-    "@funkia/jabz": "0.0.19",
     "@types/chai": "^3.4.35",
     "@types/chai-dom": "0.0.5",
     "@types/mocha": "^2.2.40",
