@@ -2,7 +2,10 @@ import { assert, use, expect } from "chai";
 import * as chaiDom from "chai-dom";
 use(chaiDom);
 import { fgo } from "@funkia/jabz";
-import { Behavior, isBehavior, sinkBehavior, placeholder, Now, publish, fromFunction } from "@funkia/hareactive";
+import {
+  Behavior, Stream, isBehavior, sinkBehavior, placeholder, Now,
+  publish, fromFunction
+} from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
 import {
@@ -25,7 +28,7 @@ describe("component specs", () => {
       expect(dom).to.have.text("world");
     });
     it("converts an array of components to component", () => {
-      const component = toComponent([span("Hello"), div("There"), button({output: {click: "click"}}, "Click me")]);
+      const component = toComponent([span("Hello"), div("There"), button({ output: { click: "click" } }, "Click me")]);
       const { dom, out } = testComponent(component);
 
       expect(out).to.have.property("click");
@@ -131,11 +134,15 @@ describe("modelView", () => {
   });
   it("passes argument to model", () => {
     const c = modelView(
-      ({ click }, n: number) => Now.of({ n: Behavior.of(n)}),
+      ({ click }: { click: Stream<any> }, n: number) => Now.of({ n: Behavior.of(n) }),
       ({ n }) => span(n)
     );
     const { dom } = testComponent(c(12));
     expect(dom.querySelector("span")).to.have.text(("12"));
+    const test = modelView(
+      ({ inputValue }) => Now.of({ foo: Behavior.of(12) }),
+      ({ foo }) => input()
+    );
   });
   it("passes argument to view", () => {
     const c = modelView(
@@ -155,7 +162,7 @@ describe("modelView", () => {
         return Now.of({});
       }, (): Child<FromView> => [
         span("Hello"),
-        input({output: {inputValue: "inputValue"}})
+        input({ output: { inputValue: "inputValue" } })
       ])();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
