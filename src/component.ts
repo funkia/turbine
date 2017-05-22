@@ -117,7 +117,7 @@ class MfixComponentNow<A> extends Now<A> {
 }
 
 export function loop<A extends ReactivesObject>(
-  f: ((a: A) => Component<A>) | ((a: A) => IterableIterator<Component<any>>),
+  f: ((a: A) => Component<A>) | ((a: A) => IterableIterator<Component<any> | A>),
   placeholderNames?: string[]
 ): Component<A> {
   if (isGeneratorFunction(f)) {

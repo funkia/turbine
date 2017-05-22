@@ -39,7 +39,7 @@ const filterItem = (name: string) => li(a({
 
 const sumFalse = (l: boolean[]) => l.filter(negate).length;
 
-const model = function* ({filterBtnActive, filterBtnAll, filterBtnCompleted, clearCompleted}: FromView, _1: any, _2: any, router: Router) {
+const model = function* ({filterBtnActive, filterBtnAll, filterBtnCompleted, clearCompleted}: FromView, {router}) {
   const navs = combine(
     filterBtnAll.mapTo("all"),
     filterBtnActive.mapTo("active"),
@@ -49,7 +49,7 @@ const model = function* ({filterBtnActive, filterBtnAll, filterBtnCompleted, cle
   return {clearCompleted};
 };
 
-const view = ({}, todosB: Behavior<ItemOut[]>, areAnyCompleted: Behavior<boolean>) => {
+const view = ({}, {todosB, areAnyCompleted}) => {
   const hidden = todosB.map(isEmpty);
   const itemsLeft = mapTraverseFlat(get("completed"), todosB).map(sumFalse);
   return footer({class: "footer", classToggle: {hidden}}, [
@@ -68,7 +68,6 @@ const view = ({}, todosB: Behavior<ItemOut[]>, areAnyCompleted: Behavior<boolean
     }, "Clear completed")
   ]);
 };
-
 
 const todoFooter = modelView(model, view);
 

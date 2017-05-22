@@ -26,7 +26,9 @@ export type PersistedItem = {
 
 export type Input = {
   name: string,
-  id: number
+  id: number,
+  toggleAll: Stream<boolean>
+  router: Router
 };
 
 type FromView = {
@@ -55,10 +57,9 @@ export type Output = {
 };
 
 
-
 function* itemModel(
   { toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName }: FromView,
-  toggleAll: Stream<boolean>, { name: initialName, id }: Input, router: Router
+  { toggleAll, name: initialName, id, router }: Input
 ): any {
   const enterPress = filter(isKey(enter), nameKeyup);
   const enterNotPressed = toggle(true, startEditing, enterPress);

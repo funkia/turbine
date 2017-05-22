@@ -47,7 +47,7 @@ function* model({
   enterTodoS, toggleAll, clearCompleted, itemOutputs
 }: FromView) {
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
-  const newTodoS: Stream<ItemParams> = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
+  const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
 
   const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map((o) => o.destroyItemId))));
 
@@ -90,10 +90,10 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
         }),
         ul(
           {class: "todo-list"},
-          list((n) => item(toggleAll, n, router), todoNames, "itemOutputs", (o) => o.id)
+          list((n) => item({toggleAll, router, ...n}), todoNames, "itemOutputs", (o) => o.id)
         )
       ]),
-      todoFooter(itemOutputs, areAnyCompleted, router)
+      todoFooter({todosB: itemOutputs, areAnyCompleted, router})
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
@@ -103,4 +103,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-export const app = modelView(model, view);
+export const app = modelView<ToView, FromView, Router>(model, view);
