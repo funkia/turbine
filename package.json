@@ -17,7 +17,7 @@
     "build-cmjs": "tsc -P tsconfig-build.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
-    "prepublishOnly": "npm run build",
+    "prepare": "npm run clean; npm run build",
     "release-major": "xyz --repo git@github.com:funkia/turbine.git --increment major",
     "release-minor": "xyz --repo git@github.com:funkia/turbine.git --increment minor",
     "release-patch": "xyz --repo git@github.com:funkia/turbine.git --increment patch"
