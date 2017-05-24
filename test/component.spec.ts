@@ -185,7 +185,6 @@ describe("modelView", () => {
 });
 
 describe("list", () => {
-  const initiel = ["Hello ", "there", "!"];
   const createSpan = (content: string) => span(content);
   const initial = ["Hello ", "there", "!"]
   it("has correct initial order", () => {
