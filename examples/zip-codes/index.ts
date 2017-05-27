@@ -1,10 +1,10 @@
 import {
   Behavior, Stream, Now, performStreamLatest, stepper, changes, split
 } from "@funkia/hareactive";
-import {combine, IO, withEffectsP, catchE, Either, left, right} from "@funkia/jabz";
+import { combine, IO, withEffectsP, catchE, Either, left, right } from "@funkia/jabz";
 
-import {Component, modelView, runComponent, elements} from "../../src/index";
-const {span, br, input} = elements;
+import { Component, modelView, runComponent, elements } from "../../src/index";
+const { span, br, input } = elements;
 
 const apiUrl = "http://api.zippopotam.us/us/";
 
@@ -36,7 +36,7 @@ type ViewOut = {
   zipCode: Behavior<string>
 };
 
-function* model({zipCode}: ViewOut): Iterator<Now<any>> {
+function* model({ zipCode }: ViewOut): Iterator<Now<any>> {
   // A stream that occurs whenever the current zip code changes
   const zipCodeChange = changes(zipCode);
   // Split the zip code changes into those that represent valid zip
@@ -57,17 +57,17 @@ function* model({zipCode}: ViewOut): Iterator<Now<any>> {
       }))
     )
   );
-  return [{status}, {}];
+  return { status };
 }
 
-function* view({status}: ToView): Iterator<Component<any>> {
+function* view({ status }: ToView): Iterator<Component<any>> {
   yield span("Please type a valid US zip code: ");
-  const {inputValue: zipCode} = yield input({props: {placeholder: "Zip code"}});
+  const { inputValue: zipCode } = yield input({ props: { placeholder: "Zip code" } });
   yield br;
   yield span(status);
-  return {zipCode};
+  return { zipCode };
 }
 
-const main = modelView<ToView, ViewOut, {}>(model, view)();
+const main = modelView<ToView, ViewOut>(model, view)();
 
 runComponent("#mount", main);

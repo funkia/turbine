@@ -3,6 +3,7 @@ import {
   async, Behavior, changes, filter, Future, keepWhen, performStream,
   sample, snapshot, stepper, Stream, switcher, toggle
 } from "@funkia/hareactive";
+import { Router, routePath } from "@funkia/rudolph";
 
 import { Component, modelView, elements } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
@@ -27,7 +28,9 @@ export type PersistedItem = {
 
 export type Input = {
   name: string,
-  id: number
+  id: number,
+  toggleAll: Stream<boolean>
+  router: Router
 };
 
 type FromView = {
@@ -45,7 +48,8 @@ type ToView = {
   isComplete: Behavior<boolean>,
   newName: Behavior<string>,
   isEditing: Behavior<boolean>,
-  focusInput: Stream<any>
+  focusInput: Stream<any>,
+  hidden: Behavior<boolean>
 };
 
 export type Output = {
@@ -54,9 +58,10 @@ export type Output = {
   completed: Behavior<boolean>
 };
 
+
 const itemModel = fgo(function* (
   { toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName }: FromView,
-  toggleAll: Stream<boolean>, { name: initialName, id }: Input, deletedS: Stream<any>
+  { toggleAll, name: initialName, id, router }: Input
 ): any {
   const enterPress = filter(isKey(enter), nameKeyup);
   const enterNotPressed = toggle(true, startEditing, enterPress);
@@ -89,16 +94,25 @@ const itemModel = fgo(function* (
   // Remove persist todo item
   yield performStream(destroyItem.mapTo(removeItemIO(persistKey)));
 
+  const shouldHide = routePath({
+    "active": () => (a: boolean) => a,
+    "completed": () => (a: boolean) => !a,
+    "*": () => () => false
+  }, router);
+
+  const hidden = lift((a, fn) => fn(a), isComplete, shouldHide);
+
   return {
     taskName: taskName_, isComplete, isEditing, newName, focusInput:
-    startEditing, id, destroyItemId, completed: isComplete
+    startEditing, id, destroyItemId, completed: isComplete,
+    hidden
   };
 });
 
-function itemView({ taskName, isComplete, isEditing, newName, focusInput }: ToView) {
+function itemView({ taskName, isComplete, isEditing, newName, focusInput, hidden }: ToView) {
   return map((out) => ({ taskName, ...out }), li({
     class: "todo",
-    classToggle: { completed: isComplete, editing: isEditing }
+    classToggle: { completed: isComplete, editing: isEditing, hidden }
   }, [
     div({ class: "view" }, [
       checkbox({

@@ -18,7 +18,7 @@ function isShowable(s: any): s is Showable {
 function fst<A, B>(a: [A, B]): A { return a[0]; }
 function snd<A, B>(a: [A, B]): B { return a[1]; }
 
-export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>) {
+export function isGeneratorFunction<A, T>(fn: any): fn is ((...a: any[]) => IterableIterator<T>) {
   return fn !== undefined
     && fn.constructor !== undefined
     && fn.constructor.name === "GeneratorFunction";
@@ -31,23 +31,19 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((a: A) => Iterator<T>
  * make it a monad in different way than Now.
  */
 @monad
-export class Component<A = any> implements Monad<A> {
-  constructor(public content: (n: Node) => Now<A>) { }
+export abstract class Component<A = any> implements Monad<A> {
   static of<B>(b: B): Component<B> {
-    return new Component(() => Now.of(b));
+    return new OfComponent(b);
   }
   of<B>(b: B): Component<B> {
-    return Component.of(b);
+    return new OfComponent(b);
   }
   chain<B>(f: (a: A) => Component<B>): Component<B> {
-    return new Component((parent: Node) => {
-      return this.content(parent).chain((a) => {
-        return f(a).content(parent);
-      });
-    });
+    return new ChainComponent(this, f);
   }
   static multi: boolean = false;
   multi: boolean = false;
+  abstract run(parent: Node): A;
   // Definitions below are inserted by Jabz
   flatten: <B>() => Component<B>;
   map: <B>(f: (a: A) => B) => Component<B>;
@@ -56,21 +52,36 @@ export class Component<A = any> implements Monad<A> {
   lift: (f: Function, ...ms: any[]) => Component<any>;
 }
 
+class OfComponent<A> extends Component<A> {
+  constructor(private value: A) {
+    super();
+  }
+  run(_: Node): A {
+    return this.value;
+  }
+}
+
+class ChainComponent<A, B> extends Component<B> {
+  constructor(private component: Component<A>, private f: (a: A) => Component<B>) {
+    super();
+  }
+  run(parent: Node): B {
+    return this.f(this.component.run(parent)).run(parent);
+  }
+}
+
 /** Run component and the now-computation inside */
 export function runComponent<A>(parent: Node | string, c: Child<A>): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent);
   }
-  return toComponent(c).content(parent).run();
+  return toComponent(c).run(parent);
 }
 
 export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
   const dom = document.createElement("div");
   const out = runComponent(dom, c);
-  return {
-    out,
-    dom
-  };
+  return { out, dom };
 }
 
 export function isComponent(c: any): c is Component<any> {
@@ -90,15 +101,14 @@ const placeholderProxyHandler = {
   }
 };
 
-class MfixComponentNow<A> extends Now<A> {
+class LoopComponent<A> extends Component<A> {
   constructor(
-    private f: (a: A) => Component<A>,
-    private parent: Node,
+    private f: (a: A) => Child<A>,
     private placeholderNames?: string[]
   ) {
     super();
   }
-  run(): A {
+  run(parent: Node): A {
     let placeholderObject: any;
     if (supportsProxy) {
       placeholderObject = new Proxy({}, placeholderProxyHandler);
@@ -110,7 +120,7 @@ class MfixComponentNow<A> extends Now<A> {
         }
       }
     }
-    const result = this.f(placeholderObject).content(this.parent).run();
+    const result = toComponent(this.f(placeholderObject)).run(parent);
     const returned: (keyof A)[] = <any>Object.keys(result);
     for (const name of returned) {
       (placeholderObject[name]).replaceWith(result[name]);
@@ -118,43 +128,12 @@ class MfixComponentNow<A> extends Now<A> {
     return result;
   }
 }
-
 export function loop<A extends ReactivesObject>(
-  f: ((a: A) => Component<A>) | ((a: A) => IterableIterator<Component<any>>),
+  f: ((a: A) => Child<A>) | ((a: A) => IterableIterator<Component<any> | A>),
   placeholderNames?: string[]
 ): Component<A> {
-  if (isGeneratorFunction(f)) {
-    f = fgo(f);
-  }
-  return new Component<A>((parent: Node) => new MfixComponentNow<A>(<any>f, parent, placeholderNames));
-}
-
-class MfixNow<M extends ReactivesObject> extends Now<M> {
-  constructor(
-    private fn: (m: M) => Now<M>,
-    private placeholderNames?: string[]
-  ) {
-    super();
-  }
-  run(): M {
-    let placeholders: any;
-    if (supportsProxy) {
-      placeholders = new Proxy({}, placeholderProxyHandler);
-    } else {
-      placeholders = {};
-      if (this.placeholderNames !== undefined) {
-        for (const name of this.placeholderNames) {
-          placeholders[name] = placeholder();
-        }
-      }
-    }
-    const behaviors = this.fn(placeholders).run();
-    // Tie the recursive knot
-    for (const name of Object.keys(behaviors)) {
-      (placeholders[name]).replaceWith(behaviors[name]);
-    }
-    return behaviors;
-  }
+  const f2 = isGeneratorFunction(f) ? fgo(f) : f;
+  return new LoopComponent<A>(f2, placeholderNames);
 }
 
 function addErrorHandler(modelName: string, viewName: string, obj: any): any {
@@ -175,13 +154,46 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
+class ModelViewComponent<A> extends Component<A> {
+  constructor(
+    private args: any[],
+    private model: (...as: any[]) => Now<A>,
+    private view: (...as: any[]) => Component<A>,
+    private placeholderNames?: string[]
+  ) {
+    super();
+  }
+  run(parent: Node): A {
+    const {view, model, args} = this;
+    let placeholders: any;
+    if (supportsProxy) {
+      placeholders = new Proxy({}, placeholderProxyHandler);
+    } else {
+      placeholders = {};
+      if (this.placeholderNames !== undefined) {
+        for (const name of this.placeholderNames) {
+          placeholders[name] = placeholder();
+        }
+      }
+    }
+    const viewOutput = view(placeholders, ...args).run(parent);
+    const helpfulViewOutput = addErrorHandler(model.name, view.name, viewOutput);
+    const behaviors = model(helpfulViewOutput, ...args).run();
+    // Tie the recursive knot
+    for (const name of Object.keys(behaviors)) {
+      (placeholders[name]).replaceWith(behaviors[name]);
+    }
+    return behaviors;
+  }
+}
+
 export type ModelReturn<M> = Now<M> | Iterator<any>;
 export type Model<V, M> = (v: V) => ModelReturn<M>;
 export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
 export type View<M, V> = ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>);
 export type View1<M, V, A> = ((m: M, a: A) => Child<V>) | ((m: M, a: A) => Iterator<Component<any>>);
 
-export function modelView<M extends ReactivesObject, V = {}>(
+export function modelView<M extends ReactivesObject, V>(
   model: Model<V, M>, view: View<M, V>, toViewReactiveNames?: string[]
 ): () => Component<M>;
 export function modelView<M extends ReactivesObject, V, A>(
@@ -191,14 +203,8 @@ export function modelView<M extends ReactivesObject, V>(
   model: any, view: any, toViewReactiveNames?: string[]
 ): (...args: any[]) => Component<M> {
   const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
-  const v = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
-  return (...args: any[]) => new Component<M>((parent: Node) => new MfixNow<M>(
-    (bs) => v(bs, ...args)
-      .content(parent)
-      .map((o: any) => addErrorHandler(model.name, view.name, o))
-      .chain((b: any) => m(b, ...args)),
-    toViewReactiveNames
-  ));
+  const v: any = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
+  return (...args: any[]) => new ModelViewComponent<M>(args, m, v, toViewReactiveNames);
 }
 
 export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): void {
@@ -207,8 +213,13 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
     update,
     () => {
       isPulling = true;
+      let lastVal;
       function pull(): void {
-        update(behavior.pull());
+        const newVal = behavior.pull();
+        if (lastVal !== newVal) {
+          lastVal = newVal;
+          update(newVal);
+        }
         if (isPulling) {
           requestAnimationFrame(pull);
         }
@@ -236,11 +247,18 @@ export function isChild(a: any): a is Child {
   return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a) || Array.isArray(a);
 }
 
-export function text(s: Showable): Component<{}> {
-  return new Component((parent: Node) => {
-    parent.appendChild(document.createTextNode(s.toString()));
-    return Now.of({});
-  });
+class TextComponent extends Component<{}> {
+  constructor(private text: Showable) {
+    super();
+  }
+  run(parent: Node): {} {
+    parent.appendChild(document.createTextNode(this.text.toString()));
+    return {};
+  }
+}
+
+export function text(showable: Showable): Component<{}> {
+  return new TextComponent(showable);
 }
 
 export function toComponent<A>(child: Component<A>): Component<A>;
@@ -263,20 +281,19 @@ export function toComponent<A>(child: Child): Component<any> {
   }
 }
 
-class DynamicComponent<A> extends Now<Behavior<A>> {
-  constructor(
-    private parent: Node,
-    private bChild: Behavior<Child>
-  ) { super(); }
-  run(): Behavior<A> {
+class DynamicComponent<A> extends Component<Behavior<A>> {
+  constructor(private behavior: Behavior<Child<A>>) {
+    super();
+  }
+  run(parent: Node): Behavior<A> {
     const start = document.createComment("Dynamic begin");
     const end = document.createComment("Dynamic end");
-    this.parent.appendChild(start);
-    this.parent.appendChild(end);
+    parent.appendChild(start);
+    parent.appendChild(end);
 
     let currentlyShowable: boolean;
     let wasShowable = false;
-    const performed = this.bChild.map((child) => {
+    const performed = this.behavior.map((child) => {
       currentlyShowable = isShowable(child);
       if (currentlyShowable && wasShowable) {
         return [undefined, child] as [A, Showable];
@@ -287,7 +304,7 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
     });
 
     let showableNode: Node;
-    viewObserve(([_, node]) => {
+    viewObserve((node) => {
       if (currentlyShowable && wasShowable) {
         showableNode.nodeValue = node.toString();
       } else {
@@ -301,40 +318,39 @@ class DynamicComponent<A> extends Now<Behavior<A>> {
         while (i !== end) {
           const j = i;
           i = i.nextSibling;
-          this.parent.removeChild(j);
+          parent.removeChild(j);
         }
-        this.parent.insertBefore((<Node>node), end);
+        parent.insertBefore((<Node>node), end);
       }
-    }, performed);
+    }, performed.map(snd));
     return performed.map(fst);
   }
 }
 
 export function dynamic<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>>;
 export function dynamic<A>(behavior: Behavior<Child>): Component<any>;
-export function dynamic<A>(behavior: Behavior<Child>): Component<Behavior<A>> {
-  return new Component((p) => new DynamicComponent<A>(p, behavior));
+export function dynamic<A>(behavior: Behavior<Child<A>>): Component<Behavior<A>> {
+  return new DynamicComponent(behavior);
 }
 
 type ComponentStuff<A> = {
   elm: Node, out: A
 };
 
-class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
+class ComponentList<A, B> extends Component<Behavior<B[]>> {
   constructor(
-    private parent: Node,
     private compFn: (a: A) => Component<B>,
     private list: Behavior<A[]>,
     private getKey: (a: A, index: number) => string,
     private name: string | undefined
   ) { super(); }
-  run(): Behavior<B[]> {
+  run(parent: Node): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
     const resultB = sinkBehavior<B[]>([]);
     const end = document.createComment("list end");
     let keyToElm: { [key: string]: ComponentStuff<B> } = {};
-    this.parent.appendChild(end);
+    parent.appendChild(end);
     this.list.subscribe((newAs) => {
       const newKeyToElm: { [key: string]: ComponentStuff<B> } = {};
       const newArray: B[] = [];
@@ -349,7 +365,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
           // Assumes component only adds a single element
           stuff = { out, elm: fragment.firstChild };
         }
-        this.parent.insertBefore(stuff.elm, end);
+        parent.insertBefore(stuff.elm, end);
         newArray.push(stuff.out);
         newKeyToElm[key] = stuff;
       }
@@ -357,7 +373,7 @@ class ComponentListNow<A, B> extends Now<Behavior<B[]>> {
       const oldKeys = Object.keys(keyToElm);
       for (const key of oldKeys) {
         if (newKeyToElm[key] === undefined) {
-          this.parent.removeChild(keyToElm[key].elm);
+          parent.removeChild(keyToElm[key].elm);
         }
       }
       keyToElm = newKeyToElm;
@@ -384,7 +400,5 @@ export function list<A, B>(
   const last = arguments[arguments.length - 1];
   const getKey = typeof last === "function" ? last : id;
   const name = typeof optional1 === "string" ? optional1 : undefined;
-  return <any>(new Component(
-    (parent) => new ComponentListNow(parent, c, list, getKey, name)
-  ));
+  return new ComponentList(c, list, getKey, name);
 }

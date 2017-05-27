@@ -14,12 +14,6 @@ type Looped = {
   value: Behavior<string>
 };
 
-input({ attrs: { placeholder: "foo" } }).chain(
-  ({ inputValue: a }) => input().chain(
-    ({ inputValue: b }) => span(["Combined text: ", a, b])
-  )
-);
-
 export type Out = {
   enterTodoS: Stream<string>
 };

@@ -1,5 +1,10 @@
 import "todomvc-app-css/index.css";
 import { runComponent } from "../../../src";
 import { app } from "./TodoApp";
+import { createRouter } from "@funkia/rudolph";
 
-runComponent("body", app);
+const router = createRouter({
+  useHash: true
+});
+
+runComponent("body", app(router));

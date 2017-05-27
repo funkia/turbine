@@ -15,6 +15,7 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
+    "@funkia/rudolph": "0.0.2",
     "todomvc-app-css": "^2.1.0"
   },
   "devDependencies": {

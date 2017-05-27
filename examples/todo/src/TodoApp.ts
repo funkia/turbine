@@ -5,12 +5,14 @@ import {
   snapshotWith
 } from "@funkia/hareactive";
 import {modelView, elements, list} from "../../../src";
-const {h1, p, header, footer, section, checkbox, ul} = elements;
+const {h1, p, header, footer, section, checkbox, ul, label} = elements;
+import { Router } from "@funkia/rudolph";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams, itemIdToPersistKey} from "./Item";
 import todoFooter, { Params as FooterParams } from "./TodoFooter";
 import {setItemIO, itemBehavior, removeItemIO} from "./localstorage";
+
 
 const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -60,7 +62,7 @@ function ListModel<A, B>({ prependItemS, removeKeyListS, itemToKey, initial }: L
 function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
 
-  const newTodoS: Stream<ItemParams> = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
+  const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
   const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map((o) => o.destroyItemId))));
   const completedIds = getCompletedIds(itemOutputs);
 
@@ -90,7 +92,7 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   return {itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted};
 }
 
-function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView) {
+function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllCompleted}: ToView, router: Router) {
   return [
     section({class: "todoapp"}, [
       header({class: "header"}, [
@@ -103,15 +105,17 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
       }, [
         checkbox({
           class: "toggle-all",
+          attrs: {id: "toggle-all"},
           props: {checked: areAllCompleted},
           output: {toggleAll: "checkedChange"}
         }),
+        label({attrs: {for: "toggle-all"}}, "Mark all as complete"),
         ul(
           {class: "todo-list"},
-          list((n) => item(toggleAll, n), todoNames, "itemOutputs", (o) => o.id)
+          list((n) => item({toggleAll, router, ...n}), todoNames, "itemOutputs", (o) => o.id)
         )
       ]),
-      todoFooter({todosB: itemOutputs, areAnyCompleted})
+      todoFooter({todosB: itemOutputs, areAnyCompleted, router})
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),
@@ -121,4 +125,4 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
   ];
 }
 
-export const app = modelView(model, view)();
+export const app = modelView<ToView, FromView, Router>(model, view);

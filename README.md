@@ -13,9 +13,11 @@ programming. Experimental.
 # Table of contents
 
 * [Why Turbine?](#why-turbine)
-* [High-level overview](#high-level-overview)
-* [Installation](#installation)
 * [Examples](#examples)
+* [High-level overview](#high-level-overview)
+* [Principles](#principles)
+* [Installation](#installation)
+* [More examples](#more-examples)
 * [Tutorial](#tutorial)
 * [API](#api)
 * [Contributing](#contributing)
@@ -37,6 +39,53 @@ We have done our best to realize our goal. But we are not done yet. We
 hope you will find Turbine interesting, try it and maybe even help us
 making it even better.
 
+## Examples
+
+### Email validator
+
+[See the example live here](https://www.webpackbin.com/bins/-KkMDZ7CT-2FIx0SqEJd).
+
+```js
+const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
+
+function* main() {
+  yield span("Please enter an email address: ");
+  const { inputValue: email } = yield input();
+  const isValid = email.map(isValidEmail);
+  yield div([
+    "The address is ", map((b) => b ? "valid" : "invalid", isValid)
+  ]);
+}
+
+// `runComponent` is the only impure function in application code
+runComponent("#mount", main);
+```
+
+### Counter
+
+[See the example live here](https://www.webpackbin.com/bins/-KkyWM1zctrimQqzrScj).
+
+```js
+const counterModel = fgo(function* ({ incrementClick, decrementClick }) {
+  const increment = incrementClick.mapTo(1);
+  const decrement = decrementClick.mapTo(-1);
+  const changes = combine(increment, decrement);
+  const count = yield sample(scan((n, m) => n + m, 0, changes));
+  return { count };
+});
+
+const counterView = ({ count }) => div([
+  "Counter ",
+  count,
+  button({ class: "btn btn-default", output: { incrementClick: "click" } }, "+"),
+  button({ class: "btn btn-default", output: { decrementClick: "click" } }, "-")
+]);
+
+const counter = modelView(counterModel, counterView);
+```
+
+[See more examples here](#more-examples).
+
 ## High-level overview
 
 Here our some of our key features.
@@ -47,9 +96,9 @@ Here our some of our key features.
 * Based on classic FRP. Behaviors represents values that change over
   time and streams provide reactivity. Turbine uses the FRP
   library [Hareactive](https://github.com/funkia/hareactive).
-* A component-based architecture. Components are encapsulated and
-  composable. Components are monads and are typically used and
-  composed with do-notation (we implement do-notation with
+* A component-based architecture. Components are immutable,
+  encapsulated and composable. Components are monads and are typically
+  used and composed with do-notation (we implement do-notation with
   generators).
 * Constructed DOM elements reacts directly to behaviors and streams.
   This avoids the overhead of using virtual DOM and should lead to
@@ -118,20 +167,20 @@ application is how to manage the data flow through an application.
 
 In Turbine we have strived to create an architecture where the data
 flow is easy to follow and understand. For us, this means that when
-looking at any piece of code it should be possible to see if what
-other parts of the application it affects and what other parts it is
+looking at any piece of code it should be possible to see what other
+parts of the application it affects and what other parts it is
 affected by.
 
-One manifestation of this principle is that in Turbine it see very
+One manifestation of this principle is that in Turbine it is very
 simple to see how the model affects the view and how the view affects
 the model. The figure below illustrates this.
 
-![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.svg)
+![modelView figure](https://rawgit.com/funkia/turbine/master/figures/explicit-dataflow.png)
 
 The arrows represent data flow between the model and the view. Note
 how these "conceptual arrows" are clearly expressed in the code. For
-instance, by looking at the buttons we can see that they produce
-output.
+instance, by looking at the buttons we can see exactly what output
+they produce.
 
 ### Declarative models
 
@@ -170,43 +219,17 @@ single source of truth is lost.
 ## Installation
 
 ```sh
-npm install @funkia/turbine @funkia/hareactive @funkia/jabz
+npm install @funkia/turbine @funkia/hareactive
 ```
 
-[Hareactive](https://github.com/funkia/hareactive) and
-[Jabz](https://github.com/funkia/jabz) are peer dependencies that
-Turbine uses. Hareactive is the FRP library that we use and Jabz
-provides some very useful functional abstractions.
+[Hareactive](https://github.com/funkia/hareactive) is a peer
+dependency. It is the FRP library that that Turbine is based upon.
 
-Alternatively, for trying out Turbine you may want to see our [Turbine
-starter kit](https://github.com/funkia/turbine-starter).
+Alternatively, for quickly trying out Turbine you may want to see our
+[Turbine starter kit](https://github.com/funkia/turbine-starter).
 
-## Examples
+## More examples
 
-The example below creates an input field and print whether or not it
-is valid.
-
-```js
-import {runComponent, elements, loop} from "@funkia/turbine";
-const {span, input, div} = elements;
-
-const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
-
-function* main() {
-  yield span("Please enter an email address: ");
-  const {inputValue: email} = yield input();
-  const isValid = email.map(isValidEmail);
-  yield div([
-    "The address is ", map((b) => b ? "valid" : "invalid", isValid)
-  ]);
-}
-
-// `runComponent` should be the only impure function in application code
-runComponent("#mount", main);
-```
-
-See the [tutorial](#tutorial) below which explains how the above
-example work.
 
 Here is a series of examples that demonstrate how to use Turbine.
 Approximately listed in order of increasing complexity.
@@ -222,8 +245,8 @@ Approximately listed in order of increasing complexity.
 * [Counters](/examples/counters) — A list of counters. Demonstrates
   nested components, managing a list of components and how child
   components can communicate with parent components.
-* [Todo](/examples/counters) — An implementation of the classic
-  TodoMVC application. Note: Routing is not implemented yet.
+* [Todo](/examples/todo) — An implementation of the classic
+  TodoMVC application.
 
 ## Tutorial
 
@@ -266,18 +289,26 @@ On top of the FRP primitives Turbine adds `Component`. Component is the
 key concept in Turbine. Once you understand `Component`—and how to use
 it—you understand Turbine. A Turbine app is just one big component.
 
- Here is a high-level overview of what a component is.
+Here is a high-level overview of what a component is.
 
 * Components can __contain logic__ expressed through operations on
   behaviors and streams.
 * Components are __encapsulated__ and have completely private state.
-* Components __produce output__ through which they selectively decide
+* Components __contain output__ through which they selectively decide
   what state they share with their parent.
 * Components __write DOM elements__ as children to their parent. They
   can write zero, one or more DOM elements.
 * Components can __declare side-effects__ expressed as `IO`-actions.
 * Components are __composable__—one component can be combined with
   another component and the result is a third component.
+
+A `Component` in Turbine is pure and immutable. A `Component` can be
+thought of as a huge description of all of the above mentioned things.
+For instance, a `Component` contains a description about what its DOM
+look like. That part is a bit like virtual DOM. But, on top op that
+the description also explain how the DOM changes over time. The
+description also tells what output the `Component` contains. More on
+that later.
 
 ### Creating HTML-elements
 
@@ -369,53 +400,79 @@ const counterView = ({ count }: CounterViewInput) => div([
 Because it will be easier going forward `counterView` takes an object
 with a `count` property.
 
-### Output from HTML components
+### Output from components
 
 The above covers the _input_ to the counter view. We now need to get
-_output_ from it. All components in Turbine can produce output.
-Components are represented by a generic type `Component<A>`. The `A`
-represents the output of the component.
+_output_ from it.
 
-As an example, a component that represents an input element has output
-that contains a behavior of the current string value in the input box.
+Remember that we mentioned how a Turbine component is a description
+about what the component will behave and look like. Part of that
+description also explains what output will come from the component.
+Components are represented by a generic type `Component<A>`. The `A`
+represents the output of the component. I.e. `Component<A>` means:
+"I'm a component that will give you `A` as output".
+
+To get a feel for what "output" means it may be helpful to mention a
+few examples.
+
+* A button will output a stream of click events. So the type of a
+  button may be `Component<Stream<Event>>`
+* A input box could output a behavior of the text inside the input.
+  It's type would be `Component<Behavior<string>>`
+* A checkbox might output a behavior representing wether it is checked
+  or not. It would have type `Component<Behavior<A>>`.
+
+In practice a component will almost always output more than a single
+stream or behavior. The output type is therefore often an object as
+that is most convenient.
+
+Let's see what an input element actually looks like.
 
 ```ts
-const usernameInput = input({attrs: {placeholder: "Username"}});
+const usernameInput =
+  input({attrs: {placeholder: "Username"}, output: {username: "inputValue"}});
 ```
 
-Here `usernameInput` has the type `Component<Output>` where `Output`
-is an object containing the output that an `input` element produces.
-Among other things, an `input` element produces a string valued
-behavior named `inputValue` that contains the current content of the
-`input` element. So, the type of `usernameInput` above is something
-like `Component<{inputValue: Behavior<string>, ...}>`. The dots are
-there to indicate that the component has other output as well.
-
-We want our counter view to produce two streams as output. One stream
-should be from whenever the first button is clicked and the other
-stream should contain clicks from the second button. That is, the
-view's output should the type `{increment: Behavior<number>,
-decrement: Behavior<number>}` The simplest way to get achieve that
-looks like this:
+Here `usernameInput` has the type
 
 ```ts
-const counterView = ({ count }: CounterViewInput) => div([
+Component<{username: Behavior<string>}>
+```
+
+An `input` element produces a string valued behavior named
+`inputValue` that contains the current content of the `input` element.
+We then give the `input` function an object `output` that tells it to
+output the behavior with the property `username`.
+
+Back to the counters app. We want our counter view to produce two
+streams as output. One stream should be from whenever the first button
+is clicked and the other stream should contain clicks from the second
+button. That is, the view's output should have the type
+
+```ts
+{incrementClick: Stream<ClickEvent>, decrementClick: Stream<ClickEvent>}
+```
+
+The simplest way to get achieve that looks like this:
+
+```ts
+const counterView = ({ count }) => div([
   "Counter ",
   count,
-  " ",
   button({ output: { incrementClick: "click" } }, "+"),
-  " ",
   button({ output: { decrementClick: "click" } }, "-"),
 ]);
 ```
 
 The `output` object given to the `button` functions tells them what
-output to produce. They will each output an object, the first with a
-stream named `incrementClick` and the later with one named
-`decrementClick`. The `div` function will combine all the objects
-output by the components in the array passed to it and output that.
-The result is that `counterView` returns a component that produces two
-streams as output.
+output we're interested in. They will only produce that output. The
+first button will output an object with a stream named
+`incrementClick` and the later with one named `decrementClick`.
+
+The `div` function will combine all the objects output by the
+components in the array passed to it and output that. The result is
+that `counterView` returns a component that produces two streams as
+output.
 
 ### Adding a model
 
@@ -503,36 +560,42 @@ To create a dynamic list of counter we have to use the `list` function.
 
 ### Understanding generator functions
 
-At first Turbine's use of generator functions may seem peculiar. But
-it is just a nicer way to call [`chain`](#componentchain) methods.
+Turbine's use of generator functions may seem a bit puzzling at first.
+For instance, it may seem like generator functions serve two different
+purposes. One when they're used in the model and another when they're
+used in the view
 
-Three types in Turbine have a `chain`-method: `Component`, `Now` and
-`Behavior`. `chain` is used to compose structures together such that the result
-from one structure can be used in the next.
+But, what they do under the hood is exactly the same in both cases.
+The key to understand is that generator functions is just sugar for
+calling [`chain`](#componentchain) several times in succession.
 
-For instance, when we use `chain` on components we can combine
-elements as we'd like and pipe output from one component into the
-next. The code below combines two `input` elements with a `span`
-element that shows the concatenation of the text in the two input
-fields.
+When we use `chain` on components we can combine elements and pipe
+output from one component into the next. The code below combines two
+`input` elements with a `span` element that shows the concatenation of
+the text in the two input fields.
 
 ```typescript
 input({ attrs: { placeholder: "foo" } }).chain(
-  ({ inputValue: a }) => input().chain(
-    ({ inputValue: b }) => span(["Combined text: ", a, b])
+  ({ inputValue: aValue }) => input().chain(
+    ({ inputValue: bValue }) => {
+      const concatenated = lift((a, b) => a + b, aValue, bValue);
+      return span(["Concatenated text: ", concatenated]).mapTo({concatenated});
+    }
   )
 );
 ```
 
 However, the above code is very awkward as each invocation of `chain`
-adds an extra layer of nesting. To solve the problem we use
+adds an extra layer of nesting. To solve this problem we use
 generators.
 
 ```typescript
 go(function*() {
-  const {inputValue: a} = yield input();
-  const {inputValue: b} = yield input();
-  yield span(["Combined text: ", a, b]);
+  const {inputValue: aValue} = yield input();
+  const {inputValue: bValue} = yield input();
+  const concatenated = lift((a, b) => a + b, aValue, bValue);
+  yield span(["Concatenated text: ", concatenated]);
+  return {concatenated};
 });
 ```
 
@@ -540,25 +603,47 @@ The above code does exactly the same as the previous example. But it
 is a lot easier to read!
 
 The `go` function works like this. We yield a value with a `chain`
-method. `go` then calls `chain` on the yielded value. The function
-that `go` gives to `chain` continues the generator function with the
+method. `go` then calls `chain` on the yielded value. `go` calls
+`chain` with a function that continues the generator function with the
 value that `chain` passes it. The end result is a value of the same
-type that we yield inside the generator function.
+type that we yield inside the generator function. When we `yield` a
+`Component<A>` we will get an `A` back inside the generator function.
 
-So, when we `yield` a `Component<A>` we will get an `A` back inside
-the generator function. And in the end `go` will return a component.
+Finally we `return` a value and that value will be the output of the
+component that `go` returns.
 
-Whenever you give a generator function to a function in Turbine it
-will call `go` on it behind the scenes. That is just for your
-convenience.
+Here is another example. The following code uses `chain` explicitly.
+
+```ts
+const view = button("Accept")
+  .chain(({click: acceptClick}) => button("Reject")
+    .map(({click: rejectClick}) => ({acceptClick, rejectClick}))
+  );
+```
+
+The above code is equivalent to the following.
+
+```ts
+const view = go(function* () {
+  const {click: acceptClick} = button("Accept");
+  const {click: rejectClick} = button("Reject");
+  return {acceptClick, rejectClick};
+});
+```
+
+Again, the code that uses generator functions is a lot easier to read.
+This is why they're useful in Turbine.
+
+`Component` is not the only type in Turbine that has a `chain` method.
+`Now` and `Behavior` does as well. And since `go` is only sugar for
+calling `chain` it works with these types as well.
 
 ## API
 
 The API documentation is incomplete. See also the
 [examples](#examples), the [tutorial](#tutorial), the [Hareactive
 documentation](https://github.com/funkia/hareactive) and this tutorial
-about the
-[`IO`-monad](https://github.com/funkia/jabz/blob/master/docs/io-tutorial.md).
+about [IO](https://github.com/funkia/io).
 
 ### Component
 
@@ -709,9 +794,8 @@ myComponent("foo", "bar");
 
 ## Contributing
 
-Turbine is developed by Funkia. We develop functional libraries. You
-can be a part of it too. Share your feedback and ideas. We also love
-PRs.
+Turbine is developed by Funkia. We write functional libraries. You can
+be a part of it too. Share your feedback and ideas. We also love PRs.
 
 Run tests once with the below command. It will additionally generate
 an HTML coverage report in `./coverage`.

@@ -157,14 +157,13 @@ function handleCustom(
   }
 }
 
-class CreateDomNow<A> extends Now<A> {
+class DomComponent<A> extends Component<A> {
   constructor(
-    private parent: Node,
     private tagName: string,
     private props?: Properties<A> & {output?: OutputNames<A>},
     private children?: Child
   ) { super(); }
-  run(): A {
+  run(parent: Node): A {
     let output: any = {};
     const elm = document.createElement(this.tagName);
 
@@ -240,7 +239,7 @@ class CreateDomNow<A> extends Now<A> {
     if (this.props.output !== undefined) {
       rename(output, this.props.output);
     }
-    this.parent.appendChild(elm);
+    parent.appendChild(elm);
     return output;
   }
 }
@@ -330,10 +329,10 @@ export function element<P extends InitialProperties>(tagName?: string, props?: P
   props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
   function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, props, newPropsOrChildren));
+      return new DomComponent<DefaultOutput>(parsedTagName, props, newPropsOrChildren);
     } else {
       const newProps = mergeDeep(props, newPropsOrChildren);
-      return new Component((p) => new CreateDomNow<DefaultOutput>(p, parsedTagName, newProps, newChildrenOrUndefined));
+      return new DomComponent<DefaultOutput>(parsedTagName, newProps, newChildrenOrUndefined);
     }
   }
   return createElement as any;
