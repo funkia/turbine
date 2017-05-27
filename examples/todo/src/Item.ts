@@ -1,4 +1,4 @@
-import { combine, fromMaybe, lift, map, Maybe } from "@funkia/jabz";
+import { combine, fromMaybe, lift, map, Maybe, fgo } from "@funkia/jabz";
 import {
   async, Behavior, changes, filter, Future, keepWhen, performStream,
   sample, snapshot, stepper, Stream, switcher, toggle
@@ -13,6 +13,8 @@ import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 const enter = 13;
 const esc = 27;
 const isKey = (keyCode: number) => (ev: { keyCode: number }) => ev.keyCode === keyCode;
+export const itemIdToPersistKey = (id: number) => `todoItem:${id}`;
+export const itemOutputToId = ({id}: Output) => id;
 
 export type Item = {
   taskName: Behavior<string>,
@@ -57,7 +59,7 @@ export type Output = {
 };
 
 
-function* itemModel(
+const itemModel = fgo(function* (
   { toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName }: FromView,
   { toggleAll, name: initialName, id, router }: Input
 ): any {
@@ -74,7 +76,7 @@ function* itemModel(
   const nameChange = snapshot(newName, keepWhen(stopEditing, notCancelled));
 
   // Restore potentially persisted todo item
-  const persistKey = `todoItem:${id}`;
+  const persistKey = itemIdToPersistKey(id);
   const savedItem = yield sample(itemBehavior(persistKey));
   const initial = savedItem === null ? { taskName: initialName, isComplete: false } : savedItem;
 
@@ -105,30 +107,28 @@ function* itemModel(
     startEditing, id, destroyItemId, completed: isComplete,
     hidden
   };
-}
+});
 
 function itemView({ taskName, isComplete, isEditing, newName, focusInput, hidden }: ToView) {
   return map((out) => ({ taskName, ...out }), li({
     class: "todo",
     classToggle: { completed: isComplete, editing: isEditing, hidden }
   }, [
-      div({
-        class: "view"
-      }, [
-        checkbox({
-          class: "toggle", output: { toggleTodo: "checkedChange" },
-          props: { checked: isComplete }
-        }),
-        label({ output: { startEditing: "dblclick" } }, taskName),
-        button({ class: "destroy", output: { deleteClicked: "click" } })
-      ]),
-      input({
-        class: "edit",
-        props: { value: taskName },
-        output: { newNameInput: "input", nameKeyup: "keyup", nameBlur: "blur" },
-        actions: { focus: focusInput }
-      })
-    ]));
+    div({ class: "view" }, [
+      checkbox({
+        class: "toggle", output: { toggleTodo: "checkedChange" },
+        props: { checked: isComplete }
+      }),
+      label({ output: { startEditing: "dblclick" } }, taskName),
+      button({ class: "destroy", output: { deleteClicked: "click" } })
+    ]),
+    input({
+      class: "edit",
+      props: { value: taskName },
+      output: { newNameInput: "input", nameKeyup: "keyup", nameBlur: "blur" },
+      actions: { focus: focusInput }
+    })
+  ]));
 }
 
 export default modelView(itemModel, itemView);

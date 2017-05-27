@@ -1,4 +1,4 @@
-import {combine, fromMaybe, lift, Maybe, traverse} from "@funkia/jabz";
+import {combine, fromMaybe, lift, Maybe, traverse, fgo, sequence, IO} from "@funkia/jabz";
 import {
   Behavior, scan, map, sample, snapshot, Stream, switchStream,
   combineList, async, Future, switcher, plan, performStream, changes,
@@ -9,12 +9,14 @@ const {h1, p, header, footer, section, checkbox, ul, label} = elements;
 import { Router } from "@funkia/rudolph";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
-import item, {Output as ItemOut, Input as ItemParams} from "./Item";
-import todoFooter, {Params as FooterParams } from "./TodoFooter";
-import {setItemIO, itemBehavior} from "./localstorage";
+import item, {Output as ItemOut, Input as ItemParams, itemIdToPersistKey} from "./Item";
+import todoFooter, { Params as FooterParams } from "./TodoFooter";
+import {setItemIO, itemBehavior, removeItemIO} from "./localstorage";
+
 
 const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
+const includes = <A>(a: A, list: A[]) => list.indexOf(a) !== -1;
 
 type FromView = {
   toggleAll: Stream<boolean>,
@@ -43,32 +45,50 @@ function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
   ).map((list) => list.filter(((o) => o.completed)).map((o) => o.id));
 }
 
-function* model({
-  enterTodoS, toggleAll, clearCompleted, itemOutputs
-}: FromView) {
+type ListModel<A, B> = {
+  prependItemS: Stream<A>,
+  removeKeyListS: Stream<B[]>,
+  itemToKey: (a: A) => B,
+  initial: A[]
+};
+// This model handles the modification of the list of Todos
+function ListModel<A, B>({ prependItemS, removeKeyListS, itemToKey, initial }: ListModel<A, B>) {
+  const prependS = prependItemS.map(item => (list: A[]) => [item].concat(list));
+  const removeS = removeKeyListS.map(keys => (list: A[]) => list.filter(item => !includes(itemToKey(item), keys)));
+  const modifications = combine(removeS, prependS);
+  return sample(scan(apply, initial, modifications));
+}
+
+function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
+
   const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
-
   const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map((o) => o.destroyItemId))));
-
   const completedIds = getCompletedIds(itemOutputs);
+
+  const savedTodoName: ItemParams[] = yield sample(todoListStorage);
+  const restoredTodoName = savedTodoName === null ? [] : savedTodoName;
+
+  const getItemId = ({id}: ItemParams) => id;
+
+  const clearCompletedIdS = snapshot(completedIds, clearCompleted);
+  const removeListS = combine(deleteS.map(a => [a]), clearCompletedIdS);
+  const todoNames = yield ListModel({
+    prependItemS: newTodoS,
+    removeKeyListS: removeListS,
+    itemToKey: getItemId,
+    initial: restoredTodoName
+  });
+
+  yield performStream(
+    clearCompletedIdS.map(ids => sequence(IO, ids.map(id => removeItemIO(itemIdToPersistKey(id))))
+  ));
+  yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
+
   const areAllCompleted =
     lift((currentIds, currentOuts) => currentIds.length === currentOuts.length, completedIds, itemOutputs);
   const areAnyCompleted = completedIds.map(isEmpty).map((b) => !b);
 
-  // Modifications
-  const prependTodoFn = newTodoS.map((todo) => (list: ItemParams[]) => combine([todo], list));
-  const removeTodoFn = deleteS.map((removeId) => (list: ItemParams[]) => list.filter(({id}) => id !== removeId));
-  const clearCompletedFn =
-    snapshot(completedIds, clearCompleted).map((ids) => (list: ItemParams[]) => list.filter(({id}) => !ids.includes(id)));
-
-  const modifications = combineList([prependTodoFn, removeTodoFn, clearCompletedFn]);
-
-  const savedTodoName: ItemParams[] = yield sample(todoListStorage);
-  const restoredTodoName = savedTodoName === null ? [] : savedTodoName;
-  const todoNames = yield sample(scan(apply, restoredTodoName, modifications));
-
-  yield performStream(changes(todoNames).map((n) => setItemIO("todoList", n)));
   return {itemOutputs, todoNames, clearAll: clearCompleted, areAnyCompleted, toggleAll, areAllCompleted};
 }
 
