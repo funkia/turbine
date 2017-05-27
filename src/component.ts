@@ -213,8 +213,13 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
     update,
     () => {
       isPulling = true;
+      let lastVal;
       function pull(): void {
-        update(behavior.pull());
+        const newVal = behavior.pull();
+        if (lastVal !== newVal) {
+          lastVal = newVal;
+          update(newVal);
+        }
         if (isPulling) {
           requestAnimationFrame(pull);
         }
@@ -299,7 +304,7 @@ class DynamicComponent<A> extends Component<Behavior<A>> {
     });
 
     let showableNode: Node;
-    viewObserve(([_, node]) => {
+    viewObserve((node) => {
       if (currentlyShowable && wasShowable) {
         showableNode.nodeValue = node.toString();
       } else {
@@ -317,7 +322,7 @@ class DynamicComponent<A> extends Component<Behavior<A>> {
         }
         parent.insertBefore((<Node>node), end);
       }
-    }, performed);
+    }, performed.map(snd));
     return performed.map(fst);
   }
 }
