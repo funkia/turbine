@@ -5,7 +5,7 @@ import {
   snapshotWith
 } from "@funkia/hareactive";
 import {modelView, elements, list} from "../../../src";
-const {h1, p, header, footer, section, checkbox, ul} = elements;
+const {h1, p, header, footer, section, checkbox, ul, label} = elements;
 import { Router } from "@funkia/rudolph";
 
 import todoInput, {Out as InputOut} from "./TodoInput";
@@ -85,9 +85,11 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
       }, [
         checkbox({
           class: "toggle-all",
+          attrs: {id: "toggle-all"},
           props: {checked: areAllCompleted},
           output: {toggleAll: "checkedChange"}
         }),
+        label({attrs: {for: "toggle-all"}}, "Mark all as complete"),
         ul(
           {class: "todo-list"},
           list((n) => item({toggleAll, router, ...n}), todoNames, "itemOutputs", (o) => o.id)
