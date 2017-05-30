@@ -1,6 +1,6 @@
 import { foldr, lift, flatten } from "@funkia/jabz";
 import {
-  Now, sample, Behavior, scan, Stream, combine, map, combineList,
+  Now, sample, Behavior, scan, Stream, combine, map,
   switchStream, scanS
 } from "@funkia/hareactive";
 
@@ -65,7 +65,7 @@ type ToModel = {
 };
 
 function* mainModel({ addCounter, listOut }: ToModel): Iterator<Now<any>> {
-  const removeIdB = listOut.map((l) => combineList(l.map(o => o.deleteS)));
+  const removeIdB = listOut.map((l) => combine(...l.map(o => o.deleteS)));
   const sum = <Behavior<number>>flatten(map(
     (list) => foldr(({ count }, sum) => lift(add, count, sum), Behavior.of(0), list),
     listOut

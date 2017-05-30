@@ -1,8 +1,7 @@
-import {combine, fromMaybe, lift, Maybe, traverse, fgo, sequence, IO} from "@funkia/jabz";
+import {fromMaybe, lift, Maybe, traverse, fgo, sequence, IO} from "@funkia/jabz";
 import {
-  Behavior, scan, map, sample, snapshot, Stream, switchStream,
-  combineList, async, Future, switcher, plan, performStream, changes,
-  snapshotWith
+  Behavior, scan, map, sample, snapshot, Stream, switchStream, combine,
+  Future, switcher, plan, performStream, changes, snapshotWith
 } from "@funkia/hareactive";
 import {modelView, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul, label} = elements;
@@ -63,7 +62,7 @@ function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) 
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
 
   const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
-  const deleteS = switchStream(itemOutputs.map((list) => combineList(list.map((o) => o.destroyItemId))));
+  const deleteS = switchStream(itemOutputs.map((list) => combine(...list.map((o) => o.destroyItemId))));
   const completedIds = getCompletedIds(itemOutputs);
 
   const savedTodoName: ItemParams[] = yield sample(todoListStorage);

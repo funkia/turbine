@@ -1,6 +1,6 @@
-import { go, lift, combine } from "@funkia/jabz";
+import { go, lift } from "@funkia/jabz";
 import {
-  Behavior, combineList, map, Now, sample, scan, scanS,
+  Behavior, combine, map, Now, sample, scan, scanS,
   stepper, Stream, switchStream
 } from "@funkia/hareactive";
 
@@ -37,9 +37,9 @@ type FromModel = {
 };
 
 const versionSelector = modelView<FromModel, FromView>(
-  function ({ selectVersion }) {
-    const selected = stepper("1", selectVersion);
-    return Now.of({ selected });
+  function* ({ selectVersion }) {
+    const selected = yield sample(stepper("1", selectVersion));
+    return { selected };
   },
   function ({ selected }): Component {
     return div({ class: "btn-group" }, function* () {

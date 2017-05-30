@@ -1,5 +1,5 @@
 import {
-  Behavior, Stream, Now, performStreamLatest, stepper, changes, split
+  Behavior, Stream, Now, performStreamLatest, stepper, changes, split, sample
 } from "@funkia/hareactive";
 import { combine, IO, withEffectsP, catchE, Either, left, right } from "@funkia/jabz";
 
@@ -46,7 +46,7 @@ function* model({ zipCode }: ViewOut): Iterator<Now<any>> {
   const requests = validZipCodeChange.map(fetchZip);
   // A stream of results obtained from performing the IO requests
   const results: Stream<Either<string, ZipResult>> = yield performStreamLatest(requests);
-  const status = stepper(
+  const status = yield sample(stepper(
     "",
     combine(
       invalidZipCodeChange.mapTo("Not a valid zip code"),
@@ -56,7 +56,7 @@ function* model({ zipCode }: ViewOut): Iterator<Now<any>> {
         right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
       }))
     )
-  );
+  ));
   return { status };
 }
 

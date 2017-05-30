@@ -2,7 +2,9 @@ import {
   Behavior, stepper, time, Stream, snapshot, Now, sample, map
 } from "@funkia/hareactive";
 
-import { Component, modelView, runComponent, list, elements, dynamic } from "../../src/index";
+import {
+  Component, modelView, runComponent, list, elements, dynamic, fgo
+} from "../../src/index";
 const { input, p, button, div, h1 } = elements;
 
 const formatTime = (t: number): string => (new Date(t)).toTimeString().split(" ")[0];
@@ -16,14 +18,14 @@ type ViewOut = {
   snapClick: Stream<any>
 };
 
-function model({ snapClick }: ViewOut): Now<any> {
+const model = fgo(function* ({ snapClick }: ViewOut) {
   const msgFromClick = map(
     (t) => "You last pressed the button at " + formatTime(t),
     snapshot(time, snapClick)
   );
-  const message = stepper("You've not clicked the button yet", msgFromClick);
-  return Now.of({time, message});
-}
+  const message = yield sample(stepper("You've not clicked the button yet", msgFromClick));
+  return {time, message};
+});
 
 function* view({ time, message }: ToView): Iterator<Component<any>> {
   yield h1("Continuous time example");

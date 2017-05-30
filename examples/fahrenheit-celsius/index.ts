@@ -1,37 +1,43 @@
-import {stepper, Stream, combine} from "@funkia/hareactive";
+import { Behavior, stepper, Stream, combine, sample } from "@funkia/hareactive";
 
-import {runComponent, elements, loop} from "../../src";
-const {input, div, label} = elements;
+import { runComponent, elements, loop, modelView, toComponent, fgo } from "../../src";
+const { input, div, label } = elements;
 
-type Looped = {
+type Model = {
+  celsius: Behavior<number>,
+  fahren: Behavior<number>
+};
+
+type View = {
   fahrenChange: Stream<string>,
   celsiusChange: Stream<string>
 };
 
 const getValue = (ev: any) => ev.currentTarget.value;
 
-const main = loop(function*({fahrenChange, celsiusChange}: Looped) {
-  // Model
+const model = fgo(function* ({ fahrenChange, celsiusChange }: View) {
   const fahrenNrChange = fahrenChange.map(parseFloat).filter((n) => !isNaN(n));
   const celsiusNrChange = celsiusChange.map(parseFloat).filter((n) => !isNaN(n));
-  const celsius = stepper(0, combine(celsiusChange, fahrenNrChange.map((f) => (f - 32) / 1.8)));
-  const fahren = stepper(0, combine(fahrenChange, celsiusNrChange.map((c) => c * 9 / 5 + 32)));
-
-  // View
-  const {fahrenInput} = yield div([
-    label("Fahrenheit"),
-    input({props: {value: fahren}, output: {fahrenInput: "input"}})
-  ]);
-  const {celsiusInput} = yield div([
-    label("Celsius"),
-    input({props: {value: celsius}, output: {celsiusInput: "input"}})
-  ]);
-
-  return {
-    fahrenChange: fahrenInput.map(getValue),
-    celsiusChange: celsiusInput.map(getValue)
-  };
+  const celsius = yield sample(stepper(0, combine(celsiusNrChange, fahrenNrChange.map((f) => (f - 32) / 1.8))));
+  const fahren = yield sample(stepper(0, combine(fahrenNrChange, celsiusNrChange.map((c) => c * 9 / 5 + 32))));
+  return { celsius, fahren };
 });
+
+const view = ({ fahren, celsius }) => div([
+  div([
+    label("Fahrenheit"),
+    input({ props: { value: fahren }, output: { fahrenInput: "input" } })
+  ]),
+  div([
+    label("Celsius"),
+    input({ props: { value: celsius }, output: { celsiusInput: "input" } })
+  ])
+]).map(({ fahrenInput, celsiusInput }) => ({
+  fahrenChange: fahrenInput.map(getValue),
+  celsiusChange: celsiusInput.map(getValue)
+}));
+
+const main = modelView<Model, View>(model, view)();
 
 // `runMain` should be the only impure function in application code
 runComponent("#mount", main);

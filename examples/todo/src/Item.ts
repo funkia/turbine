@@ -1,6 +1,6 @@
 import { combine, fromMaybe, lift, map, Maybe, fgo } from "@funkia/jabz";
 import {
-  async, Behavior, changes, filter, Future, keepWhen, performStream,
+  Behavior, changes, filter, Future, keepWhen, performStream,
   sample, snapshot, stepper, Stream, switcher, toggle
 } from "@funkia/hareactive";
 import { Router, routePath } from "@funkia/rudolph";
@@ -58,21 +58,20 @@ export type Output = {
   completed: Behavior<boolean>
 };
 
-
 const itemModel = fgo(function* (
   { toggleTodo, startEditing, nameBlur, deleteClicked, nameKeyup, newNameInput, taskName }: FromView,
   { toggleAll, name: initialName, id, router }: Input
 ): any {
   const enterPress = filter(isKey(enter), nameKeyup);
-  const enterNotPressed = toggle(true, startEditing, enterPress);
+  const enterNotPressed = yield sample(toggle(true, startEditing, enterPress));
   const cancel = filter(isKey(esc), nameKeyup);
-  const notCancelled = toggle(true, startEditing, cancel);
+  const notCancelled = yield sample(toggle(true, startEditing, cancel));
   const stopEditing = combine(enterPress, keepWhen(nameBlur, enterNotPressed), cancel);
-  const isEditing = toggle(false, startEditing, stopEditing);
-  const newName = stepper(
+  const isEditing = yield sample(toggle(false, startEditing, stopEditing));
+  const newName = yield sample(stepper(
     initialName,
     combine(newNameInput.map((ev) => ev.target.value), snapshot(taskName, cancel))
-  );
+  ));
   const nameChange = snapshot(newName, keepWhen(stopEditing, notCancelled));
 
   // Restore potentially persisted todo item
@@ -81,8 +80,8 @@ const itemModel = fgo(function* (
   const initial = savedItem === null ? { taskName: initialName, isComplete: false } : savedItem;
 
   // Initialize task to restored values
-  const taskName_ = stepper(initial.taskName, nameChange);
-  const isComplete = stepper(initial.isComplete, combine(toggleTodo, toggleAll));
+  const taskName_ = yield sample(stepper(initial.taskName, nameChange));
+  const isComplete: Behavior<boolean> = yield sample(stepper(initial.isComplete, combine(toggleTodo, toggleAll)));
 
   // Persist todo item
   const item = lift((taskName, isComplete) => ({ taskName, isComplete }), taskName_, isComplete);
@@ -104,8 +103,7 @@ const itemModel = fgo(function* (
 
   return {
     taskName: taskName_, isComplete, isEditing, newName, focusInput:
-    startEditing, id, destroyItemId, completed: isComplete,
-    hidden
+    startEditing, id, destroyItemId, completed: isComplete, hidden
   };
 });
 
