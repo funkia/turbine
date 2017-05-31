@@ -9,9 +9,8 @@ import {
 import * as fakeRaf from "fake-raf";
 
 import {
-  text, dynamic, Child,
-  toComponent, Component, modelView,
-  elements, loop, testComponent, list, runComponent
+  text, dynamic, Child, toComponent, Component, modelView,
+  emptyComponent, elements, loop, testComponent, list, runComponent
 } from "../src";
 const { span, div, button, input } = elements;
 
@@ -36,6 +35,17 @@ describe("component specs", () => {
       expect(dom.querySelector("span")).to.have.text("Hello");
       expect(dom.querySelector("div")).to.have.text("There");
       expect(dom.querySelector("button")).to.have.text("Click me");
+    });
+  });
+  describe("empty component", () => {
+    it("creates no dom", () => {
+      const {dom} = testComponent(emptyComponent);
+      expect(dom).to.be.empty;
+    });
+    it("it outputs an empty object", () => {
+      const { out } = testComponent(emptyComponent);
+      assert.typeOf(out, "object");
+      assert.deepEqual(Object.keys(out), []);
     });
   });
   describe("text", () => {

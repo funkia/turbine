@@ -61,6 +61,12 @@ class OfComponent<A> extends Component<A> {
   }
 }
 
+/**
+ * An empty component that adds no elements to the DOM and produces an
+ * empty object as output.
+ */
+export const emptyComponent = Component.of({});
+
 class ChainComponent<A, B> extends Component<B> {
   constructor(private component: Component<A>, private f: (a: A) => Component<B>) {
     super();
@@ -70,12 +76,17 @@ class ChainComponent<A, B> extends Component<B> {
   }
 }
 
-/** Run component and the now-computation inside */
-export function runComponent<A>(parent: Node | string, c: Child<A>): A {
+/**
+ * Run component and the now-computation inside.
+ * @param parent A selector string or a DOM node under which the
+ * component will be created
+ * @param component The component to run
+ */
+export function runComponent<A>(parent: Node | string, component: Child<A>): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent);
   }
-  return toComponent(c).run(parent);
+  return toComponent(component).run(parent);
 }
 
 export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
