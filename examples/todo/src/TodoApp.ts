@@ -1,7 +1,7 @@
 import {fromMaybe, lift, Maybe, traverse, fgo, sequence, IO} from "@funkia/jabz";
 import {
   Behavior, scan, map, sample, snapshot, Stream, switchStream, combine,
-  Future, switcher, plan, performStream, changes, snapshotWith
+  Future, switcher, plan, performStream, changes, snapshotWith, scanCombine, moment
 } from "@funkia/hareactive";
 import {modelView, elements, list} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul, label} = elements;
@@ -11,7 +11,6 @@ import todoInput, {Out as InputOut} from "./TodoInput";
 import item, {Output as ItemOut, Input as ItemParams, itemIdToPersistKey} from "./Item";
 import todoFooter, { Params as FooterParams } from "./TodoFooter";
 import {setItemIO, itemBehavior, removeItemIO} from "./localstorage";
-
 
 const isEmpty = (list: any[]) => list.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -33,15 +32,10 @@ type ToView = {
 // A behavior representing the current value of the localStorage property
 const todoListStorage = itemBehavior("todoList");
 
-export function mapTraverseFlat<A, B>(fn: (a: A) => Behavior<B>, behavior: Behavior<A[]>): Behavior<B[]> {
-  return behavior.map(l => traverse(Behavior, fn, l)).flatten<B[]>();
-}
-
 function getCompletedIds(outputs: Behavior<ItemOut[]>): Behavior<number[]> {
-  return mapTraverseFlat(
-    ({completed: completedB, id}) => map((completed) => ({completed, id}), completedB),
-    outputs
-  ).map((list) => list.filter(((o) => o.completed)).map((o) => o.id));
+  return moment((at) => {
+    return at(outputs).filter((o) => at(o.completed)).map((o) => o.id);
+  });
 }
 
 type ListModel<A, B> = {
@@ -52,10 +46,10 @@ type ListModel<A, B> = {
 };
 // This model handles the modification of the list of Todos
 function ListModel<A, B>({ prependItemS, removeKeyListS, itemToKey, initial }: ListModel<A, B>) {
-  const prependS = prependItemS.map(item => (list: A[]) => [item].concat(list));
-  const removeS = removeKeyListS.map(keys => (list: A[]) => list.filter(item => !includes(itemToKey(item), keys)));
-  const modifications = combine(removeS, prependS);
-  return sample(scan(apply, initial, modifications));
+  return sample(scanCombine([
+    [prependItemS, (item, list) => [item].concat(list)],
+    [removeKeyListS, (keys, list) => list.filter(item => !includes(itemToKey(item), keys))]
+  ], initial));
 }
 
 function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {

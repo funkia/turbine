@@ -33,6 +33,6 @@ const view = ({ clearedValue }) => input({
   attrs: {
     autofocus: "true", autocomplete: "off", placeholder: "What needs to be done?"
   }
-}).map((output) => ({ enterPressed: output.keyup.filter(isEnterKey), ...output });
+}).map((output) => ({ enterPressed: output.keyup.filter(isEnterKey), ...output }));
 
 export default modelView(model, view)();
