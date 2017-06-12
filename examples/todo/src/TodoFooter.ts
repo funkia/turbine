@@ -1,12 +1,11 @@
-import {Behavior, Stream} from "@funkia/hareactive";
-import {Component, elements, modelView} from "../../../src";
-import {combine} from "@funkia/jabz";
-const {span, button, ul, li, a, footer, strong} = elements;
+import { Behavior, Stream, moment, combine } from "@funkia/hareactive";
+import { Component, elements, modelView } from "../../../src";
+const { span, button, ul, li, a, footer, strong } = elements;
 import { navigate, Router } from "@funkia/rudolph";
-import {get} from "../../../src/utils";
+import { get } from "../../../src/utils";
 
-import {mapTraverseFlat} from "./TodoApp";
-import {Output as ItemOut} from "./Item";
+// import {mapTraverseFlat} from "./TodoApp";
+import { Output as ItemOut } from "./Item";
 
 export type Params = {
   todosB: Behavior<ItemOut[]>,
@@ -24,7 +23,6 @@ type FromView = {
   clearCompleted: Stream<any>
 };
 
-const negate = (b: boolean): boolean => !b;
 const isEmpty = (list: any[]) => list.length === 0;
 const formatRemainer = (value: number) => ` item${(value === 1) ? "" : "s"} left`;
 
@@ -37,34 +35,32 @@ const filterItem = (name: string) => li(a({
   }
 }, name));
 
-const sumFalse = (l: boolean[]) => l.filter(negate).length;
-
-const model = function* ({filterBtnActive, filterBtnAll, filterBtnCompleted, clearCompleted}: FromView, {router}) {
+const model = function* ({ filterBtnActive, filterBtnAll, filterBtnCompleted, clearCompleted }: FromView, { router }) {
   const navs = combine(
     filterBtnAll.mapTo("all"),
     filterBtnActive.mapTo("active"),
     filterBtnCompleted.mapTo("completed")
   );
   yield navigate(router, navs);
-  return {clearCompleted};
+  return { clearCompleted };
 };
 
-const view = ({}, {todosB, areAnyCompleted}) => {
+const view = ({ }, { todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
-  const itemsLeft = mapTraverseFlat(get("completed"), todosB).map(sumFalse);
-  return footer({class: "footer", classToggle: {hidden}}, [
-    span({class: "todo-count"}, [
+  const itemsLeft = moment((at) => at(todosB).filter((t) => !at(t.completed)).length);
+  return footer({ class: "footer", classToggle: { hidden } }, [
+    span({ class: "todo-count" }, [
       strong(itemsLeft),
       itemsLeft.map(formatRemainer)
     ]),
-    ul({class: "filters"}, [
+    ul({ class: "filters" }, [
       filterItem("All"),
       filterItem("Active"),
       filterItem("Completed")
     ]),
     button({
-      style: {visibility: areAnyCompleted.map((b) => b ? "visible" : "hidden")},
-      class: "clear-completed", output: {clearCompleted: "click"}
+      style: { visibility: areAnyCompleted.map((b) => b ? "visible" : "hidden") },
+      class: "clear-completed", output: { clearCompleted: "click" }
     }, "Clear completed")
   ]);
 };
