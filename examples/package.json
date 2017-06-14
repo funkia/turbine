@@ -10,6 +10,7 @@
     "simple": "webpack-dev-server --content-base simple simple/index.ts",
     "todo": "webpack-dev-server --content-base todo todo/src/index.ts",
     "zip-codes": "webpack-dev-server --content-base zip-codes zip-codes/index.ts",
+    "drag": "webpack-dev-server --content-base drag drag/src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Funkia",
