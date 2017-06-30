@@ -1,14 +1,21 @@
 import {
   map, streamFromEvent, stepper, Now, toggle, sample, snapshot,
-  switcher, Behavior, combine
+  switcher, Behavior, combine, scan, snapshotWith, loopNow
 } from "@funkia/hareactive";
+import { lift } from "@funkia/jabz";
 import { runComponent, elements, go, fgo, modelView } from "../../../src";
 const { span, input, div } = elements;
+
+type Point = { x: number, y: number };
 
 const mousemove = streamFromEvent(window, "mousemove");
 const mousePosition = stepper(
   { x: 0, y: 0 }, mousemove.map((e) => ({ x: e.pageX, y: e.pageY }))
 ).at();
+
+const addPoint = (p1, p2) => ({ x: p1.x + p2.x, y: p1.y + p2.y });
+
+const pos = (x, y): Point => ({ x, y });
 
 const boxModel = fgo(function* ({ startDrag, endDrag }, color: string) {
   const startDragAt = snapshot(mousePosition, startDrag);
@@ -16,24 +23,24 @@ const boxModel = fgo(function* ({ startDrag, endDrag }, color: string) {
     (p) => map((p2) => ({ x: p2.x - p.x, y: p2.y - p.y }), mousePosition),
     startDragAt
   );
-  const offset: Behavior<{x: number, y: number}> = yield sample(switcher(
+  const offset: Behavior<Point> = yield sample(switcher(
     Behavior.of({ x: 0, y: 0 }),
     combine(dragOffset, endDrag.mapTo(Behavior.of({ x: 0, y: 0 })))
   ));
-  const position = yield sample(stepper({x: 0, y: 0}, snapshot(offset, endDrag)));
-  const endDragAt = snapshot(mousePosition, endDrag);
+  const committed = yield sample(scan(addPoint, { x: 0, y: 0 }, snapshot(offset, endDrag)));
+  const position = lift(addPoint, committed, offset);
   const isBeingDragged = yield sample(toggle(false, startDrag, endDrag));
-  return { isBeingDragged, offset };
-}, Now);
+  return { isBeingDragged, position };
+});
 
-const boxView = ({ isBeingDragged, offset }, color: string) =>
+const boxView = ({ isBeingDragged, position }, color: string) =>
   div({
     class: "box",
     classToggle: { dragged: isBeingDragged },
     style: {
       background: color,
-      left: offset.map(({ x }) => x + "px"),
-      top: offset.map(({ y }) => y + "px")
+      left: position.map(({ x }) => x + "px"),
+      top: position.map(({ y }) => y + "px")
     },
     output: { startDrag: "mousedown", endDrag: "mouseup" }
   });
