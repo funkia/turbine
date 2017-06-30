@@ -33,12 +33,12 @@ const browsers = {
   }
 };
 
-module.exports = function(config) {
+module.exports = function (config) {
   config.set({
     frameworks: ["mocha", "karma-typescript"],
     files: [
-      {pattern: "src/**/*.ts"},
-      {pattern: "test/**/*.ts"}
+      { pattern: "src/**/*.ts" },
+      { pattern: "test/**/*.ts" }
     ],
     preprocessors: {
       "src/**/*.ts": ["karma-typescript"],
@@ -55,9 +55,13 @@ module.exports = function(config) {
     customLaunchers: browsers,
     concurrency: 5,
     karmaTypescriptConfig: {
-      tsconfig: "tsconfig-test.json",
+      tsconfig: "tsconfig.json",
+      exclude: ["examples"],
+      compilerOptions: {
+        module: "commonjs"
+      },
       reports: {
-	json: "coverage"
+        json: "coverage"
       }
     },
     singleRun: true
