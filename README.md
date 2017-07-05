@@ -625,8 +625,8 @@ The above code is equivalent to the following.
 
 ```ts
 const view = go(function* () {
-  const {click: acceptClick} = button("Accept");
-  const {click: rejectClick} = button("Reject");
+  const {click: acceptClick} = yield button("Accept");
+  const {click: rejectClick} = yield button("Reject");
   return {acceptClick, rejectClick};
 });
 ```
