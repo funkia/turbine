@@ -232,6 +232,7 @@ class DomComponent<A> extends Component<A> {
         }
       }
     }
+    parent.appendChild(elm);
     if (this.children !== undefined) {
       const childOutput = runComponent(elm, toComponent(this.children));
       assign(output, childOutput);
@@ -239,7 +240,6 @@ class DomComponent<A> extends Component<A> {
     if (this.props.output !== undefined) {
       rename(output, this.props.output);
     }
-    parent.appendChild(elm);
     return output;
   }
 }
