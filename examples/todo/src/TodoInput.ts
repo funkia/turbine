@@ -15,15 +15,15 @@ type Looped = {
 };
 
 export type Out = {
-  enterTodoS: Stream<string>
+  addItem: Stream<string>
 };
 
 function* model({ enterPressed, value }) {
-  const enterTodoS = snapshot(value, enterPressed).filter(isValidValue);
+  const addItem = snapshot(value, enterPressed).filter(isValidValue);
   const clearedValue = yield sample(stepper(
     "", combine(changes(value), enterPressed.mapTo(""))
   ));
-  return { enterTodoS, clearedValue };
+  return { addItem, clearedValue };
 }
 
 const view = ({ clearedValue }) => input({
@@ -35,4 +35,4 @@ const view = ({ clearedValue }) => input({
   }
 }).map((output) => ({ enterPressed: output.keyup.filter(isEnterKey), ...output }));
 
-export default modelView(model, view)();
+export default modelView<Out, any>(model, view)();

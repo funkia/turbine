@@ -9,7 +9,7 @@ import { id } from "../src/utils";
 import { testComponent, element, Component, elements } from "../src";
 const { button, div } = elements;
 
-describe("dom-builder: e()", () => {
+describe("dom-builder", () => {
 
   it("basic DOM elements", () => {
     const spanFac = element("span");
@@ -52,7 +52,7 @@ describe("dom-builder: e()", () => {
   });
 
   describe("output", () => {
-    it("passes parent output through", () => {
+    it("passes explicit child output through", () => {
       const c = div(button({ output: { buttonClick: "click" } }));
       const { out } = testComponent(c);
       assert(isStream(out.buttonClick));
@@ -73,12 +73,19 @@ describe("dom-builder: e()", () => {
       assert(isStream(out.fooClick));
       assert(isStream(out.barClick));
     });
-    it("merges own output with child output", () => {
+    it("merges own output with explicit output in child array", () => {
       const btn = button({ output: { fooClick: "click" } }, "Click me");
-      const myDiv = div({output: {divClick: "click"}}, [btn]);
+      const myDiv = div({ output: { divClick: "click" } }, [btn]);
       const { out } = testComponent(myDiv);
       assert(isStream(out.divClick));
       assert(isStream(out.fooClick));
+    });
+    it("merges all output from non-array child", () => {
+      const child = Component.of({ bar: 1 });
+      const myDiv = div({ output: { divClick: "click" } }, child);
+      const { out } = testComponent(myDiv);
+      assert(isStream(out.divClick));
+      assert.strictEqual(out.bar, 1);
     });
   });
 
@@ -192,7 +199,7 @@ describe("dom-builder: e()", () => {
     it("nested", () => {
       const spanFac = element("span");
       const h1Fac = element("h1");
-      const span = h1Fac(spanFac("Test"));
+      const span = h1Fac([spanFac("Test")]);
       const { dom, out } = testComponent(span);
       expect(dom.querySelector("h1")).to.have.length(1);
       expect(dom.querySelector("h1")).to.contain("span");
@@ -209,7 +216,7 @@ describe("dom-builder: e()", () => {
       });
       const spanC = spanFac();
       const { dom } = testComponent(spanC);
-      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;")
+      expect(dom.querySelector("span")).to.have.attribute("style", "background-color: red;");
     });
     it("override style", () => {
       const spanFac = element("span", {
