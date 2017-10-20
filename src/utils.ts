@@ -61,15 +61,15 @@ export function mergeDeep(...objects: any[]): any { // .length of function is 2
   return result;
 }
 
-// Note this function mutates `source`
-export function rename(
-  source: { [key: string]: any },
-  renames: { [name: string]: string }
-): void {
-  for (const newName of Object.keys(renames)) {
-    const name = renames[newName];
-    source[newName] = source[name];
+export function copyRemaps(
+  remap: Record<string, string>,
+  source: Record<string, any>
+): Record<string, any> {
+  const output = {};
+  for (let key in remap) {
+    output[key] = source[remap[key]];
   }
+  return output;
 }
 
 export function id<A>(a: A): A { return a; }

@@ -10,7 +10,8 @@ import * as fakeRaf from "fake-raf";
 
 import {
   text, dynamic, Child, toComponent, Component, modelView,
-  emptyComponent, elements, loop, testComponent, list, runComponent
+  emptyComponent, elements, loop, testComponent, list, runComponent,
+  output
 } from "../src";
 const { span, div, button, input } = elements;
 
@@ -27,7 +28,11 @@ describe("component specs", () => {
       expect(dom).to.have.text("world");
     });
     it("converts an array of components to component", () => {
-      const component = toComponent([span("Hello"), div("There"), button({ output: { click: "click" } }, "Click me")]);
+      const component = toComponent([
+        span("Hello"),
+        div("There"),
+        button({ output: { click: "click" } }, "Click me")
+      ]);
       const { dom, out } = testComponent(component);
 
       expect(out).to.have.property("click");
@@ -36,10 +41,41 @@ describe("component specs", () => {
       expect(dom.querySelector("div")).to.have.text("There");
       expect(dom.querySelector("button")).to.have.text("Click me");
     });
+    it("only combines explicit output in array", () => {
+      const component = toComponent([
+        button("Click me"),
+        button({ output: { trigger: "click" } })
+      ]);
+      const { dom, out } = testComponent(component);
+      expect(out).to.have.property("trigger");
+      expect(out).to.not.have.property("click");
+    });
+  });
+  describe("explicit output", () => {
+    it("has output method", () => {
+      const comp =
+        Component.of({ foo: 1, bar: 2, baz: 3 })
+          .output({ newFoo: "foo", newBar: "bar" });
+      const { dom, out } = testComponent(comp);
+      expect(out.newFoo).to.equal(1);
+      expect(out.newBar).to.equal(2);
+      expect((out as any).baz).to.be.undefined;
+    });
+    it("has output function", () => {
+      const comp = Component.of({foo: 1, bar: "two", baz: 3});
+      const comp2 = output({ newFoo: "foo", newBar: "bar" }, comp);
+      const { dom, out } = testComponent(comp2);
+      // type asserts to check that the types work
+      out.newFoo as number;
+      out.newBar as string;
+      expect(out.newFoo).to.equal(1);
+      expect(out.newBar).to.equal("two");
+      expect((out as any).baz).to.be.undefined;
+    });
   });
   describe("empty component", () => {
     it("creates no dom", () => {
-      const {dom} = testComponent(emptyComponent);
+      const { dom } = testComponent(emptyComponent);
       expect(dom).to.be.empty;
     });
     it("it outputs an empty object", () => {
