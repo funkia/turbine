@@ -28,7 +28,10 @@ export const checkbox = element("input[type=checkbox]", {
 
 export const canvas = element("canvas");
 export const button = element("button");
+export const img = element("img");
 export const a = element("a");
+export const i = element("i");
+export const b = element("b");
 export const label = element("label");
 export const br = element("br")();
 export const span = element("span");

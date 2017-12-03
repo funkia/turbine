@@ -9,7 +9,8 @@ import { Output as ItemOut } from "./Item";
 
 export type Params = {
   todosB: Behavior<ItemOut[]>,
-  areAnyCompleted: Behavior<boolean>
+  areAnyCompleted: Behavior<boolean>,
+  router: Router
 };
 
 export type Out = {
@@ -65,8 +66,6 @@ const view = ({ }, { todosB, areAnyCompleted }: Params) => {
   ]);
 };
 
-const todoFooter = modelView(model, view);
+const todoFooter = modelView<Out, FromView, Params>(model, view);
 
 export default todoFooter;
-
-

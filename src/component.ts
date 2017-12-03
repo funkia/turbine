@@ -1,11 +1,10 @@
 import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
-  Now,
-  Behavior, observe, sinkBehavior, isBehavior,
-  Stream, placeholder
+  Now, Behavior, observe, sinkBehavior, isBehavior, Stream,
+  placeholder
 } from "@funkia/hareactive";
 
-import { merge, id } from "./utils";
+import { merge, id, copyRemaps } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -41,6 +40,10 @@ export abstract class Component<A = any> implements Monad<A> {
   chain<B>(f: (a: A) => Component<B>): Component<B> {
     return new ChainComponent(this, f);
   }
+  output<B extends Record<string, any>>(remaps: B): Component<B> {
+    return new OutputComponent(remaps, this);
+  }
+  explicitOutput: string[] | undefined;
   static multi: boolean = false;
   multi: boolean = false;
   abstract run(parent: Node): A;
@@ -59,6 +62,40 @@ class OfComponent<A> extends Component<A> {
   run(_: Node): A {
     return this.value;
   }
+}
+
+class OutputComponent extends Component<any> {
+  constructor(
+    private remaps: Record<string, string>,
+    private comp: Component<any>
+  ) {
+    super();
+    this.explicitOutput = Object.keys(remaps);
+  }
+  run(parent): any {
+    const output = this.comp.run(parent);
+    return copyRemaps(this.remaps, output);
+  }
+}
+
+type AnyValues<A extends Record<string, any>> = {
+  [K in keyof A]: any
+};
+
+export type Remap<
+  A extends Record<string, any>,
+  B extends Record<string, keyof A>
+> = {
+  [K in keyof B]: A[B[K]]
+};
+
+export function output<
+  A extends Record<string, any>,
+  B extends Record<string, keyof A>
+>(
+  remaps: B, component: Component<A>
+): Component<Remap<A, B>> {
+  return component.output(remaps);
 }
 
 /**
@@ -175,7 +212,7 @@ class ModelViewComponent<A> extends Component<A> {
     super();
   }
   run(parent: Node): A {
-    const {view, model, args} = this;
+    const { view, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
       placeholders = new Proxy({}, placeholderProxyHandler);
@@ -272,11 +309,43 @@ export function text(showable: Showable): Component<{}> {
   return new TextComponent(showable);
 }
 
+class ListComponent extends Component<any> {
+  components: Component<any>[];
+  constructor(children: Child[]) {
+    super();
+    this.components = [];
+    this.explicitOutput = [];
+    for (const child of children) {
+      const component = toComponent(child);
+      this.components.push(component);
+      if (component.explicitOutput !== undefined) {
+        this.explicitOutput = this.explicitOutput.concat(component.explicitOutput);
+      }
+    }
+  }
+  run(parent) {
+    const output = {};
+    for (let i = 0; i < this.components.length; ++i) {
+      const component = this.components[i];
+      const childOutput = component.run(parent);
+      if (component.explicitOutput !== undefined) {
+        // console.log(component);
+        // console.log(childOutput);
+        for (let j = 0; j < component.explicitOutput.length; ++j) {
+          const name = component.explicitOutput[j];
+          output[name] = childOutput[name];
+        }
+      }
+    }
+    return output;
+  }
+}
+
 export function toComponent<A>(child: Component<A>): Component<A>;
 export function toComponent<A>(child: Showable): Component<{}>;
 export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
 export function toComponent<A>(child: () => Iterator<any>): Component<any>;
-export function toComponent<A>(child: Array<Component<any>>): Component<{}>;
+export function toComponent<A>(child: Child[]): Component<{}>;
 export function toComponent<A>(child: Child<A>): Component<A>;
 export function toComponent<A>(child: Child): Component<any> {
   if (isComponent(child)) {
@@ -288,7 +357,7 @@ export function toComponent<A>(child: Child): Component<any> {
   } else if (isShowable(child)) {
     return text(child);
   } else if (Array.isArray(child)) {
-    return <Component<A>>sequence(Component, child.map(toComponent)).map((res: any[]) => res.reduce(merge, {}));
+    return new ListComponent(child);
   }
 }
 
@@ -354,7 +423,12 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
     private list: Behavior<A[]>,
     private getKey: (a: A, index: number) => string,
     private name: string | undefined
-  ) { super(); }
+  ) {
+    super();
+    if (name !== undefined) {
+      this.explicitOutput = [name];
+    }
+  }
   run(parent: Node): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.

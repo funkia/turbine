@@ -3,7 +3,7 @@ import {
   Behavior, scan, map, sample, snapshot, Stream, switchStream, combine,
   Future, switcher, plan, performStream, changes, snapshotWith, scanCombine, moment
 } from "@funkia/hareactive";
-import {modelView, elements, list} from "../../../src";
+import {modelView, elements, list, output} from "../../../src";
 const {h1, p, header, footer, section, checkbox, ul, label} = elements;
 import { Router } from "@funkia/rudolph";
 
@@ -52,10 +52,10 @@ function ListModel<A, B>({ prependItemS, removeKeyListS, itemToKey, initial }: L
   ], initial));
 }
 
-function* model({enterTodoS, toggleAll, clearCompleted, itemOutputs}: FromView) {
+function* model({addItem, toggleAll, clearCompleted, itemOutputs}: FromView) {
   const nextId = itemOutputs.map((outs) => outs.reduce((maxId, {id}) => Math.max(maxId, id), 0) + 1);
 
-  const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, enterTodoS);
+  const newTodoS = snapshotWith((name, id) => ({name, id}), nextId, addItem);
   const deleteS = switchStream(itemOutputs.map((list) => combine(...list.map((o) => o.destroyItemId))));
   const completedIds = getCompletedIds(itemOutputs);
 
@@ -90,7 +90,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
     section({class: "todoapp"}, [
       header({class: "header"}, [
         h1("todos"),
-        todoInput
+        output({addItem: "addItem"}, todoInput)
       ]),
       section({
         class: "main",
@@ -108,7 +108,10 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
           list((n) => item({toggleAll, router, ...n}), todoNames, "itemOutputs", (o) => o.id)
         )
       ]),
-      todoFooter({todosB: itemOutputs, areAnyCompleted, router})
+      output(
+        {clearCompleted: "clearCompleted"},
+        todoFooter({todosB: itemOutputs, areAnyCompleted, router})
+      )
     ]),
     footer({class: "info"}, [
       p("Double-click to edit a todo"),

@@ -6,7 +6,7 @@ import {
   Component, runComponent, viewObserve, Showable, Child, isChild,
   toComponent
 } from "./component";
-import { id, rename, mergeDeep, assign } from "./utils";
+import { id, mergeDeep, assign, copyRemaps } from "./utils";
 
 export type EventName = keyof HTMLElementEventMap;
 
@@ -85,7 +85,7 @@ export type DefaultOutput = {
 };
 
 export type InitialOutput<P extends InitialProperties> =
-  OutputStream<(P & {streams: {}})["streams"]> & BehaviorOutput<(P & {behaviors: {}})["behaviors"]> & DefaultOutput;
+  OutputStream<(P & { streams: {} })["streams"]> & BehaviorOutput<(P & { behaviors: {} })["behaviors"]> & DefaultOutput;
 
 // An array of names of all DOM events
 export const allDomEvents: EventName[] =
@@ -158,11 +158,27 @@ function handleCustom(
 }
 
 class DomComponent<A> extends Component<A> {
+  child: Component<any> | undefined;
   constructor(
     private tagName: string,
-    private props?: Properties<A> & {output?: OutputNames<A>},
-    private children?: Child
-  ) { super(); }
+    private props?: Properties<A> & { output?: OutputNames<A> },
+    child?: Child
+  ) {
+    super();
+    if (props.output !== undefined) {
+      this.explicitOutput = Object.keys(props.output);
+    }
+    if (child !== undefined) {
+      this.child = toComponent(child);
+      if (this.child.explicitOutput !== undefined) {
+        if (this.explicitOutput === undefined) {
+          this.explicitOutput = this.child.explicitOutput;
+        } else {
+          this.explicitOutput = this.explicitOutput.concat(this.child.explicitOutput);
+        }
+      }
+    }
+  }
   run(parent: Node): A {
     let output: any = {};
     const elm = document.createElement(this.tagName);
@@ -186,16 +202,7 @@ class DomComponent<A> extends Component<A> {
           let a: Behavior<any> = undefined;
           const initial = initialFn(elm);
           Object.defineProperty(output, name, {
-            enumerable: false,
-            configurable: true,
-            set: function<A>(value: A): void {
-              Object.defineProperty(output, name, {
-                enumerable: true,
-                get: (): A => {
-                  return value;
-                }
-              });
-            },
+            enumerable: true,
             get: (): Behavior<any> => {
               if (a === undefined) {
                 a = behaviorFromEvent(elm, evt, initial, extractor);
@@ -211,16 +218,7 @@ class DomComponent<A> extends Component<A> {
           let a: Stream<any> = undefined;
           if (output[name] === undefined) {
             Object.defineProperty(output, name, {
-              enumerable: false,
-              configurable: true,
-              set: function<A>(value: A): void {
-                Object.defineProperty(output, name, {
-                  enumerable: true,
-                  get: (): A => {
-                    return value;
-                  }
-                });
-              },
+              enumerable: true,
               get: (): Stream<any> => {
                 if (a === undefined) {
                   a = streamFromEvent(elm, evt, extractor);
@@ -232,14 +230,14 @@ class DomComponent<A> extends Component<A> {
         }
       }
     }
-    if (this.children !== undefined) {
-      const childOutput = runComponent(elm, toComponent(this.children));
+    parent.appendChild(elm);
+    if (this.props.output !== undefined) {
+      output = copyRemaps(this.props.output, output);
+    }
+    if (this.child !== undefined) {
+      const childOutput = runComponent(elm, toComponent(this.child));
       assign(output, childOutput);
     }
-    if (this.props.output !== undefined) {
-      rename(output, this.props.output);
-    }
-    parent.appendChild(elm);
     return output;
   }
 }
