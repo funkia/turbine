@@ -36,38 +36,38 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@funkia/hareactive": "0.1.1"
+    "@funkia/hareactive": "0.1.2"
   },
   "dependencies": {
-    "@funkia/jabz": "0.0.22"
+    "@funkia/jabz": "0.0.23"
   },
   "bugs": {
     "url": "https://github.com/funkia/turbine/issues"
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "^0.1.0",
-    "@types/chai": "^4.0.4",
+    "@funkia/hareactive": "^0.1.2",
+    "@types/chai": "^4.0.6",
     "@types/chai-dom": "0.0.5",
-    "@types/mocha": "^2.2.43",
+    "@types/mocha": "^2.2.44",
     "chai": "^4.1.2",
-    "chai-dom": "^1.4.3",
-    "codecov": "^2.3.0",
+    "chai-dom": "^1.6.0",
+    "codecov": "^3.0.0",
     "fake-raf": "^1.0.1",
     "karma": "^1.7.1",
-    "karma-chrome-launcher": "^2.1.1",
+    "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "1.0.1",
     "karma-firefox-launcher": "^1.0.1",
     "karma-mocha": "1.3.0",
-    "karma-mocha-reporter": "^2.2.4",
+    "karma-mocha-reporter": "^2.2.5",
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sauce-launcher": "^1.2.0",
-    "karma-typescript": "^3.0.7",
+    "karma-typescript": "^3.0.8",
     "mocha": "^4.0.1",
-    "ts-loader": "^2.3.7",
-    "typescript": "^2.5.3",
-    "uglify-js": "^3.1.3",
-    "webpack": "^3.7.1",
+    "ts-loader": "^3.2.0",
+    "typescript": "^2.6.2",
+    "uglify-js": "^3.2.1",
+    "webpack": "^3.9.1",
     "webpack2-externals-plugin": "^1.0.0",
     "xyz": "^2.1.0"
   },

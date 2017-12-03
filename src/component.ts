@@ -481,7 +481,7 @@ export function list<A, B>(
 ): Component<Behavior<B[]>>;
 export function list<A, B>(
   c: (a: A) => Component<any>, list: Behavior<A[]>, optional1: any
-): Component<Behavior<B[]>> {
+): Component<Behavior<B[]> | Record<string, Behavior<B[]>>> {
   const last = arguments[arguments.length - 1];
   const getKey = typeof last === "function" ? last : id;
   const name = typeof optional1 === "string" ? optional1 : undefined;
