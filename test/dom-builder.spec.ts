@@ -363,11 +363,46 @@ describe("dom-builder", () => {
     });
   });
 
-  describe("classToggle", () => {
-    it("toggles classe based on behavior", () => {
+  describe("the overloaded class", () => {
+    it("adds classes based on string", () => {
+      const span = elements.span({
+        class: "foo bar"
+      });
+      const { dom } = testComponent(span);
+      const spanElm = dom.firstChild;
+      expect(spanElm).not.to.have.class("baz");
+      expect(spanElm).to.have.class("foo");
+      expect(spanElm).to.have.class("bar");
+    });
+    it("adds classes based on behavior of string", () => {
+      const classB = sinkBehavior("foo");
+      const span = elements.span({
+        class: classB
+      });
+      const { dom } = testComponent(span);
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.class("foo");
+      expect(spanElm).not.to.have.class("bar");
+      publish("bar", classB);
+      expect(spanElm).not.to.have.class("foo");
+      expect(spanElm).to.have.class("bar");
+    });
+    it("toggles classes based on record of booleans", () => {
+      const span = elements.span({
+        class: {
+          foo: true,
+          bar: false
+        }
+      });
+      const { dom } = testComponent(span);
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.class("foo");
+      expect(spanElm).not.to.have.class("bar");
+    });
+    it("toggles classes based on record of behaviors of booleans", () => {
       const boolB = sinkBehavior(false);
       const span = elements.span({
-        classToggle: { foo: boolB }
+        class: { foo: boolB }
       });
       const { dom } = testComponent(span);
       const spanElm = dom.firstChild;
@@ -376,6 +411,26 @@ describe("dom-builder", () => {
       expect(spanElm).to.have.class("foo");
       publish(false, boolB);
       expect(spanElm).not.to.have.class("foo");
+    });
+    it("adds classes based on array of mixed class descriptions", () => {
+      const classB = sinkBehavior("baz");
+      const boolB = sinkBehavior(false);
+      const span = elements.span({
+        class: ["foo bar", classB, { dap: true, dip: boolB }]
+      });
+      const { dom } = testComponent(span);
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.class("foo");
+      expect(spanElm).to.have.class("bar");
+      expect(spanElm).to.have.class("baz");
+      expect(spanElm).to.have.class("dap");
+      expect(spanElm).not.to.have.class("buzz");
+      expect(spanElm).not.to.have.class("dip");
+      publish("buzz", classB);
+      publish(true, boolB);
+      expect(spanElm).not.to.have.class("baz");
+      expect(spanElm).to.have.class("buzz");
+      expect(spanElm).to.have.class("dip");
     });
   });
 });
