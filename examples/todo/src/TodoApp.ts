@@ -93,8 +93,7 @@ function view({itemOutputs, todoNames, areAnyCompleted, toggleAll, areAllComplet
         output({addItem: "addItem"}, todoInput)
       ]),
       section({
-        class: "main",
-        classToggle: {hidden: todoNames.map(isEmpty)}
+        class: ["main", {hidden: todoNames.map(isEmpty)}]
       }, [
         checkbox({
           class: "toggle-all",

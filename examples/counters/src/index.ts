@@ -23,8 +23,7 @@ type AppId = keyof (typeof numberToApp);
 
 function selectorButton(n: AppId, selected: Behavior<AppId>): Component<Stream<AppId>> {
   return button({
-    class: "btn btn-default",
-    classToggle: { active: selected.map((m) => n === m) }
+    class: ["btn btn-default", { active: selected.map((m) => n === m) }]
   }, `Version ${n}`).map(({ click }) => click.mapTo(n));
 }
 

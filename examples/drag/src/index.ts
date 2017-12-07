@@ -35,8 +35,7 @@ const boxModel = fgo(function* ({ startDrag, endDrag }, color: string) {
 
 const boxView = ({ isBeingDragged, position }, color: string) =>
   div({
-    class: "box",
-    classToggle: { dragged: isBeingDragged },
+    class: ["box", { dragged: isBeingDragged }],
     style: {
       background: color,
       left: position.map(({ x }) => x + "px"),

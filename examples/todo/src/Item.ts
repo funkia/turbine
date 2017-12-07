@@ -109,8 +109,7 @@ const itemModel = fgo(function* (
 
 function itemView({ taskName, isComplete, isEditing, newName, focusInput, hidden }: ToView) {
   return map((out) => ({ taskName, ...out }), li({
-    class: "todo",
-    classToggle: { completed: isComplete, editing: isEditing, hidden }
+    class: ["todo", { completed: isComplete, editing: isEditing, hidden }]
   }, [
     div({ class: "view" }, [
       checkbox({
