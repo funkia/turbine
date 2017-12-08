@@ -49,7 +49,7 @@ const model = function* ({ filterBtnActive, filterBtnAll, filterBtnCompleted, cl
 const view = ({ }, { todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
   const itemsLeft = moment((at) => at(todosB).filter((t) => !at(t.completed)).length);
-  return footer({ class: "footer", classToggle: { hidden } }, [
+  return footer({ class: ["footer", { hidden }] }, [
     span({ class: "todo-count" }, [
       strong(itemsLeft),
       itemsLeft.map(formatRemainer)

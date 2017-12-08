@@ -1,3 +1,5 @@
+import { isBehavior } from "@funkia/hareactive";
+
 function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
   const result = [];
   for (let i = 0; i < arr1.length; ++i) {
@@ -10,7 +12,7 @@ function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
 }
 
 function isObject(item: any): item is Object {
-  return typeof item === "object" && !Array.isArray(item);
+  return typeof item === "object" && !Array.isArray(item) && !isBehavior(item);
 }
 
 export function get<K extends string>(prop: K): any {

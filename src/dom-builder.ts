@@ -61,6 +61,16 @@ export type Style = {
   [N in keyof CSSStyleDeclaration]?: Behavior<CSSStyleDeclaration[N]> | CSSStyleDeclaration[N]
 };
 
+type ClassNames = Behavior<string> | string;
+
+type ClassToggles = {
+  [name: string]: boolean | Behavior<boolean>;
+};
+
+type ClassDescription = ClassNames | ClassToggles | ClassDescriptionArray;
+
+interface ClassDescriptionArray extends Array<ClassDescription> {}
+
 export type InitialProperties = {
   streams?: StreamDescriptions,
   behaviors?: BehaviorDescriptions,
@@ -74,10 +84,7 @@ export type InitialProperties = {
   actionDefinitions?: ActionDefinitions,
   actions?: Actions,
   setters?: { [name: string]: Behavior<any> },
-  class?: string,
-  classToggle?: {
-    [name: string]: boolean | Behavior<boolean>;
-  }
+  class?: ClassDescription;
 };
 
 export type DefaultOutput = {
@@ -157,6 +164,30 @@ function handleCustom(
   }
 }
 
+function handleClass(
+  desc: ClassDescription | ClassDescription[],
+  elm: HTMLElement
+): void {
+  if (isBehavior(desc)) {
+    let previousClasses: string[];
+    viewObserve(value => {
+      if (previousClasses !== undefined) {
+        elm.classList.remove(...previousClasses);
+      }
+      previousClasses = value.split(" ");
+      elm.classList.add(...previousClasses);
+    }, desc);
+  } else if (Array.isArray(desc)) {
+    for (const d of desc) {
+      handleClass(d, elm);
+    }
+  } else if (typeof desc === "string") {
+    const classes = desc.split(" ");
+    elm.classList.add(...classes);
+  } else {
+    handleObject(desc, elm, classSetter);
+  }
+}
 class DomComponent<A> extends Component<A> {
   child: Component<any> | undefined;
   constructor(
@@ -187,12 +218,8 @@ class DomComponent<A> extends Component<A> {
       handleObject(<any>this.props.style, elm, styleSetter);
       handleObject(this.props.attrs, elm, attributeSetter);
       handleObject(this.props.props, elm, propertySetter);
-      handleObject(this.props.classToggle, elm, classSetter);
       if (this.props.class !== undefined) {
-        const classes = this.props.class.split(" ");
-        for (const name of classes) {
-          elm.classList.add(name);
-        }
+        handleClass(this.props.class, elm);
       }
       handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);
       handleCustom(elm, false, this.props.actionDefinitions, this.props.setters);
@@ -253,8 +280,8 @@ function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
         result.props.id = token.slice(1);
         break;
       case ".":
-        result.classToggle = result.classToggle || {};
-        result.classToggle[token.slice(1)] = true;
+        result.class = result.class || {};
+        result.class[token.slice(1)] = true;
         break;
       case "[":
         result.attrs = result.attrs || {};
