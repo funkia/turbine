@@ -67,7 +67,9 @@ type ClassToggles = {
   [name: string]: boolean | Behavior<boolean>;
 };
 
-type ClassDescription = ClassNames | ClassToggles;
+type ClassDescription = ClassNames | ClassToggles | ClassDescriptionArray;
+
+interface ClassDescriptionArray extends Array<ClassDescription> {}
 
 export type InitialProperties = {
   streams?: StreamDescriptions,
@@ -82,7 +84,7 @@ export type InitialProperties = {
   actionDefinitions?: ActionDefinitions,
   actions?: Actions,
   setters?: { [name: string]: Behavior<any> },
-  class?: ClassDescription | ClassDescription[]
+  class?: ClassDescription;
 };
 
 export type DefaultOutput = {

@@ -412,6 +412,15 @@ describe("dom-builder", () => {
       publish(false, boolB);
       expect(spanElm).not.to.have.class("foo");
     });
+    it("adds classes based on strings in nested arrays", () => {
+      const span = elements.span({
+        class: ["foo", ["bar"]]
+      });
+      const { dom } = testComponent(span);
+      const spanElm = dom.firstChild;
+      expect(spanElm).to.have.class("foo");
+      expect(spanElm).to.have.class("bar");
+    });
     it("adds classes based on array of mixed class descriptions", () => {
       const classB = sinkBehavior("baz");
       const boolB = sinkBehavior(false);
