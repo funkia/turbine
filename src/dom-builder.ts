@@ -266,15 +266,13 @@ class DomComponent<A> extends Component<A> {
       const childOutput = runComponent(elm, toComponent(this.child), destroyed.mapTo(false));
       assign(output, childOutput);
     }
-    destroyed.observe(
-      (toplevela) => {
-        if (toplevela) {
+    destroyed.subscribe(
+      (toplevel) => {
+        if (toplevel) {
           parent.removeChild(elm);
         }
-      },
-      () => {"NotImplemented"; },
-      () => {"NotImplemented"; }
-    )
+        // TODO: cleanup listeners
+    });
     return output;
   }
 }
