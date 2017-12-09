@@ -1,6 +1,7 @@
 import {
   Behavior, sinkBehavior, isBehavior, Stream, Now, streamFromEvent,
-  behaviorFromEvent
+  behaviorFromEvent,
+  Future
 } from "@funkia/hareactive";
 import {
   Component, runComponent, viewObserve, Showable, Child, isChild,
@@ -210,7 +211,7 @@ class DomComponent<A> extends Component<A> {
       }
     }
   }
-  run(parent: Node): A {
+  run(parent: Node, destroyed: Future<boolean>): A {
     let output: any = {};
     const elm = document.createElement(this.tagName);
 
@@ -262,9 +263,18 @@ class DomComponent<A> extends Component<A> {
       output = copyRemaps(this.props.output, output);
     }
     if (this.child !== undefined) {
-      const childOutput = runComponent(elm, toComponent(this.child));
+      const childOutput = runComponent(elm, toComponent(this.child), destroyed.mapTo(false));
       assign(output, childOutput);
     }
+    destroyed.observe(
+      (toplevela) => {
+        if (toplevela) {
+          parent.removeChild(elm);
+        }
+      },
+      () => {"NotImplemented"; },
+      () => {"NotImplemented"; }
+    )
     return output;
   }
 }

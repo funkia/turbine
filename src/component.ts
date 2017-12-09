@@ -1,7 +1,9 @@
 import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
   Now, Behavior, observe, sinkBehavior, isBehavior, Stream,
-  placeholder
+  placeholder,
+  Future,
+  sinkFuture
 } from "@funkia/hareactive";
 
 import { merge, id, copyRemaps } from "./utils";
@@ -46,7 +48,7 @@ export abstract class Component<A = any> implements Monad<A> {
   explicitOutput: string[] | undefined;
   static multi: boolean = false;
   multi: boolean = false;
-  abstract run(parent: Node): A;
+  abstract run(parent: Node, destroyed: Future<boolean>): A;
   // Definitions below are inserted by Jabz
   flatten: <B>() => Component<B>;
   map: <B>(f: (a: A) => B) => Component<B>;
@@ -59,7 +61,7 @@ class OfComponent<A> extends Component<A> {
   constructor(private value: A) {
     super();
   }
-  run(_: Node): A {
+  run(_1: Node, _2: Future<boolean>): A {
     return this.value;
   }
 }
@@ -72,8 +74,8 @@ class OutputComponent extends Component<any> {
     super();
     this.explicitOutput = Object.keys(remaps);
   }
-  run(parent): any {
-    const output = this.comp.run(parent);
+  run(parent: Node, destroyed: Future<boolean>): any {
+    const output = this.comp.run(parent, destroyed);
     return copyRemaps(this.remaps, output);
   }
 }
@@ -108,8 +110,8 @@ class ChainComponent<A, B> extends Component<B> {
   constructor(private component: Component<A>, private f: (a: A) => Component<B>) {
     super();
   }
-  run(parent: Node): B {
-    return this.f(this.component.run(parent)).run(parent);
+  run(parent: Node, destroyed: Future<boolean>): B {
+    return this.f(this.component.run(parent, destroyed)).run(parent, destroyed);
   }
 }
 
@@ -119,17 +121,19 @@ class ChainComponent<A, B> extends Component<B> {
  * component will be created
  * @param component The component to run
  */
-export function runComponent<A>(parent: Node | string, component: Child<A>): A {
+export function runComponent<A>(parent: Node | string, component: Child<A>, destroy: Future<boolean> = sinkFuture()): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent);
   }
-  return toComponent(component).run(parent);
+  return toComponent(component).run(parent, destroy);
 }
 
-export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
+export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement, destroy: (toplevel: boolean) => void } {
   const dom = document.createElement("div");
-  const out = runComponent(dom, c);
-  return { out, dom };
+  const destroyed = sinkFuture<boolean>();
+  const out = runComponent(dom, c, destroyed);
+  const destroy = destroyed.resolve.bind(destroyed);
+  return { out, dom, destroy };
 }
 
 export function isComponent(c: any): c is Component<any> {
@@ -156,19 +160,18 @@ class LoopComponent<A> extends Component<A> {
   ) {
     super();
   }
-  run(parent: Node): A {
-    let placeholderObject: any;
+  run(parent: Node, destroyed: Future<boolean>): A {
+    let placeholderObject: any = {destroyed};
     if (supportsProxy) {
-      placeholderObject = new Proxy({}, placeholderProxyHandler);
+      placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
     } else {
-      placeholderObject = {};
       if (this.placeholderNames !== undefined) {
         for (const name of this.placeholderNames) {
           placeholderObject[name] = placeholder();
         }
       }
     }
-    const result = toComponent(this.f(placeholderObject)).run(parent);
+    const result = toComponent(this.f(placeholderObject)).run(parent, destroyed);
     const returned: (keyof A)[] = <any>Object.keys(result);
     for (const name of returned) {
       (placeholderObject[name]).replaceWith(result[name]);
@@ -211,7 +214,7 @@ class ModelViewComponent<A> extends Component<A> {
   ) {
     super();
   }
-  run(parent: Node): A {
+  run(parent: Node, destoyed: Future<boolean>): A {
     const { view, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
@@ -224,7 +227,7 @@ class ModelViewComponent<A> extends Component<A> {
         }
       }
     }
-    const viewOutput = view(placeholders, ...args).run(parent);
+    const viewOutput = view(placeholders, ...args).run(parent, destoyed);
     const helpfulViewOutput = addErrorHandler(model.name, view.name, viewOutput);
     const behaviors = model(helpfulViewOutput, ...args).run();
     // Tie the recursive knot
@@ -299,8 +302,17 @@ class TextComponent extends Component<{}> {
   constructor(private text: Showable) {
     super();
   }
-  run(parent: Node): {} {
-    parent.appendChild(document.createTextNode(this.text.toString()));
+  run(parent: Node, destroyed: Future<boolean>): {} {
+    const node = document.createTextNode(this.text.toString());
+    parent.appendChild(node);
+    destroyed.observe(toplevel => {
+        if (toplevel) {
+          parent.removeChild(node);
+        }
+      },
+      () => { throw "NotImplemented"; },
+      () => { throw "NotImplemented"; }
+    );
     return {};
   }
 }
@@ -323,11 +335,11 @@ class ListComponent extends Component<any> {
       }
     }
   }
-  run(parent) {
+  run(parent: Node, destroyed: Future<boolean>): any {
     const output = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
-      const childOutput = component.run(parent);
+      const childOutput = component.run(parent, destroyed);
       if (component.explicitOutput !== undefined) {
         // console.log(component);
         // console.log(childOutput);
@@ -365,7 +377,7 @@ class DynamicComponent<A> extends Component<Behavior<A>> {
   constructor(private behavior: Behavior<Child<A>>) {
     super();
   }
-  run(parent: Node): Behavior<A> {
+  run(parent: Node, destroyed: Future<boolean>): Behavior<A> {
     const start = document.createComment("Dynamic begin");
     const end = document.createComment("Dynamic end");
     parent.appendChild(start);
@@ -414,7 +426,7 @@ export function dynamic<A>(behavior: Behavior<Child<A>>): Component<Behavior<A>>
 }
 
 type ComponentStuff<A> = {
-  elm: Node, out: A
+  elm: Node, out: A, destroy: Future<boolean>
 };
 
 class ComponentList<A, B> extends Component<Behavior<B[]>> {
@@ -429,7 +441,7 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
       this.explicitOutput = [name];
     }
   }
-  run(parent: Node): Behavior<B[]> {
+  run(parent: Node, listDestroyed: Future<boolean>): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
     const resultB = sinkBehavior<B[]>([]);
@@ -445,10 +457,11 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
         const key = this.getKey(a, i);
         let stuff = keyToElm[key];
         if (stuff === undefined) {
+          const destroy = sinkFuture<boolean>();
           const fragment = document.createDocumentFragment();
-          const out = runComponent(fragment, this.compFn(a));
+          const out = runComponent(fragment, this.compFn(a), destroy.combine(listDestroyed));
           // Assumes component only adds a single element
-          stuff = { out, elm: fragment.firstChild };
+          stuff = { out, elm: fragment.firstChild, destroy };
         }
         parent.insertBefore(stuff.elm, end);
         newArray.push(stuff.out);
@@ -458,7 +471,7 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
       const oldKeys = Object.keys(keyToElm);
       for (const key of oldKeys) {
         if (newKeyToElm[key] === undefined) {
-          parent.removeChild(keyToElm[key].elm);
+          keyToElm[key].destroy.resolve(true);
         }
       }
       keyToElm = newKeyToElm;
