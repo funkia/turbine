@@ -428,13 +428,18 @@ class DomRecorder implements DomApi {
   constructor(private parent: DomApi) {}
   elms: Node[] = [];
   appendChild(child: Node): void {
+    this.parent.appendChild(child);
     this.elms.push(child);
   }
   insertBefore(a: Node, b: Node): void {
     this.parent.insertBefore(a, b);
+    const index = this.elms.indexOf(b);
+    this.elms.splice(index, 0, a);
   }
   removeChild(c: Node): void {
     this.parent.removeChild(c);
+    const index = this.elms.indexOf(c);
+    this.elms.splice(index, 1);
   }
 }
 
@@ -470,12 +475,13 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
         let stuff = keyToElm[key];
         if (stuff === undefined) {
           const destroy = sinkFuture<boolean>();
-          const recorder = new DomRecorder(parent);
+          const recorder = new DomRecorder(parentWrap);
           const out = runComponent(recorder, this.compFn(a), destroy.combine(listDestroyed));
           stuff = { elms: recorder.elms, out, destroy };
-        }
-        for (const elm of stuff.elms) {
-          parentWrap.appendChild(elm);
+        } else {
+          for (const elm of stuff.elms) {
+            parentWrap.appendChild(elm);
+          }
         }
         newArray.push(stuff.out);
         newKeyToElm[key] = stuff;
