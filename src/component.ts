@@ -25,8 +25,6 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((...a: any[]) => Iter
     && fn.constructor.name === "GeneratorFunction";
 }
 
-
-
 interface DomApi {
   appendChild(child: Node): void;
   insertBefore(insert: Node, before: Node): void;
@@ -426,8 +424,22 @@ export function dynamic<A>(behavior: Behavior<Child<A>>): Component<Behavior<A>>
   return new DynamicComponent(behavior);
 }
 
+class DomRecorder implements DomApi {
+  constructor(private parent: DomApi) {}
+  elms: Node[] = [];
+  appendChild(child: Node): void {
+    this.elms.push(child);
+  }
+  insertBefore(a: Node, b: Node): void {
+    this.parent.insertBefore(a, b);
+  }
+  removeChild(c: Node): void {
+    this.parent.removeChild(c);
+  }
+}
+
 type ComponentStuff<A> = {
-  out: A, destroy: Future<boolean>
+  out: A, destroy: Future<boolean>, elms: Node[]
 };
 
 class ComponentList<A, B> extends Component<Behavior<B[]>> {
@@ -458,8 +470,12 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
         let stuff = keyToElm[key];
         if (stuff === undefined) {
           const destroy = sinkFuture<boolean>();
-          const out = runComponent(parentWrap, this.compFn(a), destroy.combine(listDestroyed));
-          stuff = { out, destroy };
+          const recorder = new DomRecorder(parent);
+          const out = runComponent(recorder, this.compFn(a), destroy.combine(listDestroyed));
+          stuff = { elms: recorder.elms, out, destroy };
+        }
+        for (const elm of stuff.elms) {
+          parentWrap.appendChild(elm);
         }
         newArray.push(stuff.out);
         newKeyToElm[key] = stuff;

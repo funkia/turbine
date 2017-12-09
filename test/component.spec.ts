@@ -249,6 +249,7 @@ describe("list", () => {
     expect(dom).to.contain(elements[0]);
     expect(dom).to.contain(elements[1]);
     expect(dom).to.contain(elements[2]);
+    expect(dom).to.have.text("!thereHello ");
   });
   it("removes element", () => {
     const listB = sinkBehavior(initial);
