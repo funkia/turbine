@@ -147,7 +147,7 @@ export function isComponent(c: any): c is Component<any> {
 }
 
 export interface ReactivesObject {
-  [a: string]: Behavior<any> | Stream<any>;
+  [a: string]: Behavior<any> | Stream<any> | Future<any>;
 }
 
 const placeholderProxyHandler = {
@@ -220,7 +220,7 @@ class ModelViewComponent<A> extends Component<A> {
   ) {
     super();
   }
-  run(parent: DomApi, destoyed: Future<boolean>): A {
+  run(parent: DomApi, destroyed: Future<boolean>): A {
     const { view, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
@@ -233,8 +233,8 @@ class ModelViewComponent<A> extends Component<A> {
         }
       }
     }
-    const viewOutput = view(placeholders, ...args).run(parent, destoyed);
-    const helpfulViewOutput = addErrorHandler(model.name, view.name, viewOutput);
+    const viewOutput = view(placeholders, ...args).run(parent, destroyed);
+    const helpfulViewOutput = addErrorHandler(model.name, view.name, Object.assign(viewOutput, {destroyed}));
     const behaviors = model(helpfulViewOutput, ...args).run();
     // Tie the recursive knot
     for (const name of Object.keys(behaviors)) {
