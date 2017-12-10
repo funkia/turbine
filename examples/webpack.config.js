@@ -1,4 +1,4 @@
-var path = require('path');
+const path = require('path');
 
 module.exports = {
   output: {
@@ -11,7 +11,7 @@ module.exports = {
   },
   module: {
     rules: [
-      {test: /\.ts$/, exclude: /node_modules/, use: ["babel-loader", "ts-loader"]},
+      {test: /\.ts$/, exclude: /node_modules/, use: "ts-loader"},
       {test: /\.css$/, use: [ 'style-loader', 'css-loader' ]}
     ]
   }
