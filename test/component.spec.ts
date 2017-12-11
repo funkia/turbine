@@ -4,7 +4,7 @@ use(chaiDom);
 import { fgo } from "@funkia/jabz";
 import {
   Behavior, Stream, isBehavior, sinkBehavior, placeholder, Now,
-  publish, fromFunction
+  publish, fromFunction, Future
 } from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
@@ -143,7 +143,7 @@ describe("component specs", () => {
   });
 
   describe("loop", () => {
-    type Looped = { name: Behavior<string> };
+    type Looped = { name: Behavior<string>, destroyed: Future<boolean> };
     it("works with explicit fgo and looped behavior", () => {
       const comp = loop(fgo(function* ({ name }: Looped): IterableIterator<Component<any>> {
         yield div(name);
@@ -160,6 +160,21 @@ describe("component specs", () => {
         ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
         return { name };
       });
+    });
+    it("can be told to destroy", () => {
+      let toplevel: boolean;
+      const comp = loop(fgo(function* ({ name, destroyed }: Looped): IterableIterator<Component<any>> {
+        yield div(name);
+        destroyed.subscribe((b) => toplevel = b);
+        ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+        return { name };
+      }));
+      const { dom, destroy } = testComponent(comp);
+      expect(dom).to.have.length(2);
+      expect(dom.firstChild).to.have.text("Foo");
+      destroy(true);
+      expect(dom).to.have.length(0);
+      expect(toplevel).to.equal(true);
     });
   });
 });
@@ -228,6 +243,25 @@ describe("modelView", () => {
       testComponent(c);
     }, /fooComp/);
   });
+
+  it("can be told to destroy", () => {
+    let toplevel: boolean;
+    const c = modelView(
+      function model({destroyed}): Now<any> {
+        destroyed.subscribe((b) => toplevel = b);
+        return Now.of({});
+      },
+      function view(): Component<any> {
+        return span("World");
+      }
+    )();
+    const { dom, destroy } = testComponent(c);
+    expect(dom.querySelector("span")).to.exist;
+    expect(dom.querySelector("span")).to.have.text("World");
+    destroy(true);
+    expect(dom.querySelector("span")).to.not.exist;
+    expect(toplevel).to.equal(true);
+  });
 });
 
 describe("list", () => {
@@ -249,6 +283,7 @@ describe("list", () => {
     expect(dom).to.contain(elements[0]);
     expect(dom).to.contain(elements[1]);
     expect(dom).to.contain(elements[2]);
+    expect(dom).to.have.text("!thereHello ");
   });
   it("removes element", () => {
     const listB = sinkBehavior(initial);

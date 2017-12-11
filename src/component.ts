@@ -1,7 +1,9 @@
 import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
   Now, Behavior, observe, sinkBehavior, isBehavior, Stream,
-  placeholder
+  placeholder,
+  Future,
+  sinkFuture
 } from "@funkia/hareactive";
 
 import { merge, id, copyRemaps } from "./utils";
@@ -21,6 +23,12 @@ export function isGeneratorFunction<A, T>(fn: any): fn is ((...a: any[]) => Iter
   return fn !== undefined
     && fn.constructor !== undefined
     && fn.constructor.name === "GeneratorFunction";
+}
+
+interface DomApi {
+  appendChild(child: Node): void;
+  insertBefore(insert: Node, before: Node): void;
+  removeChild(child: Node): void;
 }
 
 /**
@@ -46,7 +54,7 @@ export abstract class Component<A = any> implements Monad<A> {
   explicitOutput: string[] | undefined;
   static multi: boolean = false;
   multi: boolean = false;
-  abstract run(parent: Node): A;
+  abstract run(parent: DomApi, destroyed: Future<boolean>): A;
   // Definitions below are inserted by Jabz
   flatten: <B>() => Component<B>;
   map: <B>(f: (a: A) => B) => Component<B>;
@@ -59,7 +67,7 @@ class OfComponent<A> extends Component<A> {
   constructor(private value: A) {
     super();
   }
-  run(_: Node): A {
+  run(_1: Node, _2: Future<boolean>): A {
     return this.value;
   }
 }
@@ -72,8 +80,8 @@ class OutputComponent extends Component<any> {
     super();
     this.explicitOutput = Object.keys(remaps);
   }
-  run(parent): any {
-    const output = this.comp.run(parent);
+  run(parent: DomApi, destroyed: Future<boolean>): any {
+    const output = this.comp.run(parent, destroyed);
     return copyRemaps(this.remaps, output);
   }
 }
@@ -108,8 +116,8 @@ class ChainComponent<A, B> extends Component<B> {
   constructor(private component: Component<A>, private f: (a: A) => Component<B>) {
     super();
   }
-  run(parent: Node): B {
-    return this.f(this.component.run(parent)).run(parent);
+  run(parent: DomApi, destroyed: Future<boolean>): B {
+    return this.f(this.component.run(parent, destroyed)).run(parent, destroyed);
   }
 }
 
@@ -119,17 +127,19 @@ class ChainComponent<A, B> extends Component<B> {
  * component will be created
  * @param component The component to run
  */
-export function runComponent<A>(parent: Node | string, component: Child<A>): A {
+export function runComponent<A>(parent: DomApi | string, component: Child<A>, destroy: Future<boolean> = sinkFuture()): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent);
   }
-  return toComponent(component).run(parent);
+  return toComponent(component).run(parent, destroy);
 }
 
-export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement } {
+export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement, destroy: (toplevel: boolean) => void } {
   const dom = document.createElement("div");
-  const out = runComponent(dom, c);
-  return { out, dom };
+  const destroyed = sinkFuture<boolean>();
+  const out = runComponent(dom, c, destroyed);
+  const destroy = destroyed.resolve.bind(destroyed);
+  return { out, dom, destroy };
 }
 
 export function isComponent(c: any): c is Component<any> {
@@ -137,7 +147,7 @@ export function isComponent(c: any): c is Component<any> {
 }
 
 export interface ReactivesObject {
-  [a: string]: Behavior<any> | Stream<any>;
+  [a: string]: Behavior<any> | Stream<any> | Future<any>;
 }
 
 const placeholderProxyHandler = {
@@ -156,19 +166,18 @@ class LoopComponent<A> extends Component<A> {
   ) {
     super();
   }
-  run(parent: Node): A {
-    let placeholderObject: any;
+  run(parent: DomApi, destroyed: Future<boolean>): A {
+    let placeholderObject: any = {destroyed};
     if (supportsProxy) {
-      placeholderObject = new Proxy({}, placeholderProxyHandler);
+      placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
     } else {
-      placeholderObject = {};
       if (this.placeholderNames !== undefined) {
         for (const name of this.placeholderNames) {
           placeholderObject[name] = placeholder();
         }
       }
     }
-    const result = toComponent(this.f(placeholderObject)).run(parent);
+    const result = toComponent(this.f(placeholderObject)).run(parent, destroyed);
     const returned: (keyof A)[] = <any>Object.keys(result);
     for (const name of returned) {
       (placeholderObject[name]).replaceWith(result[name]);
@@ -211,7 +220,7 @@ class ModelViewComponent<A> extends Component<A> {
   ) {
     super();
   }
-  run(parent: Node): A {
+  run(parent: DomApi, destroyed: Future<boolean>): A {
     const { view, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
@@ -224,8 +233,8 @@ class ModelViewComponent<A> extends Component<A> {
         }
       }
     }
-    const viewOutput = view(placeholders, ...args).run(parent);
-    const helpfulViewOutput = addErrorHandler(model.name, view.name, viewOutput);
+    const viewOutput = view(placeholders, ...args).run(parent, destroyed);
+    const helpfulViewOutput = addErrorHandler(model.name, view.name, Object.assign(viewOutput, {destroyed}));
     const behaviors = model(helpfulViewOutput, ...args).run();
     // Tie the recursive knot
     for (const name of Object.keys(behaviors)) {
@@ -299,8 +308,14 @@ class TextComponent extends Component<{}> {
   constructor(private text: Showable) {
     super();
   }
-  run(parent: Node): {} {
-    parent.appendChild(document.createTextNode(this.text.toString()));
+  run(parent: DomApi, destroyed: Future<boolean>): {} {
+    const node = document.createTextNode(this.text.toString());
+    parent.appendChild(node);
+    destroyed.subscribe(toplevel => {
+      if (toplevel) {
+        parent.removeChild(node);
+      }
+    });
     return {};
   }
 }
@@ -323,11 +338,11 @@ class ListComponent extends Component<any> {
       }
     }
   }
-  run(parent) {
+  run(parent: DomApi, destroyed: Future<boolean>): any {
     const output = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
-      const childOutput = component.run(parent);
+      const childOutput = component.run(parent, destroyed);
       if (component.explicitOutput !== undefined) {
         // console.log(component);
         // console.log(childOutput);
@@ -361,49 +376,45 @@ export function toComponent<A>(child: Child): Component<any> {
   }
 }
 
+class FixedDomPosition implements DomApi {
+  end: Comment;
+  constructor(private parent: DomApi, destroy: Future<boolean>) {
+    this.end = document.createComment("Fixed point");
+    parent.appendChild(this.end);
+    destroy.subscribe(() => parent.removeChild(this.end));
+  }
+
+  appendChild(child: Node): void {
+    this.parent.insertBefore(child, this.end);
+  }
+  insertBefore(e: Node, a: Node): void {
+    this.parent.insertBefore(e, a);
+  }
+  removeChild(c: Node): void {
+    this.parent.removeChild(c);
+  }
+}
+
 class DynamicComponent<A> extends Component<Behavior<A>> {
   constructor(private behavior: Behavior<Child<A>>) {
     super();
   }
-  run(parent: Node): Behavior<A> {
-    const start = document.createComment("Dynamic begin");
-    const end = document.createComment("Dynamic end");
-    parent.appendChild(start);
-    parent.appendChild(end);
+  run(parent: DomApi, dynamicDestroyed: Future<boolean>): Behavior<A> {
+    let destroyPrevious: Future<boolean>;
+    const parentWrap = new FixedDomPosition(parent, dynamicDestroyed);
 
-    let currentlyShowable: boolean;
-    let wasShowable = false;
-    const performed = this.behavior.map((child) => {
-      currentlyShowable = isShowable(child);
-      if (currentlyShowable && wasShowable) {
-        return [undefined, child] as [A, Showable];
+    const outputB = this.behavior.map((child) => {
+      if (destroyPrevious !== undefined) {
+        destroyPrevious.resolve(true);
       }
-      const fragment = document.createDocumentFragment();
-      const a = runComponent(fragment, <Component<A>>toComponent(child));
-      return [a, fragment] as [A, DocumentFragment];
+      destroyPrevious = sinkFuture<boolean>();
+      const out = runComponent(parentWrap, toComponent(child), destroyPrevious.combine(dynamicDestroyed));
+      return out;
     });
+    // To activate behavior
+    viewObserve((v) => {}, outputB);
 
-    let showableNode: Node;
-    viewObserve((node) => {
-      if (currentlyShowable && wasShowable) {
-        showableNode.nodeValue = node.toString();
-      } else {
-        if (currentlyShowable) {
-          showableNode = (<Node>node).firstChild;
-          wasShowable = true;
-        } else {
-          wasShowable = false;
-        }
-        let i: Node = start.nextSibling;
-        while (i !== end) {
-          const j = i;
-          i = i.nextSibling;
-          parent.removeChild(j);
-        }
-        parent.insertBefore((<Node>node), end);
-      }
-    }, performed.map(snd));
-    return performed.map(fst);
+    return outputB;
   }
 }
 
@@ -413,8 +424,27 @@ export function dynamic<A>(behavior: Behavior<Child<A>>): Component<Behavior<A>>
   return new DynamicComponent(behavior);
 }
 
+class DomRecorder implements DomApi {
+  constructor(private parent: DomApi) {}
+  elms: Node[] = [];
+  appendChild(child: Node): void {
+    this.parent.appendChild(child);
+    this.elms.push(child);
+  }
+  insertBefore(a: Node, b: Node): void {
+    this.parent.insertBefore(a, b);
+    const index = this.elms.indexOf(b);
+    this.elms.splice(index, 0, a);
+  }
+  removeChild(c: Node): void {
+    this.parent.removeChild(c);
+    const index = this.elms.indexOf(c);
+    this.elms.splice(index, 1);
+  }
+}
+
 type ComponentStuff<A> = {
-  elm: Node, out: A
+  out: A, destroy: Future<boolean>, elms: Node[]
 };
 
 class ComponentList<A, B> extends Component<Behavior<B[]>> {
@@ -429,15 +459,14 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
       this.explicitOutput = [name];
     }
   }
-  run(parent: Node): Behavior<B[]> {
+  run(parent: DomApi, listDestroyed: Future<boolean>): Behavior<B[]> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
     const resultB = sinkBehavior<B[]>([]);
-    const end = document.createComment("list end");
-    let keyToElm: { [key: string]: ComponentStuff<B> } = {};
-    parent.appendChild(end);
+    let keyToElm: Record<string, ComponentStuff<B>> = {};
+    const parentWrap = new FixedDomPosition(parent, listDestroyed);
     this.list.subscribe((newAs) => {
-      const newKeyToElm: { [key: string]: ComponentStuff<B> } = {};
+      const newKeyToElm: Record<string, ComponentStuff<B>> = {};
       const newArray: B[] = [];
       // Re-add existing elements and new elements
       for (let i = 0; i < newAs.length; i++) {
@@ -445,12 +474,15 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
         const key = this.getKey(a, i);
         let stuff = keyToElm[key];
         if (stuff === undefined) {
-          const fragment = document.createDocumentFragment();
-          const out = runComponent(fragment, this.compFn(a));
-          // Assumes component only adds a single element
-          stuff = { out, elm: fragment.firstChild };
+          const destroy = sinkFuture<boolean>();
+          const recorder = new DomRecorder(parentWrap);
+          const out = runComponent(recorder, this.compFn(a), destroy.combine(listDestroyed));
+          stuff = { elms: recorder.elms, out, destroy };
+        } else {
+          for (const elm of stuff.elms) {
+            parentWrap.appendChild(elm);
+          }
         }
-        parent.insertBefore(stuff.elm, end);
         newArray.push(stuff.out);
         newKeyToElm[key] = stuff;
       }
@@ -458,7 +490,7 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
       const oldKeys = Object.keys(keyToElm);
       for (const key of oldKeys) {
         if (newKeyToElm[key] === undefined) {
-          parent.removeChild(keyToElm[key].elm);
+          keyToElm[key].destroy.resolve(true);
         }
       }
       keyToElm = newKeyToElm;
