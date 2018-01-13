@@ -4,7 +4,7 @@ import { element, streamDescription, behaviorDescription } from "./dom-builder";
 
 export const input = element("input", {
   actionDefinitions: {
-    focus: (element): void => element.focus()
+    focus: (element: HTMLElement): void => element.focus()
   },
   behaviors: {
     inputValue: behaviorDescription(

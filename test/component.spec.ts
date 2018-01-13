@@ -162,7 +162,7 @@ describe("component specs", () => {
       });
     });
     it("can be told to destroy", () => {
-      let toplevel: boolean;
+      let toplevel = false;
       const comp = loop(fgo(function* ({ name, destroyed }: Looped): IterableIterator<Component<any>> {
         yield div(name);
         destroyed.subscribe((b) => toplevel = b);
@@ -228,7 +228,7 @@ describe("modelView", () => {
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
-    assert(isBehavior(fromView.inputValue));
+    assert(isBehavior(fromView!.inputValue));
   });
 
   it("throws an error message if the view doesn't return the needed properties", () => {
@@ -245,10 +245,10 @@ describe("modelView", () => {
   });
 
   it("can be told to destroy", () => {
-    let toplevel: boolean;
+    let toplevel = false;
     const c = modelView(
       function model({destroyed}): Now<any> {
-        destroyed.subscribe((b) => toplevel = b);
+        destroyed.subscribe((b: boolean) => toplevel = b);
         return Now.of({});
       },
       function view(): Component<any> {

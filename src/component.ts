@@ -129,7 +129,7 @@ class ChainComponent<A, B> extends Component<B> {
  */
 export function runComponent<A>(parent: DomApi | string, component: Child<A>, destroy: Future<boolean> = sinkFuture()): A {
   if (typeof parent === "string") {
-    parent = document.querySelector(parent);
+    parent = document.querySelector(parent)!;
   }
   return toComponent(component).run(parent, destroy);
 }
@@ -189,7 +189,7 @@ export function loop<A extends ReactivesObject>(
   f: ((a: A) => Child<A>) | ((a: A) => IterableIterator<Component<any> | A>),
   placeholderNames?: string[]
 ): Component<A> {
-  const f2 = isGeneratorFunction(f) ? fgo(f) : f;
+  const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
   return new LoopComponent<A>(f2, placeholderNames);
 }
 
@@ -211,7 +211,7 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-class ModelViewComponent<A> extends Component<A> {
+class ModelViewComponent<A extends ReactivesObject> extends Component<A> {
   constructor(
     private args: any[],
     private model: (...as: any[]) => Now<A>,
@@ -270,7 +270,7 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
     update,
     () => {
       isPulling = true;
-      let lastVal;
+      let lastVal: A;
       function pull(): void {
         const newVal = behavior.pull();
         if (lastVal !== newVal) {
@@ -339,7 +339,7 @@ class ListComponent extends Component<any> {
     }
   }
   run(parent: DomApi, destroyed: Future<boolean>): any {
-    const output = {};
+    const output: Record<string, any> = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
       const childOutput = component.run(parent, destroyed);
@@ -373,6 +373,8 @@ export function toComponent<A>(child: Child): Component<any> {
     return text(child);
   } else if (Array.isArray(child)) {
     return new ListComponent(child);
+  } else {
+    throw "Child could not be converted to component";
   }
 }
 

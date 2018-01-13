@@ -67,7 +67,7 @@ export function copyRemaps(
   remap: Record<string, string>,
   source: Record<string, any>
 ): Record<string, any> {
-  const output = {};
+  const output: Record<string, any> = {};
   for (let key in remap) {
     output[key] = source[remap[key]];
   }
