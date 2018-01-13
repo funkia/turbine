@@ -93,7 +93,7 @@ export type DefaultOutput = {
 };
 
 export type InitialOutput<P extends InitialProperties> =
-  OutputStream<(P & { streams: {} })["streams"]> & BehaviorOutput<(P & { behaviors: {} })["behaviors"]> & DefaultOutput;
+  OutputStream<(P & { streams: StreamDescriptions })["streams"]> & BehaviorOutput<(P & { behaviors: BehaviorDescriptions })["behaviors"]> & DefaultOutput;
 
 // An array of names of all DOM events
 export const allDomEvents: EventName[] =
@@ -112,17 +112,17 @@ const defaultProperties = {
   streams: defaultStreams
 };
 
-const attributeSetter = (element: HTMLElement) => (key: string, value: boolean | string) => {
+const attributeSetter = (element: HTMLElement) => (key: string, value: Showable | boolean) => {
   if (value === true) {
     element.setAttribute(key, "");
   } else if (value === false) {
     element.removeAttribute(key);
   } else {
-    element.setAttribute(key, value);
+    element.setAttribute(key, value.toString());
   }
 };
 
-const propertySetter = (element: HTMLElement) => (key: string, value: string) =>
+const propertySetter = (element: HTMLElement) => (key: string, value: Showable | boolean) =>
   (<any>element)[key] = value;
 
 const classSetter = (element: HTMLElement) => (key: string, value: boolean) =>
@@ -193,7 +193,7 @@ class DomComponent<A> extends Component<A> {
   child: Component<any> | undefined;
   constructor(
     private tagName: string,
-    private props?: Properties<A> & { output?: OutputNames<A> },
+    private props: Properties<A> & { output?: OutputNames<A> },
     child?: Child
   ) {
     super();
@@ -215,46 +215,46 @@ class DomComponent<A> extends Component<A> {
     let output: any = {};
     const elm = document.createElement(this.tagName);
 
-    if (this.props !== undefined) {
-      handleObject(<any>this.props.style, elm, styleSetter);
-      handleObject(this.props.attrs, elm, attributeSetter);
-      handleObject(this.props.props, elm, propertySetter);
-      if (this.props.class !== undefined) {
-        handleClass(this.props.class, elm);
-      }
+    handleObject(<any>this.props.style, elm, styleSetter);
+    handleObject(this.props.attrs, elm, attributeSetter);
+    handleObject(this.props.props, elm, propertySetter);
+    if (this.props.class !== undefined) {
+      handleClass(this.props.class, elm);
+    }
+    if (this.props.actionDefinitions !== undefined) {
       handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);
       handleCustom(elm, false, this.props.actionDefinitions, this.props.setters);
-      if (this.props.behaviors !== undefined) {
-        for (const name of Object.keys(this.props.behaviors)) {
-          const [evt, extractor, initialFn] = this.props.behaviors[name];
-          let a: Behavior<any> = undefined;
-          const initial = initialFn(elm);
+    }
+    if (this.props.behaviors !== undefined) {
+      for (const name of Object.keys(this.props.behaviors)) {
+        const [evt, extractor, initialFn] = this.props.behaviors[name];
+        let a: Behavior<any> | undefined = undefined;
+        const initial = initialFn(elm);
+        Object.defineProperty(output, name, {
+          enumerable: true,
+          get: (): Behavior<any> => {
+            if (a === undefined) {
+              a = behaviorFromEvent(elm, evt, initial, extractor);
+            }
+            return a;
+          }
+        });
+      }
+    }
+    if (this.props.streams !== undefined) {
+      for (const name of Object.keys(this.props.streams)) {
+        const [evt, extractor] = this.props.streams[name];
+        let a: Stream<any> | undefined = undefined;
+        if (output[name] === undefined) {
           Object.defineProperty(output, name, {
             enumerable: true,
-            get: (): Behavior<any> => {
+            get: (): Stream<any> => {
               if (a === undefined) {
-                a = behaviorFromEvent(elm, evt, initial, extractor);
+                a = streamFromEvent(elm, evt, extractor);
               }
               return a;
             }
           });
-        }
-      }
-      if (this.props.streams !== undefined) {
-        for (const name of Object.keys(this.props.streams)) {
-          const [evt, extractor] = this.props.streams[name];
-          let a: Stream<any> = undefined;
-          if (output[name] === undefined) {
-            Object.defineProperty(output, name, {
-              enumerable: true,
-              get: (): Stream<any> => {
-                if (a === undefined) {
-                  a = streamFromEvent(elm, evt, extractor);
-                }
-                return a;
-              }
-            });
-          }
         }
       }
     }
@@ -289,7 +289,7 @@ function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
         break;
       case ".":
         result.class = result.class || {};
-        result.class[token.slice(1)] = true;
+        (result.class as any)[token.slice(1)] = true;
         break;
       case "[":
         result.attrs = result.attrs || {};
@@ -356,16 +356,16 @@ export type ElementCreator<A> = {
   (props: Properties<A>): Cp<A>;
 };
 
-export function element<P extends InitialProperties>(tagName?: string, props?: P):
+export function element<P extends InitialProperties>(tagName: string, props?: P):
   ElementCreator<InitialOutput<P>> {
   const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-  props = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
-  function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<DefaultOutput> {
+  const mergedProps: P = mergeDeep(props, mergeDeep(defaultProperties, tagProps));
+  function createElement(newPropsOrChildren?: InitialProperties | Child, newChildrenOrUndefined?: Child): Component<InitialOutput<P>> {
     if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new DomComponent<DefaultOutput>(parsedTagName, props, newPropsOrChildren);
+      return new DomComponent<InitialOutput<P>>(parsedTagName, mergedProps, newPropsOrChildren);
     } else {
-      const newProps = mergeDeep(props, newPropsOrChildren);
-      return new DomComponent<DefaultOutput>(parsedTagName, newProps, newChildrenOrUndefined);
+      const newProps = mergeDeep(mergedProps, newPropsOrChildren);
+      return new DomComponent<InitialOutput<P>>(parsedTagName, newProps, newChildrenOrUndefined);
     }
   }
   return createElement as any;
