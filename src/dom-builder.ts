@@ -263,8 +263,13 @@ class DomComponent<A> extends Component<A> {
       output = copyRemaps(this.props.output, output);
     }
     if (this.child !== undefined) {
-      const childOutput = runComponent(elm, toComponent(this.child), destroyed.mapTo(false));
-      assign(output, childOutput);
+      const childOutput = runComponent(elm, this.child, destroyed.mapTo(false));
+      if (this.child.explicitOutput !== undefined) {
+        for (const prop of this.child.explicitOutput) {
+          output[prop] = childOutput[prop];
+        }
+      }
+      // assign(output, childOutput);
     }
     destroyed.subscribe(
       (toplevel) => {
