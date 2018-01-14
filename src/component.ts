@@ -48,7 +48,7 @@ export abstract class Component<A = any> implements Monad<A> {
   chain<B>(f: (a: A) => Component<B>): Component<B> {
     return new ChainComponent(this, f);
   }
-  output<B extends Record<string, any>>(remaps: B): Component<B> {
+  output<B extends Record<string, keyof A>>(remaps: B): Component<Remap<A, B>> {
     return new OutputComponent(remaps, this);
   }
   explicitOutput: string[] | undefined;

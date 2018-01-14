@@ -81,7 +81,7 @@ describe("dom-builder", () => {
       assert(isStream(out.fooClick));
     });
     it("merges all output from non-array child", () => {
-      const child = Component.of({ bar: 1 });
+      const child = Component.of({ bar: 1 }).output({bar: "bar"});
       const myDiv = div({ output: { divClick: "click" } }, child);
       const { out } = testComponent(myDiv);
       assert(isStream(out.divClick));
@@ -204,6 +204,12 @@ describe("dom-builder", () => {
       expect(dom.querySelector("h1")).to.have.length(1);
       expect(dom.querySelector("h1")).to.contain("span");
       expect(dom.querySelector("span")).to.have.text("Test");
+    });
+
+    it("nested", () => {
+      const root = div(div("Test"));
+      const { dom, out } = testComponent(root);
+      expect(dom.firstChild).to.have.length(1);
     });
   });
 
