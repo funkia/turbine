@@ -1,5 +1,5 @@
-import {assert} from "chai";
-import {mergeDeep} from "../src/utils";
+import { assert } from "chai";
+import { mergeDeep } from "../src/utils";
 
 describe("utils: deepMerge", () => {
   it("last object is winning", () => {
@@ -12,7 +12,7 @@ describe("utils: deepMerge", () => {
       age: 41
     };
     const ab = mergeDeep(a, b);
-    assert.deepEqual(ab, {name: "Bob", age: 41});
+    assert.deepEqual(ab, { name: "Bob", age: 41 });
   });
   it("merge two levels deep ", () => {
     const a = {
@@ -25,7 +25,7 @@ describe("utils: deepMerge", () => {
     const b = {
       name: "Bob",
       age: 41,
-      friend: {name: "walter"}
+      friend: { name: "walter" }
     };
     const ab = mergeDeep(a, b);
     assert.deepEqual(ab, {

@@ -1,6 +1,11 @@
 import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
 import {
-  Now, Behavior, observe, sinkBehavior, isBehavior, Stream,
+  Now,
+  Behavior,
+  observe,
+  sinkBehavior,
+  isBehavior,
+  Stream,
   placeholder,
   Future,
   sinkFuture
@@ -16,13 +21,21 @@ function isShowable(s: any): s is Showable {
   return typeof s === "string" || typeof s === "number";
 }
 
-function fst<A, B>(a: [A, B]): A { return a[0]; }
-function snd<A, B>(a: [A, B]): B { return a[1]; }
+function fst<A, B>(a: [A, B]): A {
+  return a[0];
+}
+function snd<A, B>(a: [A, B]): B {
+  return a[1];
+}
 
-export function isGeneratorFunction<A, T>(fn: any): fn is ((...a: any[]) => IterableIterator<T>) {
-  return fn !== undefined
-    && fn.constructor !== undefined
-    && fn.constructor.name === "GeneratorFunction";
+export function isGeneratorFunction<A, T>(
+  fn: any
+): fn is ((...a: any[]) => IterableIterator<T>) {
+  return (
+    fn !== undefined &&
+    fn.constructor !== undefined &&
+    fn.constructor.name === "GeneratorFunction"
+  );
 }
 
 interface DomApi {
@@ -86,23 +99,17 @@ class OutputComponent extends Component<any> {
   }
 }
 
-type AnyValues<A extends Record<string, any>> = {
-  [K in keyof A]: any
-};
+type AnyValues<A extends Record<string, any>> = { [K in keyof A]: any };
 
 export type Remap<
   A extends Record<string, any>,
   B extends Record<string, keyof A>
-> = {
-  [K in keyof B]: A[B[K]]
-};
+> = { [K in keyof B]: A[B[K]] };
 
 export function output<
   A extends Record<string, any>,
   B extends Record<string, keyof A>
->(
-  remaps: B, component: Component<A>
-): Component<Remap<A, B>> {
+>(remaps: B, component: Component<A>): Component<Remap<A, B>> {
   return component.output(remaps);
 }
 
@@ -113,7 +120,10 @@ export function output<
 export const emptyComponent = Component.of({});
 
 class ChainComponent<A, B> extends Component<B> {
-  constructor(private component: Component<A>, private f: (a: A) => Component<B>) {
+  constructor(
+    private component: Component<A>,
+    private f: (a: A) => Component<B>
+  ) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): B {
@@ -127,14 +137,20 @@ class ChainComponent<A, B> extends Component<B> {
  * component will be created
  * @param component The component to run
  */
-export function runComponent<A>(parent: DomApi | string, component: Child<A>, destroy: Future<boolean> = sinkFuture()): A {
+export function runComponent<A>(
+  parent: DomApi | string,
+  component: Child<A>,
+  destroy: Future<boolean> = sinkFuture()
+): A {
   if (typeof parent === "string") {
     parent = document.querySelector(parent)!;
   }
   return toComponent(component).run(parent, destroy);
 }
 
-export function testComponent<A>(c: Component<A>): { out: A, dom: HTMLDivElement, destroy: (toplevel: boolean) => void } {
+export function testComponent<A>(
+  c: Component<A>
+): { out: A; dom: HTMLDivElement; destroy: (toplevel: boolean) => void } {
   const dom = document.createElement("div");
   const destroyed = sinkFuture<boolean>();
   const out = runComponent(dom, c, destroyed);
@@ -151,7 +167,7 @@ export interface ReactivesObject {
 }
 
 const placeholderProxyHandler = {
-  get: function (target: any, name: string): Behavior<any> | Stream<any> {
+  get: function(target: any, name: string): Behavior<any> | Stream<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }
@@ -167,7 +183,7 @@ class LoopComponent<A> extends Component<A> {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): A {
-    let placeholderObject: any = {destroyed};
+    let placeholderObject: any = { destroyed };
     if (supportsProxy) {
       placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
     } else {
@@ -177,10 +193,13 @@ class LoopComponent<A> extends Component<A> {
         }
       }
     }
-    const result = toComponent(this.f(placeholderObject)).run(parent, destroyed);
+    const result = toComponent(this.f(placeholderObject)).run(
+      parent,
+      destroyed
+    );
     const returned: (keyof A)[] = <any>Object.keys(result);
     for (const name of returned) {
-      (placeholderObject[name]).replaceWith(result[name]);
+      placeholderObject[name].replaceWith(result[name]);
     }
     return result;
   }
@@ -194,8 +213,12 @@ export function loop<A extends ReactivesObject>(
 }
 
 function addErrorHandler(modelName: string, viewName: string, obj: any): any {
-  if (modelName === "") { modelName = "anonymous"; }
-  if (viewName === "") { viewName = "anonymous"; }
+  if (modelName === "") {
+    modelName = "anonymous";
+  }
+  if (viewName === "") {
+    viewName = "anonymous";
+  }
   if (!supportsProxy) {
     return obj;
   }
@@ -234,11 +257,15 @@ class ModelViewComponent<A extends ReactivesObject> extends Component<A> {
       }
     }
     const viewOutput = view(placeholders, ...args).run(parent, destroyed);
-    const helpfulViewOutput = addErrorHandler(model.name, view.name, Object.assign(viewOutput, {destroyed}));
+    const helpfulViewOutput = addErrorHandler(
+      model.name,
+      view.name,
+      Object.assign(viewOutput, { destroyed })
+    );
     const behaviors = model(helpfulViewOutput, ...args).run();
     // Tie the recursive knot
     for (const name of Object.keys(behaviors)) {
-      (placeholders[name]).replaceWith(behaviors[name]);
+      placeholders[name].replaceWith(behaviors[name]);
     }
     return behaviors;
   }
@@ -247,24 +274,40 @@ class ModelViewComponent<A extends ReactivesObject> extends Component<A> {
 export type ModelReturn<M> = Now<M> | Iterator<any>;
 export type Model<V, M> = (v: V) => ModelReturn<M>;
 export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
-export type View<M, V> = ((m: M) => Child<V>) | ((m: M) => Iterator<Component<any>>);
-export type View1<M, V, A> = ((m: M, a: A) => Child<V>) | ((m: M, a: A) => Iterator<Component<any>>);
+export type View<M, V> =
+  | ((m: M) => Child<V>)
+  | ((m: M) => Iterator<Component<any>>);
+export type View1<M, V, A> =
+  | ((m: M, a: A) => Child<V>)
+  | ((m: M, a: A) => Iterator<Component<any>>);
 
 export function modelView<M extends ReactivesObject, V>(
-  model: Model<V, M>, view: View<M, V>, toViewReactiveNames?: string[]
+  model: Model<V, M>,
+  view: View<M, V>,
+  toViewReactiveNames?: string[]
 ): () => Component<M>;
 export function modelView<M extends ReactivesObject, V, A>(
-  model: Model1<V, M, A>, view: View1<M, V, A>, toViewReactiveNames?: string[]
+  model: Model1<V, M, A>,
+  view: View1<M, V, A>,
+  toViewReactiveNames?: string[]
 ): (a: A) => Component<M>;
 export function modelView<M extends ReactivesObject, V>(
-  model: any, view: any, toViewReactiveNames?: string[]
+  model: any,
+  view: any,
+  toViewReactiveNames?: string[]
 ): (...args: any[]) => Component<M> {
   const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
-  const v: any = isGeneratorFunction<any, any>(view) ? fgo(view) : (...as: any[]) => toComponent(view(...as));
-  return (...args: any[]) => new ModelViewComponent<M>(args, m, v, toViewReactiveNames);
+  const v: any = isGeneratorFunction<any, any>(view)
+    ? fgo(view)
+    : (...as: any[]) => toComponent(view(...as));
+  return (...args: any[]) =>
+    new ModelViewComponent<M>(args, m, v, toViewReactiveNames);
 }
 
-export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): void {
+export function viewObserve<A>(
+  update: (a: A) => void,
+  behavior: Behavior<A>
+): void {
   let isPulling = false;
   observe(
     update,
@@ -292,16 +335,26 @@ export function viewObserve<A>(update: (a: A) => void, behavior: Behavior<A>): v
 
 // Union of the types that can be used as a child. A child is either a
 // component or something that can be converted into a component.
-export type Child<A = {}> = Component<A> | Showable | Behavior<Showable>
-  | (() => Iterator<any>) | ChildList;
+export type Child<A = {}> =
+  | Component<A>
+  | Showable
+  | Behavior<Showable>
+  | (() => Iterator<any>)
+  | ChildList;
 
 // A dummy interface is required since TypeScript doesn't handle
 // recursive type aliases
 // See: https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
-export interface ChildList extends Array<Child> { }
+export interface ChildList extends Array<Child> {}
 
 export function isChild(a: any): a is Child {
-  return isComponent(a) || isGeneratorFunction(a) || isBehavior(a) || isShowable(a) || Array.isArray(a);
+  return (
+    isComponent(a) ||
+    isGeneratorFunction(a) ||
+    isBehavior(a) ||
+    isShowable(a) ||
+    Array.isArray(a)
+  );
 }
 
 class TextComponent extends Component<{}> {
@@ -311,7 +364,7 @@ class TextComponent extends Component<{}> {
   run(parent: DomApi, destroyed: Future<boolean>): {} {
     const node = document.createTextNode(this.text.toString());
     parent.appendChild(node);
-    destroyed.subscribe(toplevel => {
+    destroyed.subscribe((toplevel) => {
       if (toplevel) {
         parent.removeChild(node);
       }
@@ -334,7 +387,9 @@ class ListComponent extends Component<any> {
       const component = toComponent(child);
       this.components.push(component);
       if (component.explicitOutput !== undefined) {
-        this.explicitOutput = this.explicitOutput.concat(component.explicitOutput);
+        this.explicitOutput = this.explicitOutput.concat(
+          component.explicitOutput
+        );
       }
     }
   }
@@ -410,7 +465,11 @@ class DynamicComponent<A> extends Component<Behavior<A>> {
         destroyPrevious.resolve(true);
       }
       destroyPrevious = sinkFuture<boolean>();
-      const out = runComponent(parentWrap, toComponent(child), destroyPrevious.combine(dynamicDestroyed));
+      const out = runComponent(
+        parentWrap,
+        toComponent(child),
+        destroyPrevious.combine(dynamicDestroyed)
+      );
       return out;
     });
     // To activate behavior
@@ -420,9 +479,13 @@ class DynamicComponent<A> extends Component<Behavior<A>> {
   }
 }
 
-export function dynamic<A>(behavior: Behavior<Component<A>>): Component<Behavior<A>>;
+export function dynamic<A>(
+  behavior: Behavior<Component<A>>
+): Component<Behavior<A>>;
 export function dynamic<A>(behavior: Behavior<Child>): Component<any>;
-export function dynamic<A>(behavior: Behavior<Child<A>>): Component<Behavior<A>> {
+export function dynamic<A>(
+  behavior: Behavior<Child<A>>
+): Component<Behavior<A>> {
   return new DynamicComponent(behavior);
 }
 
@@ -446,7 +509,9 @@ class DomRecorder implements DomApi {
 }
 
 type ComponentStuff<A> = {
-  out: A, destroy: Future<boolean>, elms: Node[]
+  out: A;
+  destroy: Future<boolean>;
+  elms: Node[];
 };
 
 class ComponentList<A, B> extends Component<Behavior<B[]>> {
@@ -478,7 +543,11 @@ class ComponentList<A, B> extends Component<Behavior<B[]>> {
         if (stuff === undefined) {
           const destroy = sinkFuture<boolean>();
           const recorder = new DomRecorder(parentWrap);
-          const out = runComponent(recorder, this.compFn(a), destroy.combine(listDestroyed));
+          const out = runComponent(
+            recorder,
+            this.compFn(a),
+            destroy.combine(listDestroyed)
+          );
           stuff = { elms: recorder.elms, out, destroy };
         } else {
           for (const elm of stuff.elms) {
@@ -507,14 +576,16 @@ export function list<A, B, Name extends string>(
   list: Behavior<A[]>,
   name: Name,
   key?: (a: A, index: number) => Showable
-): Component<{[key in Name]: Behavior<B[]> }>;
+): Component<{ [key in Name]: Behavior<B[]> }>;
 export function list<A, B>(
   componentCreator: (a: A) => Component<any>,
   list: Behavior<A[]>,
   key?: (a: A, index: number) => Showable
 ): Component<Behavior<B[]>>;
 export function list<A, B>(
-  c: (a: A) => Component<any>, list: Behavior<A[]>, optional1: any
+  c: (a: A) => Component<any>,
+  list: Behavior<A[]>,
+  optional1: any
 ): Component<Behavior<B[]> | Record<string, Behavior<B[]>>> {
   const last = arguments[arguments.length - 1];
   const getKey = typeof last === "function" ? last : id;

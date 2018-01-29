@@ -3,14 +3,31 @@ import * as chaiDom from "chai-dom";
 use(chaiDom);
 import { fgo } from "@funkia/jabz";
 import {
-  Behavior, Stream, isBehavior, sinkBehavior, placeholder, Now,
-  publish, fromFunction, Future
+  Behavior,
+  Stream,
+  isBehavior,
+  sinkBehavior,
+  placeholder,
+  Now,
+  publish,
+  fromFunction,
+  Future
 } from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
 
 import {
-  text, dynamic, Child, toComponent, Component, modelView,
-  emptyComponent, elements, loop, testComponent, list, runComponent,
+  text,
+  dynamic,
+  Child,
+  toComponent,
+  Component,
+  modelView,
+  emptyComponent,
+  elements,
+  loop,
+  testComponent,
+  list,
+  runComponent,
   output
 } from "../src";
 const { span, div, button, input } = elements;
@@ -53,16 +70,17 @@ describe("component specs", () => {
   });
   describe("explicit output", () => {
     it("has output method", () => {
-      const comp =
-        Component.of({ foo: 1, bar: 2, baz: 3 })
-          .output({ newFoo: "foo", newBar: "bar" });
+      const comp = Component.of({ foo: 1, bar: 2, baz: 3 }).output({
+        newFoo: "foo",
+        newBar: "bar"
+      });
       const { dom, out } = testComponent(comp);
       expect(out.newFoo).to.equal(1);
       expect(out.newBar).to.equal(2);
       expect((out as any).baz).to.be.undefined;
     });
     it("has output function", () => {
-      const comp = Component.of({foo: 1, bar: "two", baz: 3});
+      const comp = Component.of({ foo: 1, bar: "two", baz: 3 });
       const comp2 = output({ newFoo: "foo", newBar: "bar" }, comp);
       const { dom, out } = testComponent(comp2);
       // type asserts to check that the types work
@@ -143,19 +161,23 @@ describe("component specs", () => {
   });
 
   describe("loop", () => {
-    type Looped = { name: Behavior<string>, destroyed: Future<boolean> };
+    type Looped = { name: Behavior<string>; destroyed: Future<boolean> };
     it("works with explicit fgo and looped behavior", () => {
-      const comp = loop(fgo(function* ({ name }: Looped): IterableIterator<Component<any>> {
-        yield div(name);
-        ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
-        return { name };
-      }));
+      const comp = loop(
+        fgo(function*({ name }: Looped): IterableIterator<Component<any>> {
+          yield div(name);
+          ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+          return { name };
+        })
+      );
       const { dom } = testComponent(comp);
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
     });
     it("can be called directly with generator function", () => {
-      const comp = loop(function* ({ name }: Looped): IterableIterator<Component<any>> {
+      const comp = loop(function*({
+        name
+      }: Looped): IterableIterator<Component<any>> {
         yield div(name);
         ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
         return { name };
@@ -163,12 +185,17 @@ describe("component specs", () => {
     });
     it("can be told to destroy", () => {
       let toplevel = false;
-      const comp = loop(fgo(function* ({ name, destroyed }: Looped): IterableIterator<Component<any>> {
-        yield div(name);
-        destroyed.subscribe((b) => toplevel = b);
-        ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
-        return { name };
-      }));
+      const comp = loop(
+        fgo(function*({
+          name,
+          destroyed
+        }: Looped): IterableIterator<Component<any>> {
+          yield div(name);
+          destroyed.subscribe((b) => (toplevel = b));
+          ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+          return { name };
+        })
+      );
       const { dom, destroy } = testComponent(comp);
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
@@ -195,23 +222,21 @@ describe("modelView", () => {
   });
   it("passes argument to model", () => {
     const c = modelView(
-      ({ click }: { click: Stream<any> }, n: number) => Now.of({ n: Behavior.of(n) }),
+      ({ click }: { click: Stream<any> }, n: number) =>
+        Now.of({ n: Behavior.of(n) }),
       ({ n }) => span(n)
     );
     const { dom } = testComponent(c(12));
-    expect(dom.querySelector("span")).to.have.text(("12"));
+    expect(dom.querySelector("span")).to.have.text("12");
     const test = modelView(
       ({ inputValue }) => Now.of({ foo: Behavior.of(12) }),
       ({ foo }) => input()
     );
   });
   it("passes argument to view", () => {
-    const c = modelView(
-      ({ click }) => Now.of({}),
-      ({ }, n: number) => span(n)
-    );
+    const c = modelView(({ click }) => Now.of({}), ({}, n: number) => span(n));
     const { dom } = testComponent(c(7));
-    expect(dom.querySelector("span")).to.have.text(("7"));
+    expect(dom.querySelector("span")).to.have.text("7");
   });
 
   it("view is function returning array of components", () => {
@@ -221,10 +246,12 @@ describe("modelView", () => {
       function model(args: FromView): Now<any> {
         fromView = args;
         return Now.of({});
-      }, (): Child<FromView> => [
+      },
+      (): Child<FromView> => [
         span("Hello"),
         input({ output: { inputValue: "inputValue" } })
-      ])();
+      ]
+    )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
@@ -236,8 +263,12 @@ describe("modelView", () => {
       return;
     }
     const c = modelView(
-      function fooComp({ foo }: any): Now<any> { return Now.of({}); },
-      function barView(): Component<any> { return Component.of({ bar: "no foo?" }); }
+      function fooComp({ foo }: any): Now<any> {
+        return Now.of({});
+      },
+      function barView(): Component<any> {
+        return Component.of({ bar: "no foo?" });
+      }
     )();
     assert.throws(() => {
       testComponent(c);
@@ -247,8 +278,8 @@ describe("modelView", () => {
   it("can be told to destroy", () => {
     let toplevel = false;
     const c = modelView(
-      function model({destroyed}): Now<any> {
-        destroyed.subscribe((b: boolean) => toplevel = b);
+      function model({ destroyed }): Now<any> {
+        destroyed.subscribe((b: boolean) => (toplevel = b));
         return Now.of({});
       },
       function view(): Component<any> {
@@ -266,7 +297,7 @@ describe("modelView", () => {
 
 describe("list", () => {
   const createSpan = (content: string) => span(content);
-  const initial = ["Hello ", "there", "!"]
+  const initial = ["Hello ", "there", "!"];
   it("has correct initial order", () => {
     const listB = sinkBehavior(initial);
     const { dom } = testComponent(list(createSpan, listB));

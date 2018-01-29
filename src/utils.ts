@@ -20,7 +20,7 @@ export function get<K extends string>(prop: K): any {
 }
 
 export function assign<A, B>(a: A, b: B): A & B {
-  for (const key of (Object.keys(b) as (keyof B)[])) {
+  for (const key of Object.keys(b) as (keyof B)[]) {
     (a as any)[key] = b[key];
   }
   return a as any;
@@ -28,16 +28,17 @@ export function assign<A, B>(a: A, b: B): A & B {
 
 export function merge<A, B>(a: A, b: B): A & B {
   const c: { [key: string]: any } = {};
-  for (const key of (Object.keys(a) as (keyof A)[])) {
+  for (const key of Object.keys(a) as (keyof A)[]) {
     c[key] = a[key];
   }
-  for (const key of (Object.keys(b) as (keyof B)[])) {
+  for (const key of Object.keys(b) as (keyof B)[]) {
     c[key] = b[key];
   }
   return <any>c;
 }
 
-export function mergeDeep(...objects: any[]): any { // .length of function is 2
+export function mergeDeep(...objects: any[]): any {
+  // .length of function is 2
   const result: any = {};
   for (const source of objects) {
     if (isObject(source)) {
@@ -74,4 +75,6 @@ export function copyRemaps(
   return output;
 }
 
-export function id<A>(a: A): A { return a; }
+export function id<A>(a: A): A {
+  return a;
+}
