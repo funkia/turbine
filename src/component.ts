@@ -38,7 +38,7 @@ export function isGeneratorFunction<A, T>(
   );
 }
 
-interface DomApi {
+export interface DomApi {
   appendChild(child: Node): void;
   insertBefore(insert: Node, before: Node): void;
   removeChild(child: Node): void;

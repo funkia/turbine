@@ -82,15 +82,18 @@ export type Style = {
     | CSSStyleDeclaration[N]
 };
 
-type ClassNames = Behavior<string> | string;
+export type ClassNames = Behavior<string> | string;
 
-type ClassToggles = {
+export type ClassToggles = {
   [name: string]: boolean | Behavior<boolean>;
 };
 
-type ClassDescription = ClassNames | ClassToggles | ClassDescriptionArray;
+export type ClassDescription =
+  | ClassNames
+  | ClassToggles
+  | ClassDescriptionArray;
 
-interface ClassDescriptionArray extends Array<ClassDescription> {}
+export interface ClassDescriptionArray extends Array<ClassDescription> {}
 
 export type InitialProperties = {
   streams?: StreamDescriptions;
