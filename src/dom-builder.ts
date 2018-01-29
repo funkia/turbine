@@ -109,6 +109,7 @@ export type InitialProperties = {
   actions?: Actions;
   setters?: { [name: string]: Behavior<any> };
   class?: ClassDescription;
+  entry?: { class?: string };
 };
 
 export type DefaultOutput = {
@@ -227,6 +228,18 @@ function handleClass(
     handleObject(desc, elm, classSetter);
   }
 }
+
+function handleEntryClass(desc: string, elm: HTMLElement): void {
+  const classes = desc.split(" ");
+  elm.classList.add(...classes);
+  // Wait two frames so that we get one frame with the class
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      elm.classList.remove(...classes);
+    });
+  });
+}
+
 class DomComponent<A> extends Component<A> {
   child: Component<any> | undefined;
   constructor(
@@ -260,6 +273,11 @@ class DomComponent<A> extends Component<A> {
     handleObject(this.props.props, elm, propertySetter);
     if (this.props.class !== undefined) {
       handleClass(this.props.class, elm);
+    }
+    if (this.props.entry) {
+      if (this.props.entry.class !== undefined) {
+        handleEntryClass(this.props.entry.class, elm);
+      }
     }
     if (this.props.actionDefinitions !== undefined) {
       handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);

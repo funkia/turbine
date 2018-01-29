@@ -427,7 +427,7 @@ describe("dom-builder", () => {
     });
   });
 
-  describe("the overloaded class", () => {
+  describe("class", () => {
     it("adds classes based on string", () => {
       const span = elements.span({
         class: "foo bar"
@@ -504,6 +504,25 @@ describe("dom-builder", () => {
       expect(spanElm).not.to.have.class("baz");
       expect(spanElm).to.have.class("buzz");
       expect(spanElm).to.have.class("dip");
+    });
+  });
+  describe("entry", () => {
+    describe("class", () => {
+      it("adds class in single frame", (done) => {
+        const c = div({ entry: { class: "foo" }, class: "bar" }, "Hello");
+        const { dom } = testComponent(c);
+        const theDiv = dom.firstChild;
+        expect(theDiv).to.have.class("foo");
+        expect(theDiv).to.have.class("bar");
+        requestAnimationFrame(() => {
+          expect(theDiv).to.have.class("foo");
+          requestAnimationFrame(() => {
+            expect(theDiv).to.not.have.class("foo");
+            expect(theDiv).to.have.class("bar");
+            done();
+          });
+        });
+      });
     });
   });
 });
