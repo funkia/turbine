@@ -8,20 +8,25 @@
   "directories": {
     "dist": "dist"
   },
+  "files": ["dist"],
   "scripts": {
     "test": "karma start --single-run",
     "test-watch": "karma start",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
     "codecov": "codecov -f coverage/**/json",
     "build-web": "webpack",
-    "build-es6": "tsc -P tsconfig-build.json --module ES6 --outDir dist/es6 --declaration true --declarationDir ./dist/defs",
+    "build-es6":
+      "tsc -P tsconfig-build.json --module ES6 --outDir dist/es6 --declaration true --declarationDir ./dist/defs",
     "build-cmjs": "tsc -P tsconfig-build.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run clean; npm run build",
-    "release-major": "xyz --repo git@github.com:funkia/turbine.git --increment major",
-    "release-minor": "xyz --repo git@github.com:funkia/turbine.git --increment minor",
-    "release-patch": "xyz --repo git@github.com:funkia/turbine.git --increment patch"
+    "release-major":
+      "xyz --repo git@github.com:funkia/turbine.git --increment major",
+    "release-minor":
+      "xyz --repo git@github.com:funkia/turbine.git --increment minor",
+    "release-patch":
+      "xyz --repo git@github.com:funkia/turbine.git --increment patch"
   },
   "repository": {
     "type": "git",
