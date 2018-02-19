@@ -240,6 +240,65 @@ function handleEntryClass(desc: string, elm: HTMLElement): void {
   });
 }
 
+export function handleProps<A>(
+  props: Properties<A> & { output?: OutputNames<A> },
+  elm: HTMLElement
+): A {
+  let output: any = {};
+  handleObject(<any>props.style, elm, styleSetter);
+  handleObject(props.attrs, elm, attributeSetter);
+  handleObject(props.props, elm, propertySetter);
+  if (props.class !== undefined) {
+    handleClass(props.class, elm);
+  }
+  if (props.entry !== undefined) {
+    if (props.entry.class !== undefined) {
+      handleEntryClass(props.entry.class, elm);
+    }
+  }
+  if (props.actionDefinitions !== undefined) {
+    handleCustom(elm, true, props.actionDefinitions, props.actions);
+    handleCustom(elm, false, props.actionDefinitions, props.setters);
+  }
+  if (props.behaviors !== undefined) {
+    for (const name of Object.keys(props.behaviors)) {
+      const [evt, extractor, initialFn] = props.behaviors[name];
+      let a: Behavior<any> | undefined = undefined;
+      const initial = initialFn(elm);
+      Object.defineProperty(output, name, {
+        enumerable: true,
+        get: (): Behavior<any> => {
+          if (a === undefined) {
+            a = behaviorFromEvent(elm, evt, initial, extractor);
+          }
+          return a;
+        }
+      });
+    }
+  }
+  if (props.streams !== undefined) {
+    for (const name of Object.keys(props.streams)) {
+      const [evt, extractor] = props.streams[name];
+      let a: Stream<any> | undefined = undefined;
+      if (output[name] === undefined) {
+        Object.defineProperty(output, name, {
+          enumerable: true,
+          get: (): Stream<any> => {
+            if (a === undefined) {
+              a = streamFromEvent(elm, evt, extractor);
+            }
+            return a;
+          }
+        });
+      }
+    }
+  }
+  if (props.output !== undefined) {
+    output = copyRemaps(props.output, output);
+  }
+  return output;
+}
+
 class DomComponent<A> extends Component<A> {
   child: Component<any> | undefined;
   constructor(
@@ -268,63 +327,12 @@ class DomComponent<A> extends Component<A> {
     let output: any = {};
     const elm = document.createElement(this.tagName);
 
-    handleObject(<any>this.props.style, elm, styleSetter);
-    handleObject(this.props.attrs, elm, attributeSetter);
-    handleObject(this.props.props, elm, propertySetter);
-    if (this.props.class !== undefined) {
-      handleClass(this.props.class, elm);
+    if (this.props !== undefined) {
+      output = handleProps(this.props, elm);
     }
-    if (this.props.entry) {
-      if (this.props.entry.class !== undefined) {
-        handleEntryClass(this.props.entry.class, elm);
-      }
-    }
-    if (this.props.actionDefinitions !== undefined) {
-      handleCustom(elm, true, this.props.actionDefinitions, this.props.actions);
-      handleCustom(
-        elm,
-        false,
-        this.props.actionDefinitions,
-        this.props.setters
-      );
-    }
-    if (this.props.behaviors !== undefined) {
-      for (const name of Object.keys(this.props.behaviors)) {
-        const [evt, extractor, initialFn] = this.props.behaviors[name];
-        let a: Behavior<any> | undefined = undefined;
-        const initial = initialFn(elm);
-        Object.defineProperty(output, name, {
-          enumerable: true,
-          get: (): Behavior<any> => {
-            if (a === undefined) {
-              a = behaviorFromEvent(elm, evt, initial, extractor);
-            }
-            return a;
-          }
-        });
-      }
-    }
-    if (this.props.streams !== undefined) {
-      for (const name of Object.keys(this.props.streams)) {
-        const [evt, extractor] = this.props.streams[name];
-        let a: Stream<any> | undefined = undefined;
-        if (output[name] === undefined) {
-          Object.defineProperty(output, name, {
-            enumerable: true,
-            get: (): Stream<any> => {
-              if (a === undefined) {
-                a = streamFromEvent(elm, evt, extractor);
-              }
-              return a;
-            }
-          });
-        }
-      }
-    }
+
     parent.appendChild(elm);
-    if (this.props.output !== undefined) {
-      output = copyRemaps(this.props.output, output);
-    }
+
     if (this.child !== undefined) {
       const childOutput = runComponent(elm, this.child, destroyed.mapTo(false));
       if (this.child.explicitOutput !== undefined) {
