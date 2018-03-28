@@ -11,7 +11,7 @@ import {
   sinkFuture
 } from "@funkia/hareactive";
 
-import { merge, id, copyRemaps } from "./utils";
+import { merge, id, copyRemaps, fst, snd } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -19,13 +19,6 @@ export type Showable = string | number;
 
 function isShowable(s: any): s is Showable {
   return typeof s === "string" || typeof s === "number";
-}
-
-function fst<A, B>(a: [A, B]): A {
-  return a[0];
-}
-function snd<A, B>(a: [A, B]): B {
-  return a[1];
 }
 
 export function isGeneratorFunction<A, T>(
