@@ -8,25 +8,23 @@
   "directories": {
     "dist": "dist"
   },
-  "files": ["dist"],
+  "files": [
+    "dist"
+  ],
   "scripts": {
     "test": "karma start --single-run",
     "test-watch": "karma start",
     "format": "prettier --write \"{src,test}/**/*.ts\"",
     "codecov": "codecov -f coverage/**/json",
     "build-web": "webpack",
-    "build-es6":
-      "tsc -P tsconfig-build.json --module ES6 --outDir dist/es6 --declaration true --declarationDir ./dist/defs",
+    "build-es6": "tsc -P tsconfig-build.json --module ES6 --outDir dist/es6 --declaration true --declarationDir ./dist/defs",
     "build-cmjs": "tsc -P tsconfig-build.json",
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run clean; npm run build",
-    "release-major":
-      "xyz --repo git@github.com:funkia/turbine.git --increment major",
-    "release-minor":
-      "xyz --repo git@github.com:funkia/turbine.git --increment minor",
-    "release-patch":
-      "xyz --repo git@github.com:funkia/turbine.git --increment patch"
+    "release-major": "xyz --repo git@github.com:funkia/turbine.git --increment major",
+    "release-minor": "xyz --repo git@github.com:funkia/turbine.git --increment minor",
+    "release-patch": "xyz --repo git@github.com:funkia/turbine.git --increment patch"
   },
   "repository": {
     "type": "git",
@@ -53,14 +51,14 @@
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
     "@funkia/hareactive": "^0.1.3",
-    "@types/chai": "^4.0.8",
-    "@types/chai-dom": "0.0.5",
-    "@types/mocha": "^2.2.44",
+    "@types/chai": "^4.1.2",
+    "@types/chai-dom": "0.0.6",
+    "@types/mocha": "^5.0.0",
     "chai": "^4.1.2",
-    "chai-dom": "^1.6.0",
+    "chai-dom": "^1.7.0",
     "codecov": "^3.0.0",
     "fake-raf": "^1.0.1",
-    "karma": "^1.7.1",
+    "karma": "^2.0.0",
     "karma-chrome-launcher": "^2.2.0",
     "karma-cli": "1.0.1",
     "karma-firefox-launcher": "^1.1.0",
@@ -68,15 +66,15 @@
     "karma-mocha-reporter": "^2.2.5",
     "karma-phantomjs-launcher": "1.0.4",
     "karma-sauce-launcher": "^1.2.0",
-    "karma-typescript": "^3.0.8",
-    "mocha": "^4.0.1",
-    "prettier": "^1.10.2",
-    "ts-loader": "^3.2.0",
-    "typescript": "^2.6.2",
-    "uglify-js": "^3.2.1",
-    "webpack": "^3.10.0",
+    "karma-typescript": "^3.0.12",
+    "mocha": "^5.0.5",
+    "prettier": "^1.11.1",
+    "ts-loader": "^4.1.0",
+    "typescript": "^2.8.1",
+    "uglify-js": "^3.3.16",
+    "webpack": "^4.3.0",
     "webpack2-externals-plugin": "^1.0.0",
-    "xyz": "^2.1.0"
+    "xyz": "^3.0.0"
   },
   "contributors": [
     {
