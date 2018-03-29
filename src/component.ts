@@ -11,7 +11,7 @@ import {
   sinkFuture
 } from "@funkia/hareactive";
 
-import { merge, id, copyRemaps, fst, snd } from "./utils";
+import { mergeObj, id, copyRemaps, fst, snd } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -65,9 +65,9 @@ export abstract class Component<O, A = any> implements Monad<A> {
   ): Component<O & Remap<A, B>, A>;
   output(handler: any): Component<any, A> {
     if (typeof handler === "function") {
-      return new HandleOutput((e, o) => merge(e, handler(o)), this);
+      return new HandleOutput((e, o) => mergeObj(e, handler(o)), this);
     } else {
-      return new HandleOutput((e, o) => merge(e, copyRemaps(handler, o)), this);
+      return new HandleOutput((e, o) => mergeObj(e, copyRemaps(handler, o)), this);
     }
     // return new OutputComponent(remaps, this);
   }
@@ -106,7 +106,7 @@ class OutputComponent extends Component<any> {
   run(parent: DomApi, destroyed: Future<boolean>): any {
     const { explicit, output } = this.comp.run(parent, destroyed);
     const newExplicit = copyRemaps(this.remaps, output);
-    const finalExplicit = merge(output, newExplicit);
+    const finalExplicit = mergeObj(output, newExplicit);
     return { explicit: newExplicit, output };
   }
 }
@@ -257,6 +257,32 @@ export function loop<O, A extends ReactivesObject>(
 ): Component<O, A> {
   const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
   return new LoopComponent<O, A>(f2, placeholderNames);
+}
+
+class MergeComponent<
+  O extends object,
+  A,
+  P extends object,
+  B
+> extends Component<O & P, B> {
+  constructor(private c1: Component<O, A>, private c2: Component<P, B>) {
+    super();
+  }
+  run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, B> {
+    const { explicit: explicit1 } = this.c1.run(parent, destroyed);
+    const { explicit: explicit2, output } = this.c2.run(parent, destroyed);
+    return { explicit: Object.assign({}, explicit1, explicit2), output };
+  }
+}
+
+/**
+ * Merges two components. Their explicit output is combined.
+ */
+export function merge<O extends object, A, P extends object, B>(
+  c1: Component<O, A>,
+  c2: Component<P, B>
+): Component<O & P, B> {
+  return new MergeComponent(c1, c2);
 }
 
 function addErrorHandler(modelName: string, viewName: string, obj: any): any {
