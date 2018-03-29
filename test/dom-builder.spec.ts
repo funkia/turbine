@@ -59,6 +59,12 @@ describe("dom-builder", () => {
   });
 
   describe("output", () => {
+    it("renames output as explicit", () => {
+      const c = button({ output: { buttonClick: "click" } });
+      const { out, explicit } = testComponent(c);
+      assert(isStream(out.buttonClick));
+      assert(isStream(explicit.buttonClick));
+    });
     it("passes explicit child output through", () => {
       const c = div(button({ output: { buttonClick: "click" } }));
       const { out } = testComponent(c);
@@ -68,7 +74,7 @@ describe("dom-builder", () => {
       const btn = button({ output: { fooClick: "click" } }, "Click me");
       const btn2 = button({ output: { barClick: "click" } }, "Click me");
       const c = div({}, [btn, btn2]);
-      const { out } = testComponent(c);
+      const { out, explicit } = testComponent(c);
       assert(isStream(out.fooClick));
       assert(isStream(out.barClick));
     });

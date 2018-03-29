@@ -64,7 +64,7 @@ const versionSelector = modelView<FromModel, FromView>(
     const selected = yield sample(stepper("1", selectVersion));
     return { selected };
   },
-  function({ selected }): Component {
+  function({ selected }) {
     return div({ class: "btn-group" }, [
       selectorButton("1", selected).output({ select1: "select" }),
       selectorButton("2", selected).output({ select2: "select" }),

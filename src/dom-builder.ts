@@ -6,7 +6,8 @@ import {
   Now,
   streamFromEvent,
   behaviorFromEvent,
-  Future
+  Future,
+  empty
 } from "@funkia/hareactive";
 import {
   Component,
@@ -15,7 +16,9 @@ import {
   Showable,
   Child,
   isChild,
-  toComponent
+  toComponent,
+  Out,
+  emptyComponent
 } from "./component";
 import { id, mergeDeep, assign, copyRemaps } from "./utils";
 
@@ -294,53 +297,45 @@ export function handleProps<A>(
     }
   }
   if (props.output !== undefined) {
-    output = copyRemaps(props.output, output);
+    for (const name of Object.keys(props.output)) {
+      if (output[name] === undefined) {
+        output[name] = output[props.output[name]];
+      }
+    }
   }
   return output;
 }
 
-class DomComponent<A> extends Component<A> {
-  child: Component<any> | undefined;
+class DomComponent<O, P, A> extends Component<O & P, A & P> {
   constructor(
     private tagName: string,
     private props: Properties<A> & { output?: OutputNames<A> },
-    child?: Child
+    private child?: Component<P, any>
   ) {
     super();
-    if (props.output !== undefined) {
-      this.explicitOutput = Object.keys(props.output);
-    }
     if (child !== undefined) {
       this.child = toComponent(child);
-      if (this.child.explicitOutput !== undefined) {
-        if (this.explicitOutput === undefined) {
-          this.explicitOutput = this.child.explicitOutput;
-        } else {
-          this.explicitOutput = this.explicitOutput.concat(
-            this.child.explicitOutput
-          );
-        }
-      }
     }
   }
-  run(parent: Node, destroyed: Future<boolean>): A {
-    let output: any = {};
+  run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
     const elm = document.createElement(this.tagName);
 
-    if (this.props !== undefined) {
-      output = handleProps(this.props, elm);
+    const output: any = handleProps(this.props, elm);
+
+    const explicitOutput = this.props.output
+      ? Object.keys(this.props.output)
+      : [];
+    const explicit: any = {};
+    for (const name of explicitOutput) {
+      explicit[name] = output[name];
     }
 
     parent.appendChild(elm);
 
     if (this.child !== undefined) {
-      const childOutput = runComponent(elm, this.child, destroyed.mapTo(false));
-      if (this.child.explicitOutput !== undefined) {
-        for (const prop of this.child.explicitOutput) {
-          output[prop] = childOutput[prop];
-        }
-      }
-      // assign(output, childOutput);
+      const childResult = this.child.run(elm, destroyed.mapTo(false));
+      Object.assign(explicit, childResult.explicit);
+      Object.assign(output, childResult.explicit);
     }
     destroyed.subscribe((toplevel) => {
       if (toplevel) {
@@ -348,7 +343,7 @@ class DomComponent<A> extends Component<A> {
       }
       // TODO: cleanup listeners
     });
-    return output;
+    return { explicit, output };
   }
 }
 
@@ -508,22 +503,19 @@ export function element<P extends InitialProperties>(
   );
   function createElement(
     newPropsOrChildren?: InitialProperties | Child,
-    newChildrenOrUndefined?: Child
+    childOrUndefined?: Child
   ): Component<InitialOutput<P>> {
-    if (newChildrenOrUndefined === undefined && isChild(newPropsOrChildren)) {
-      return new DomComponent<InitialOutput<P>>(
-        parsedTagName,
-        mergedProps,
-        newPropsOrChildren
-      );
-    } else {
-      const newProps = mergeDeep(mergedProps, newPropsOrChildren);
-      return new DomComponent<InitialOutput<P>>(
-        parsedTagName,
-        newProps,
-        newChildrenOrUndefined
-      );
-    }
+    const finalProps =
+      newPropsOrChildren !== undefined && !isChild(newPropsOrChildren)
+        ? mergeDeep(mergedProps, newPropsOrChildren)
+        : mergedProps;
+    const child =
+      childOrUndefined !== undefined
+        ? toComponent(childOrUndefined)
+        : isChild(newPropsOrChildren)
+          ? toComponent(newPropsOrChildren)
+          : undefined;
+    return new DomComponent<any, any, any>(parsedTagName, finalProps, child);
   }
   return createElement as any;
 }

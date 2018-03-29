@@ -96,7 +96,9 @@ function* counterListView({
     "Add counter"
   );
   yield br;
-  const { listOut } = yield ul(list(counter, counterIds, "listOut"));
+  const { listOut } = yield ul(
+    list(counter, counterIds).output((o) => ({ listOut: o }))
+  );
   return { addCounter, listOut };
 }
 
