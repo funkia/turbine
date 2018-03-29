@@ -28,7 +28,8 @@ import {
   testComponent,
   list,
   runComponent,
-  output
+  output,
+  merge
 } from "../src";
 const { span, div, button, input } = elements;
 
@@ -74,21 +75,33 @@ describe("component specs", () => {
         newFoo: "foo",
         newBar: "bar"
       });
-      const { dom, out } = testComponent(comp);
-      expect(out.newFoo).to.equal(1);
-      expect(out.newBar).to.equal(2);
-      expect((out as any).baz).to.be.undefined;
+      const { dom, out, explicit } = testComponent(comp);
+      expect(explicit.newFoo).to.equal(1);
+      expect(explicit.newBar).to.equal(2);
+      expect((out as any).newFoo).to.be.undefined;
     });
     it("has output function", () => {
       const comp = Component.of({ foo: 1, bar: "two", baz: 3 });
       const comp2 = output({ newFoo: "foo", newBar: "bar" }, comp);
-      const { dom, out } = testComponent(comp2);
+      const { dom, out, explicit } = testComponent(comp2);
       // type asserts to check that the types work
-      out.newFoo as number;
-      out.newBar as string;
-      expect(out.newFoo).to.equal(1);
-      expect(out.newBar).to.equal("two");
-      expect((out as any).baz).to.be.undefined;
+      explicit.newFoo as number;
+      explicit.newBar as string;
+      expect(explicit.newFoo).to.equal(1);
+      expect(explicit.newBar).to.equal("two");
+      expect((out as any).newFoo).to.be.undefined;
+    });
+  });
+  describe("merge", () => {
+    it("merges output", () => {
+      const b1 = button({output: {click1: "click"}});
+      const b2 = button({output: {click2: "click"}});
+      const m = merge(b1, b2);
+      const {explicit, out} = testComponent(m);
+      expect(out).to.not.have.property("click1");
+      expect(out).to.have.property("click2");
+      expect(explicit).to.have.property("click1");
+      expect(explicit).to.have.property("click2");
     });
   });
   describe("empty component", () => {
@@ -328,8 +341,10 @@ describe("list", () => {
   });
   it("outputs object with property", () => {
     const listB = sinkBehavior(initial);
-    const { out } = testComponent(list(createSpan, listB, "foobar"));
-    assert.notEqual(out.foobar, undefined);
+    const { explicit } = testComponent(
+      list(createSpan, listB).output((o) => ({ foobar: o }))
+    );
+    assert.notEqual(explicit.foobar, undefined);
   });
 });
 
