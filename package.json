@@ -22,9 +22,7 @@
     "build": "npm run build-web; npm run build-es6; npm run build-cmjs",
     "clean": "rm -rf coverage dist",
     "prepublishOnly": "npm run clean; npm run build",
-    "release-major": "xyz --repo git@github.com:funkia/turbine.git --increment major",
-    "release-minor": "xyz --repo git@github.com:funkia/turbine.git --increment minor",
-    "release-patch": "xyz --repo git@github.com:funkia/turbine.git --increment patch"
+    "release": "np"
   },
   "repository": {
     "type": "git",
@@ -68,13 +66,13 @@
     "karma-sauce-launcher": "^1.2.0",
     "karma-typescript": "^3.0.12",
     "mocha": "^5.0.5",
+    "np": "^2.20.1",
     "prettier": "^1.11.1",
     "ts-loader": "^4.1.0",
     "typescript": "^2.8.1",
     "uglify-js": "^3.3.16",
     "webpack": "^4.3.0",
-    "webpack2-externals-plugin": "^1.0.0",
-    "xyz": "^3.0.0"
+    "webpack2-externals-plugin": "^1.0.0"
   },
   "contributors": [
     {

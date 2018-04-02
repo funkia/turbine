@@ -67,7 +67,10 @@ export abstract class Component<O, A = any> implements Monad<A> {
     if (typeof handler === "function") {
       return new HandleOutput((e, o) => mergeObj(e, handler(o)), this);
     } else {
-      return new HandleOutput((e, o) => mergeObj(e, copyRemaps(handler, o)), this);
+      return new HandleOutput(
+        (e, o) => mergeObj(e, copyRemaps(handler, o)),
+        this
+      );
     }
     // return new OutputComponent(remaps, this);
   }
@@ -630,7 +633,7 @@ class ComponentList<A, B> extends Component<{}, Behavior<B[]>> {
 }
 
 export function list<A, B>(
-  componentCreator: (a: A) => Component<any>,
+  componentCreator: (a: A) => Component<any, B>,
   listB: Behavior<A[]>,
   getKey: (a: A, index: number) => Showable = id
 ): Component<{}, Behavior<B[]>> {
