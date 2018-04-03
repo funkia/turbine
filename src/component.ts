@@ -267,14 +267,15 @@ class MergeComponent<
   A,
   P extends object,
   B
-> extends Component<O & P, B> {
+> extends Component<O & P, O & P> {
   constructor(private c1: Component<O, A>, private c2: Component<P, B>) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, B> {
+  run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, O & P> {
     const { explicit: explicit1 } = this.c1.run(parent, destroyed);
-    const { explicit: explicit2, output } = this.c2.run(parent, destroyed);
-    return { explicit: Object.assign({}, explicit1, explicit2), output };
+    const { explicit: explicit2 } = this.c2.run(parent, destroyed);
+    const merged = Object.assign({}, explicit1, explicit2);
+    return { explicit: merged, output: merged };
   }
 }
 
@@ -284,7 +285,7 @@ class MergeComponent<
 export function merge<O extends object, A, P extends object, B>(
   c1: Component<O, A>,
   c2: Component<P, B>
-): Component<O & P, B> {
+): Component<O & P, O & P> {
   return new MergeComponent(c1, c2);
 }
 

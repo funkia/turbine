@@ -94,11 +94,11 @@ describe("component specs", () => {
   });
   describe("merge", () => {
     it("merges output", () => {
-      const b1 = button({output: {click1: "click"}});
-      const b2 = button({output: {click2: "click"}});
+      const b1 = button({ output: { click1: "click" } });
+      const b2 = button({ output: { click2: "click" } });
       const m = merge(b1, b2);
-      const {explicit, out} = testComponent(m);
-      expect(out).to.not.have.property("click1");
+      const { explicit, out } = testComponent(m);
+      expect(out).to.have.property("click1");
       expect(out).to.have.property("click2");
       expect(explicit).to.have.property("click1");
       expect(explicit).to.have.property("click2");
