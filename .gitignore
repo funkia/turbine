@@ -3,6 +3,7 @@ bundle.js
 *.map
 node_modules/
 *~
+tags
 typings
 .tern-port
 .#*
