@@ -1,6 +1,6 @@
 {
   "name": "@funkia/turbine",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "A functional frontend framework in Typescript",
   "main": "dist/cmjs/index.js",
   "module": "dist/es6/index.js",
