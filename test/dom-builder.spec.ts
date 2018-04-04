@@ -35,29 +35,6 @@ describe("dom-builder", () => {
     expect(domBtn).to.have.html("<button></button>");
   });
 
-  describe("selector syntax", () => {
-    it("with class", () => {
-      const spanFac = element("span.someClass.otherClass");
-      const spanC = spanFac();
-      const { dom } = testComponent(spanC);
-      expect(dom.querySelector("span")).to.have.class("someClass");
-      expect(dom.querySelector("span")).to.have.class("otherClass");
-    });
-    it("adds static classes", () => {
-      const divC = element("div")({ class: "foo bar baz" });
-      const { dom } = testComponent(divC);
-      expect(dom.querySelector("div")).to.have.class("foo");
-      expect(dom.querySelector("div")).to.have.class("bar");
-      expect(dom.querySelector("div")).to.have.class("baz");
-    });
-    it("with id", () => {
-      const spanFac = element("span#someId");
-      const spanC = spanFac();
-      const { dom } = testComponent(spanC);
-      expect(dom.querySelector("span")).to.have.id("someId");
-    });
-  });
-
   describe("output", () => {
     it("renames output as explicit", () => {
       const c = button({ output: { buttonClick: "click" } });

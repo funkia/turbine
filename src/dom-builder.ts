@@ -347,32 +347,6 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
   }
 }
 
-function parseCSSTagname(cssTagName: string): [string, InitialProperties] {
-  const parsedTag = cssTagName.split(/(?=\.)|(?=#)|(?=\[)/);
-  const result: InitialProperties = {};
-  for (let i = 1; i < parsedTag.length; i++) {
-    const token = parsedTag[i];
-    switch (token[0]) {
-      case "#":
-        result.props = result.props || {};
-        result.props.id = token.slice(1);
-        break;
-      case ".":
-        result.class = result.class || {};
-        (result.class as any)[token.slice(1)] = true;
-        break;
-      case "[":
-        result.attrs = result.attrs || {};
-        const attr = token.slice(1, -1).split("=");
-        result.attrs[attr[0]] = attr[1] || "";
-        break;
-      default:
-        throw new Error("Unknown symbol");
-    }
-  }
-  return [parsedTag[0], result];
-}
-
 export type OutputNames<A> = {
   [name: string]: keyof A;
 };
@@ -496,11 +470,7 @@ export function element<P extends InitialProperties>(
   tagName: string,
   props?: P
 ): ElementCreator<InitialOutput<P>> {
-  const [parsedTagName, tagProps] = parseCSSTagname(tagName);
-  const mergedProps: P = mergeDeep(
-    props,
-    mergeDeep(defaultProperties, tagProps)
-  );
+  const mergedProps: P = mergeDeep(props, defaultProperties);
   function createElement(
     newPropsOrChildren?: InitialProperties | Child,
     childOrUndefined?: Child
@@ -515,7 +485,7 @@ export function element<P extends InitialProperties>(
         : isChild(newPropsOrChildren)
           ? toComponent(newPropsOrChildren)
           : undefined;
-    return new DomComponent<any, any, any>(parsedTagName, finalProps, child);
+    return new DomComponent<any, any, any>(tagName, finalProps, child);
   }
   return createElement as any;
 }
