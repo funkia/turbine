@@ -98,22 +98,28 @@ export type ClassDescription =
 
 export interface ClassDescriptionArray extends Array<ClassDescription> {}
 
-export type InitialProperties = {
+export type Attributes = {
+  [name: string]: (Showable | boolean) | Behavior<Showable | boolean>;
+};
+
+type _InitialProperties = {
   streams?: StreamDescriptions;
   behaviors?: BehaviorDescriptions;
   style?: Style;
   props?: {
     [name: string]: Showable | Behavior<Showable | boolean>;
   };
-  attrs?: {
-    [name: string]: (Showable | boolean) | Behavior<Showable | boolean>;
-  };
+  attrs?: Attributes;
   actionDefinitions?: ActionDefinitions;
   actions?: Actions;
   setters?: { [name: string]: Behavior<any> };
   class?: ClassDescription;
   entry?: { class?: string };
 };
+
+export type InitialProperties =
+  | _InitialProperties
+  | (_InitialProperties & Attributes);
 
 export type DefaultOutput = {
   [E in EventName]: Stream<HTMLElementEventMap[E]>
@@ -243,13 +249,22 @@ function handleEntryClass(desc: string, elm: HTMLElement): void {
   });
 }
 
+const propKeywords = ["style", "attrs", "props", "class", "actionDefinitions", "actions", "setters", "entry", "behaviors", "streams", "output"];
 export function handleProps<A>(
   props: Properties<A> & { output?: OutputNames<A> },
   elm: HTMLElement
 ): A {
   let output: any = {};
+
+  let attrs = Object.assign({}, props.attrs);
+  for (const [key, value] of Object.entries(props)) {
+    if (!propKeywords.includes(key) && attrs[key] === undefined) {
+      attrs[key] = value;
+    }
+  }
+
   handleObject(<any>props.style, elm, styleSetter);
-  handleObject(props.attrs, elm, attributeSetter);
+  handleObject(attrs, elm, attributeSetter);
   handleObject(props.props, elm, propertySetter);
   if (props.class !== undefined) {
     handleClass(props.class, elm);
