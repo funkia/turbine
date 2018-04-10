@@ -249,7 +249,19 @@ function handleEntryClass(desc: string, elm: HTMLElement): void {
   });
 }
 
-const propKeywords = ["style", "attrs", "props", "class", "actionDefinitions", "actions", "setters", "entry", "behaviors", "streams", "output"];
+const propKeywords = new Set([
+  "style",
+  "attrs",
+  "props",
+  "class",
+  "actionDefinitions",
+  "actions",
+  "setters",
+  "entry",
+  "behaviors",
+  "streams",
+  "output"
+]);
 export function handleProps<A>(
   props: Properties<A> & { output?: OutputNames<A> },
   elm: HTMLElement
@@ -258,7 +270,7 @@ export function handleProps<A>(
 
   let attrs = Object.assign({}, props.attrs);
   for (const [key, value] of Object.entries(props)) {
-    if (!propKeywords.includes(key) && attrs[key] === undefined) {
+    if (!propKeywords.has(key) && attrs[key] === undefined) {
       attrs[key] = value;
     }
   }
