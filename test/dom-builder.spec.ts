@@ -296,6 +296,14 @@ describe("dom-builder", () => {
       publish(false, checkedB);
       expect(aElm).to.not.have.attribute("checked");
     });
+    it("sets attributes from root", () => {
+      const hrefB = sinkBehavior("/foo");
+      const { dom } = testComponent(element("a", { href: hrefB })());
+      const aElm = dom.firstChild;
+      expect(aElm).to.have.attribute("href", "/foo");
+      publish("/bar", hrefB);
+      expect(aElm).to.have.attribute("href", "/bar");
+    });
   });
 
   describe("properties", () => {

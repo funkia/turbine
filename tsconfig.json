@@ -11,7 +11,7 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "noStrictGenericChecks": true,
-    "lib": ["dom", "es2016.array.include", "es2015"]
+    "lib": ["dom", "es2017"]
   },
   "include": ["src/**/*", "test/**/*", "examples/**/*"],
   "exclude": ["node_modules"]
