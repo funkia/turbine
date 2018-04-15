@@ -11,7 +11,7 @@ import {
   sinkFuture
 } from "@funkia/hareactive";
 
-import { mergeObj, id, copyRemaps, fst, snd } from "./utils";
+import { mergeObj, id, copyRemaps, fst, snd, Merge } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -49,7 +49,7 @@ export type Out<O, A> = {
  * make it a monad in different way than Now.
  */
 @monad
-export abstract class Component<O, A = any> implements Monad<A> {
+export abstract class Component<O, A> implements Monad<A> {
   static of<B>(b: B): Component<{}, B> {
     return new OfComponent(b);
   }
@@ -82,11 +82,11 @@ export abstract class Component<O, A = any> implements Monad<A> {
     destroyed: Future<boolean>
   ): { explicit: O; output: A };
   // Definitions below are inserted by Jabz
-  flatten: <B>() => Component<B>;
-  map: <B>(f: (a: A) => B) => Component<B>;
-  mapTo: <B>(b: B) => Component<B>;
-  ap: <B>(a: Component<(a: A) => B>) => Component<B>;
-  lift: (f: Function, ...ms: any[]) => Component<any>;
+  flatten: <B>() => Component<O, B>;
+  map: <B>(f: (a: A) => B) => Component<O, B>;
+  mapTo: <B>(b: B) => Component<O, B>;
+  ap: <B, P>(a: Component<P, (a: A) => B>) => Component<O, B>;
+  lift: (f: Function, ...ms: any[]) => Component<O, any>;
 }
 
 class OfComponent<A> extends Component<{}, A> {
@@ -98,10 +98,10 @@ class OfComponent<A> extends Component<{}, A> {
   }
 }
 
-class OutputComponent extends Component<any> {
+class OutputComponent extends Component<any, any> {
   constructor(
     private remaps: Record<string, string>,
-    private comp: Component<any>
+    private comp: Component<any, any>
   ) {
     super();
     // this.explicitOutput = Object.keys(remaps);
@@ -184,7 +184,7 @@ class ChainComponent<O, A, B> extends Component<O, B> {
  */
 export function runComponent<A>(
   parent: DomApi | string,
-  component: Child<A>,
+  component: Child,
   destroy: Future<boolean> = sinkFuture()
 ): A {
   if (typeof parent === "string") {
@@ -208,7 +208,7 @@ export function testComponent<O, A>(
   return { out, dom, destroy, explicit };
 }
 
-export function isComponent(c: any): c is Component<any> {
+export function isComponent(c: any): c is Component<any, any> {
   return c instanceof Component;
 }
 
@@ -226,10 +226,7 @@ const placeholderProxyHandler = {
 };
 
 class LoopComponent<O, A> extends Component<O, A> {
-  constructor(
-    private f: (a: A) => Child<O, A>,
-    private placeholderNames?: string[]
-  ) {
+  constructor(private f: (a: A) => Child, private placeholderNames?: string[]) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<O, A> {
@@ -255,7 +252,7 @@ class LoopComponent<O, A> extends Component<O, A> {
   }
 }
 export function loop<O, A extends ReactivesObject>(
-  f: ((a: A) => Child<O, A>) | ((a: A) => IterableIterator<Component<any> | A>),
+  f: ((a: A) => Child<O, A>),
   placeholderNames?: string[]
 ): Component<O, A> {
   const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
@@ -315,7 +312,7 @@ class ModelViewComponent<A extends ReactivesObject> extends Component<{}, A> {
   constructor(
     private args: any[],
     private model: (...as: any[]) => Now<A>,
-    private view: (...as: any[]) => Component<A>,
+    private view: (...as: any[]) => Component<A, any>,
     private placeholderNames?: string[]
   ) {
     super();
@@ -356,10 +353,10 @@ export type Model<V, M> = (v: V) => ModelReturn<M>;
 export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
 export type View<M, V> =
   | ((m: M) => Child<V>)
-  | ((m: M) => Iterator<Component<any>>);
+  | ((m: M) => Iterator<Component<any, any>>);
 export type View1<M, V, A> =
   | ((m: M, a: A) => Child<V>)
-  | ((m: M, a: A) => Iterator<Component<any>>);
+  | ((m: M, a: A) => Iterator<Component<any, any>>);
 
 export function modelView<M extends ReactivesObject, V>(
   model: Model<V, M>,
@@ -413,19 +410,93 @@ export function viewObserve<A>(
   );
 }
 
-// Union of the types that can be used as a child. A child is either a
-// component or something that can be converted into a component.
-export type Child<O = {}, A = {}> =
+// Child element
+export type CE<O = any, A = any> =
   | Component<O, A>
   | Showable
   | Behavior<Showable>
-  | (() => Iterator<any>)
   | ChildList;
+
+// Union of the types that can be used as a child. A child is either a
+// component or something that can be converted into a component. This
+// type is not recursive on tuples due to recursive type aliases being
+// impossible.
+export type Child<O = any, A = any> =
+  | [CE]
+  | [CE, CE]
+  | [CE, CE, CE]
+  | [CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE]
+  | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] // 12
+  | CE<O, A>;
 
 // A dummy interface is required since TypeScript doesn't handle
 // recursive type aliases
 // See: https://github.com/Microsoft/TypeScript/issues/3496#issuecomment-128553540
-export interface ChildList extends Array<Child> {}
+export interface ChildList extends Array<CE> {}
+
+/**
+ * Takes a component type and returns the explicit output of the component.
+ */
+export type ComponentExplicitOutput<C> = C extends Component<infer O, any> ? O : never;
+
+/**
+ * Takes a component type and returns the output of the component.
+ */
+export type ComponentOutput<C> = C extends Component<any, infer A> ? A : never;
+
+type Co<O> = Component<O, any>;
+
+export type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
+  ToComponent<Ch>
+>;
+
+// Merge component
+export type MC<C1 extends CE, C2 extends CE> = Component<
+  Merge<ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>>,
+  Merge<ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>>
+>;
+
+// prettier-ignore
+export type ArrayToComponent<A extends Array<Child>> =
+  A extends [CE] ? TC<A[0]> :
+  A extends [CE, CE] ? MC<A[0], A[1]> :
+  A extends [CE, CE, CE] ? MC<A[0], MC<A[1], A[2]>> :
+  A extends [CE, CE, CE, CE] ? MC<A[0], MC<A[1], MC<A[2], A[3]>>> :
+  A extends [CE, CE, CE, CE, CE] ? MC<A[0], MC<A[1], MC<A[2], MC<A[3], A[4]>>>> :
+  A extends [CE, CE, CE, CE, CE, CE] ? MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], A[5]>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], A[6]>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], A[7]>>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], MC<A[7], A[8]>>>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], MC<A[7], MC<A[8], A[9]>>>>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], MC<A[7], MC<A[8], MC<A[9], A[10]>>>>>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], MC<A[7], MC<A[8], MC<A[9], MC<A[10], A[11]>>>>>>>>>>>> :
+  A extends [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] ? TC<MC<A[0], MC<A[1], MC<A[2], MC<A[3], MC<A[4], MC<A[5], MC<A[6], MC<A[7], MC<A[8], MC<A[9], MC<A[10], MC<A[11], A[12]>>>>>>>>>>>>> :
+  Component<any, any>;
+
+export type TC<A> = A extends Component<infer O, any>
+  ? Component<O, O>
+  : A extends Showable
+    ? Component<{}, {}>
+    : A extends Behavior<Showable> ? Component<{}, {}> : Component<any, any>;
+
+export type ToComponent<A> = A extends Child[] ? ArrayToComponent<A> : TC<A>;
+
+type Arr = [Component<{ a: number }, {}>, string];
+type Arr2 = [
+  Component<{ a: number }, {}>,
+  string,
+  Component<{ b: Behavior<number> }, {}>
+];
+type R = ToComponent<Component<{ a: number }, {}>>;
+type CS = ToComponent<Arr>;
+type CS2 = ToComponent<Arr2>;
 
 export function isChild(a: any): a is Child {
   return (
@@ -437,7 +508,7 @@ export function isChild(a: any): a is Child {
   );
 }
 
-class TextComponent extends Component<{}> {
+class TextComponent extends Component<{}, {}> {
   constructor(private t: Showable) {
     super();
   }
@@ -453,12 +524,12 @@ class TextComponent extends Component<{}> {
   }
 }
 
-export function text(showable: Showable): Component<{}> {
+export function text(showable: Showable): Component<{}, {}> {
   return new TextComponent(showable);
 }
 
-class ListComponent extends Component<any> {
-  components: Component<any>[];
+class ListComponent extends Component<any, any> {
+  components: Component<any, any>[];
   constructor(children: Child[]) {
     super();
     this.components = [];
@@ -478,23 +549,17 @@ class ListComponent extends Component<any> {
   }
 }
 
-export function toComponent<A>(child: Component<A>): Component<A>;
-export function toComponent<A>(child: Showable): Component<{}>;
-export function toComponent<A>(child: Behavior<Showable>): Component<{}>;
-export function toComponent<A>(child: () => Iterator<any>): Component<any>;
-export function toComponent<A>(child: Child[]): Component<{}>;
-export function toComponent<A>(child: Child<A>): Component<A>;
-export function toComponent<A>(child: Child): Component<any> {
+export function toComponent<A extends Child>(child: A): ToComponent<A> {
   if (isComponent(child)) {
-    return child;
+    return child as any;
   } else if (isBehavior(child)) {
-    return dynamic(child).mapTo({});
+    return dynamic(child).mapTo({}) as any;
   } else if (isGeneratorFunction(child)) {
     return go(<any>child);
   } else if (isShowable(child)) {
-    return text(child);
+    return text(child) as any;
   } else if (Array.isArray(child)) {
-    return new ListComponent(child);
+    return new ListComponent(child) as any;
   } else {
     throw "Child could not be converted to component";
   }
@@ -582,7 +647,7 @@ type ComponentStuff<A> = {
 
 class ComponentList<A, B> extends Component<{}, Behavior<B[]>> {
   constructor(
-    private compFn: (a: A) => Component<B>,
+    private compFn: (a: A) => Component<B, any>,
     private listB: Behavior<A[]>,
     private getKey: (a: A, index: number) => Showable
   ) {
@@ -605,12 +670,11 @@ class ComponentList<A, B> extends Component<{}, Behavior<B[]>> {
         if (stuff === undefined) {
           const destroy = sinkFuture<boolean>();
           const recorder = new DomRecorder(parentWrap);
-          const out = runComponent(
+          const out = this.compFn(a).run(
             recorder,
-            this.compFn(a),
             destroy.combine(listDestroyed)
           );
-          stuff = { elms: recorder.elms, out, destroy };
+          stuff = { elms: recorder.elms, out: out.explicit, destroy };
         } else {
           for (const elm of stuff.elms) {
             parentWrap.appendChild(elm);

@@ -44,38 +44,38 @@ describe("dom-builder", () => {
     });
     it("passes explicit child output through", () => {
       const c = div(button({ output: { buttonClick: "click" } }));
-      const { out } = testComponent(c);
-      assert(isStream(out.buttonClick));
+      const { out, explicit } = testComponent(c);
+      assert(isStream(explicit.buttonClick));
     });
     it("merges output from list of elements", () => {
       const btn = button({ output: { fooClick: "click" } }, "Click me");
       const btn2 = button({ output: { barClick: "click" } }, "Click me");
       const c = div({}, [btn, btn2]);
       const { out, explicit } = testComponent(c);
-      assert(isStream(out.fooClick));
-      assert(isStream(out.barClick));
+      assert(isStream(explicit.fooClick));
+      assert(isStream(explicit.barClick));
     });
     it("merges output from list of elements alongside strings", () => {
       const btn = button({ output: { fooClick: "click" } }, "Click me");
       const btn2 = button({ output: { barClick: "click" } }, "Click me");
       const c = div({}, [btn, "foo", btn2]);
-      const { out } = testComponent(c);
-      assert(isStream(out.fooClick));
-      assert(isStream(out.barClick));
+      const { explicit } = testComponent(c);
+      assert(isStream(explicit.fooClick));
+      assert(isStream(explicit.barClick));
     });
     it("merges own output with explicit output in child array", () => {
       const btn = button({ output: { fooClick: "click" } }, "Click me");
       const myDiv = div({ output: { divClick: "click" } }, [btn]);
-      const { out } = testComponent(myDiv);
-      assert(isStream(out.divClick));
-      assert(isStream(out.fooClick));
+      const { explicit } = testComponent(myDiv);
+      assert(isStream(explicit.divClick));
+      assert(isStream(explicit.fooClick));
     });
     it("merges all output from non-array child", () => {
       const child = Component.of({ bar: 1 }).output({ bar: "bar" });
       const myDiv = div({ output: { divClick: "click" } }, child);
-      const { out } = testComponent(myDiv);
-      assert(isStream(out.divClick));
-      assert.strictEqual(out.bar, 1);
+      const { explicit } = testComponent(myDiv);
+      assert(isStream(explicit.divClick));
+      assert.strictEqual(explicit.bar, 1);
     });
   });
 
@@ -102,7 +102,7 @@ describe("dom-builder", () => {
       const myElement = element("span", {
         streams: { customClick: streamDescription("click", id) }
       });
-      const myCreatedElement: Component<any> = myElement({ streams: {} });
+      const myCreatedElement = myElement({ streams: {} });
       const { out } = testComponent(myCreatedElement);
       assert.isTrue(isStream(out.customClick));
     });

@@ -47,7 +47,7 @@ function* counterModel(
   return { count, deleteS };
 }
 
-function counterView({ count }: CounterModelOut): Component<CounterModelInput> {
+function counterView({ count }: CounterModelOut) {
   return li([
     "Counter ",
     count,
