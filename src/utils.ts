@@ -45,6 +45,8 @@ export function mergeObj<A, B>(a: A, b: B): A & B {
   return <any>c;
 }
 
+export type Merge<T> = { [K in keyof T]: T[K] };
+
 export function mergeDeep(...objects: any[]): any {
   // .length of function is 2
   const result: any = {};

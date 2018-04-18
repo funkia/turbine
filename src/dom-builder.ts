@@ -18,14 +18,14 @@ import {
   isChild,
   toComponent,
   Out,
-  emptyComponent
+  emptyComponent,
+  ToComponent,
+  ComponentExplicitOutput,
+  Remap
 } from "./component";
-import { id, mergeDeep, assign, copyRemaps } from "./utils";
+import { id, mergeDeep, assign, copyRemaps, Merge } from "./utils";
 
 export type EventName = keyof HTMLElementEventMap;
-
-export type Cp<A> = Component<A>;
-export type Ch<A> = Child<A>;
 
 export type StreamDescription<A> = [EventName, (evt: any) => A, A];
 
@@ -125,10 +125,14 @@ export type DefaultOutput = {
   [E in EventName]: Stream<HTMLElementEventMap[E]>
 };
 
-export type InitialOutput<P extends InitialProperties> = OutputStream<
-  (P & { streams: StreamDescriptions })["streams"]
-> &
-  BehaviorOutput<(P & { behaviors: BehaviorDescriptions })["behaviors"]> &
+export type InitialOutput<
+  P extends InitialProperties
+> = (P["streams"] extends StreamDescriptions
+  ? OutputStream<P["streams"]>
+  : {}) &
+  (P["behaviors"] extends BehaviorDescriptions
+    ? BehaviorOutput<P["behaviors"]>
+    : {}) &
   DefaultOutput;
 
 // An array of names of all DOM events
@@ -262,10 +266,7 @@ const propKeywords = new Set([
   "streams",
   "output"
 ]);
-export function handleProps<A>(
-  props: Properties<A> & { output?: OutputNames<A> },
-  elm: HTMLElement
-): A {
+export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
   let output: any = {};
 
   let attrs = Object.assign({}, props.attrs);
@@ -336,7 +337,7 @@ export function handleProps<A>(
 class DomComponent<O, P, A> extends Component<O & P, A & P> {
   constructor(
     private tagName: string,
-    private props: Properties<A> & { output?: OutputNames<A> },
+    private props: Properties<A>,
     private child?: Component<P, any>
   ) {
     super();
@@ -374,123 +375,37 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
   }
 }
 
-export type OutputNames<A> = {
-  [name: string]: keyof A;
+export type Properties<A> = InitialProperties & {
+  output?: Record<string, keyof A>;
 };
 
-export type Properties<A> = InitialProperties;
+type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
+  ToComponent<Ch>
+>;
 
-export type PropsOutput<A, O extends OutputNames<A>> = {
-  output?: O;
-} & InitialProperties;
-
-export type OutputRenamed<A, B extends OutputNames<A>> = {
-  [N in keyof B]: A[B[N]]
-} &
-  A;
-
-export type ChArr1<A> = [Ch<A>];
-export type ChArr2<A, B> = [Ch<A>, Ch<B>];
-export type ChArr3<A, B, C> = [Ch<A>, Ch<B>, Ch<C>];
-export type ChArr4<A, B, C, D> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>];
-export type ChArr5<A, B, C, D, E> = [Ch<A>, Ch<B>, Ch<C>, Ch<D>, Ch<E>];
-export type ChArr6<A, B, C, D, E, F> = [
-  Ch<A>,
-  Ch<B>,
-  Ch<C>,
-  Ch<D>,
-  Ch<E>,
-  Ch<F>
-];
-export type ChArr7<A, B, C, D, E, F, G> = [
-  Ch<A>,
-  Ch<B>,
-  Ch<C>,
-  Ch<D>,
-  Ch<E>,
-  Ch<F>,
-  Ch<G>
-];
-export type ChArr8<A, B, C, D, E, F, G, H> = [
-  Ch<A>,
-  Ch<B>,
-  Ch<C>,
-  Ch<D>,
-  Ch<E>,
-  Ch<F>,
-  Ch<G>,
-  Ch<H>
-];
-export type ChArr9<A, B, C, D, E, F, G, H, I> = [
-  Ch<A>,
-  Ch<B>,
-  Ch<C>,
-  Ch<D>,
-  Ch<E>,
-  Ch<F>,
-  Ch<G>,
-  Ch<H>,
-  Ch<I>
-];
-
-export type Generator = IterableIterator<any>;
-// `A` is the parents output
-export type ElementCreator<A> = {
-  (): Cp<A>;
-  // We cannot know what a generator function outputs
-  (generator: Generator): Cp<any>;
-  <O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    generator: Generator
-  ): Cp<any>;
-  // Properties are given
-  <B, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr1<B>
-  ): Cp<B & OutputRenamed<A, O>>;
-  <B, C, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr2<B, C>
-  ): Cp<B & C & OutputRenamed<A, O>>;
-  <B, C, D, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr3<B, C, D>
-  ): Cp<B & C & D & OutputRenamed<A, O>>;
-  <B, C, D, E, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr4<B, C, D, E>
-  ): Cp<B & C & D & E & OutputRenamed<A, O>>;
-  <B, C, D, E, F, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr5<B, C, D, E, F>
-  ): Cp<B & C & D & E & F & OutputRenamed<A, O>>;
-  <B, C, D, E, F, G, O extends OutputNames<A> = {}>(
-    props: PropsOutput<A, O>,
-    child?: ChArr6<B, C, D, E, F, G>
-  ): Cp<B & C & D & E & F & G & OutputRenamed<A, O>>;
-  <O extends OutputNames<A>, B>(props: PropsOutput<A, O>, child?: Ch<B>): Cp<
-    B & OutputRenamed<A, O>
+// `O` is the parents output
+export type ElementCreator<O> = {
+  (): Component<{}, O>;
+  // Only children
+  <Ch extends Child>(child: Ch): Component<ChildExplicitOutput<Ch>, O>;
+  // Only props
+  // `output` is given
+  <OP extends Record<string, keyof O>>(
+    props: InitialProperties & { output: OP }
+  ): Component<Remap<O, OP>, Remap<O, OP>>;
+  // `output` is not given
+  (props: InitialProperties): Component<{}, O>;
+  // Props and children
+  // `output` is given
+  <OP extends Record<string, keyof O>, Ch extends Child>(
+    props: InitialProperties & { output: OP },
+    child: Ch
+  ): Component<Merge<Remap<O, OP> & ChildExplicitOutput<Ch>>, Remap<O, OP>>;
+  // `output` is not given
+  <Ch extends Child>(props: Properties<O>, child: Ch): Component<
+    ChildExplicitOutput<Ch>,
+    O
   >;
-  <B>(props: Properties<A>, child: Child<B>): Cp<B>;
-  // Properties aren't given
-  <B, C>(child: ChArr2<B, C>): Cp<A & B & C>;
-  <B, C, D>(child: ChArr3<B, C, D>): Cp<A & B & C & D>;
-  <B, C, D, E>(child: ChArr4<B, C, D, E>): Cp<A & B & C & D & E>;
-  <B, C, D, E, F>(child: ChArr5<B, C, D, E, F>): Cp<A & B & C & D & E & F>;
-  <B, C, D, E, F, G>(child: ChArr6<B, C, D, E, F, G>): Cp<
-    A & B & C & D & E & F & G
-  >;
-  <B, C, D, E, F, G, H>(child: ChArr7<B, C, D, E, F, G, H>): Cp<
-    A & B & C & D & E & F & G & H
-  >;
-  <B, C, D, E, F, G, H, I>(child: ChArr8<B, C, D, E, F, G, H, I>): Cp<
-    A & B & C & D & E & F & G & H & I
-  >;
-  <B, C, D, E, F, G, H, I, J>(child: ChArr9<B, C, D, E, F, G, H, I, J>): Cp<
-    A & B & C & D & E & F & G & H & I & J
-  >;
-  <B>(child: Ch<B>): Cp<A & B>;
-  (props: Properties<A>): Cp<A>;
 };
 
 export function element<P extends InitialProperties>(
@@ -501,7 +416,7 @@ export function element<P extends InitialProperties>(
   function createElement(
     newPropsOrChildren?: InitialProperties | Child,
     childOrUndefined?: Child
-  ): Component<InitialOutput<P>> {
+  ): Component<any, any> {
     const finalProps =
       newPropsOrChildren !== undefined && !isChild(newPropsOrChildren)
         ? mergeDeep(mergedProps, newPropsOrChildren)
