@@ -36,10 +36,10 @@ export function assign<A, B>(a: A, b: B): A & B {
 
 export function mergeObj<A, B>(a: A, b: B): A & B {
   const c: { [key: string]: any } = {};
-  for (const key of Object.keys(a) as (keyof A)[]) {
+  for (const key of Object.keys(a) as (keyof A & string)[]) {
     c[key] = a[key];
   }
-  for (const key of Object.keys(b) as (keyof B)[]) {
+  for (const key of Object.keys(b) as (keyof B & string)[]) {
     c[key] = b[key];
   }
   return <any>c;
