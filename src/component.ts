@@ -1,4 +1,4 @@
-import { sequence, Monad, monad, go, fgo } from "@funkia/jabz";
+import { Monad, monad, go, fgo } from "@funkia/jabz";
 import {
   Now,
   Behavior,
@@ -10,8 +10,7 @@ import {
   Future,
   sinkFuture
 } from "@funkia/hareactive";
-
-import { mergeObj, id, copyRemaps, fst, snd, Merge } from "./utils";
+import { mergeObj, id, copyRemaps, Merge } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -402,9 +401,9 @@ export function viewObserve<A>(
         }
       }
       pull();
-    },
-    () => {
-      isPulling = false;
+      return () => {
+        isPulling = false;
+      };
     },
     behavior
   );
