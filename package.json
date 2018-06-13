@@ -66,7 +66,7 @@
     "karma-sauce-launcher": "^1.2.0",
     "karma-typescript": "^3.0.12",
     "mocha": "^5.2.0",
-    "np": "^3.0.1",
+    "np": "^3.0.4",
     "prettier": "^1.13.3",
     "ts-loader": "^4.3.0",
     "tslint": "^5.10.0",
