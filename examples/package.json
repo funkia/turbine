@@ -7,6 +7,7 @@
     "counters": "webpack-dev-server --content-base counters counters/src/index.ts",
     "continuous-time": "webpack-dev-server --content-base continuous-time continuous-time/index.ts",
     "fahrenheit-celsius": "webpack-dev-server --content-base fahrenheit-celsius fahrenheit-celsius/index.ts",
+    "hello-world": "webpack-dev-server --content-base hello-world hello-world/index.ts",
     "simple": "webpack-dev-server --content-base simple simple/index.ts",
     "todo": "webpack-dev-server --content-base todo todo/src/index.ts",
     "zip-codes": "webpack-dev-server --content-base zip-codes zip-codes/index.ts",
