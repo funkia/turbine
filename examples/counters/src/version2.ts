@@ -1,6 +1,5 @@
-import { combine } from "@funkia/jabz";
-import { Behavior, sample, scan, Stream } from "@funkia/hareactive";
-import { elements, modelView, Component } from "../../../src";
+import { Behavior, sample, scan, Stream, combine } from "@funkia/hareactive";
+import { elements, modelView, Component, fgo } from "../../../src";
 const { br, div, button } = elements;
 
 type CounterModelInput = {
@@ -12,13 +11,16 @@ type CounterViewInput = {
   count: Behavior<number>;
 };
 
-function* counterModel({ incrementClick, decrementClick }: CounterModelInput) {
+const counterModel = fgo(function*({
+  incrementClick,
+  decrementClick
+}: CounterModelInput) {
   const increment = incrementClick.mapTo(1);
   const decrement = decrementClick.mapTo(-1);
   const changes = combine(increment, decrement);
   const count = yield sample(scan((n, m) => n + m, 0, changes));
   return { count };
-}
+});
 
 const counterView = ({ count }: CounterViewInput) =>
   div([

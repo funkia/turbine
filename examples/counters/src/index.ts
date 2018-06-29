@@ -1,32 +1,19 @@
-import { go, lift } from "@funkia/jabz";
-import {
-  Behavior,
-  combine,
-  map,
-  Now,
-  sample,
-  scan,
-  scanS,
-  stepper,
-  Stream,
-  switchStream
-} from "@funkia/hareactive";
-
+import { Behavior, combine, sample, stepper, Stream } from "@funkia/hareactive";
+import { go } from "@funkia/jabz";
 import {
   Component,
   dynamic,
   elements,
-  list,
-  loop,
+  fgo,
   modelView,
   runComponent
 } from "../../../src";
-const { ul, li, p, br, button, h1, div } = elements;
-
 import { main1 } from "./version1";
 import { main2 } from "./version2";
 import { main3 } from "./version3";
 import { counterList as main4 } from "./version4";
+
+const { ul, li, p, br, button, h1, div } = elements;
 
 const numberToApp = {
   1: main1,
@@ -60,12 +47,12 @@ type FromModel = {
 };
 
 const versionSelector = modelView<FromModel, FromView>(
-  function*({ selectVersion }) {
+  fgo(function*({ selectVersion }) {
     const selected = yield sample(stepper("1", selectVersion));
     return { selected };
-  },
-  function({ selected }) {
-    return div({ class: "btn-group" }, [
+  }),
+  ({ selected }) =>
+    div({ class: "btn-group" }, [
       selectorButton("1", selected).output({ select1: "select" }),
       selectorButton("2", selected).output({ select2: "select" }),
       selectorButton("3", selected).output({ select3: "select" }),
@@ -74,8 +61,7 @@ const versionSelector = modelView<FromModel, FromView>(
       .map((o) => ({
         selectVersion: combine(o.select1, o.select2, o.select3, o.select4)
       }))
-      .output({ selectVersion: "selectVersion" });
-  }
+      .output({ selectVersion: "selectVersion" })
 );
 
 const main = go(function*() {

@@ -1,20 +1,21 @@
-import { combine, map } from "@funkia/jabz";
 import {
-  Component,
-  elements,
-  modelView,
-  list,
-  ModelReturn
-} from "../../../src";
-import {
-  Now,
   Behavior,
+  combine,
+  map,
+  Now,
   sample,
   scan,
   scanS,
-  Stream,
-  switchStream
+  Stream
 } from "@funkia/hareactive";
+import {
+  Component,
+  elements,
+  fgo,
+  list,
+  ModelReturn,
+  modelView
+} from "../../../src";
 const { br, div, button, h1, p, ul } = elements;
 
 const add = (n: number, m: number) => n + m;
@@ -33,7 +34,7 @@ type CounterOutput = {
   count: Behavior<number>;
 };
 
-function* counterModel({
+const counterModel = fgo(function*({
   incrementClick,
   decrementClick
 }: CounterModelInput): ModelReturn<CounterViewInput> {
@@ -41,7 +42,7 @@ function* counterModel({
   const decrement = decrementClick.mapTo(-1);
   const count = yield sample(scan(add, 0, combine(increment, decrement)));
   return { count };
-}
+});
 
 const counterView = ({ count }: CounterViewInput) =>
   div([
@@ -71,7 +72,7 @@ type ModelInput = {
   listOut: Behavior<CounterOutput[]>;
 };
 
-function* counterListModel({
+const counterListModel = fgo(function* ({
   addCounter,
   listOut
 }: ModelInput): Iterator<Now<any>> {
@@ -84,23 +85,22 @@ function* counterListModel({
   );
   const counterIds = yield sample(scan(apply, [0], appendCounterFn));
   return { counterIds };
-}
+});
 
-function* counterListView({
+const counterListView = ({
   sum,
   counterIds
-}: ViewInput): Iterator<Component<any>> {
-  yield h1("Counters");
-  const { click: addCounter } = yield button(
-    { class: "btn btn-primary" },
+}: ViewInput) => [
+  h1("Counters"),
+  button(
+    { class: "btn btn-primary", output: {addCounter: "click"} },
     "Add counter"
-  );
-  yield br;
-  const { listOut } = yield ul(
+  ),
+  br,
+  ul(
     list(counter, counterIds).output((o) => ({ listOut: o }))
-  );
-  return { addCounter, listOut };
-}
+  )
+];
 
 const counterList = modelView(counterListModel, counterListView);
 
