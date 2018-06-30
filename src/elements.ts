@@ -22,7 +22,8 @@ function getTargetChecked(event: any): boolean {
   return event.target.checked;
 }
 
-export const checkbox = element("input[type=checkbox]", {
+export const checkbox = element("input", {
+  attrs: { type: "checkbox" },
   behaviors: {
     checked: behaviorDescription(
       "change",

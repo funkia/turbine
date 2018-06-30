@@ -2,7 +2,7 @@ import {
   Stream, snapshot, changes, combine, Behavior, stepper, sample
 } from "@funkia/hareactive";
 
-import { elements, modelView } from "../../../src";
+import { elements, modelView, fgo } from "../../../src";
 const { input, span } = elements;
 
 const KEYCODE_ENTER = 13;
@@ -35,4 +35,4 @@ const view = ({ clearedValue }) => input({
   }
 }).map((output) => ({ enterPressed: output.keyup.filter(isEnterKey), ...output }));
 
-export default modelView<Out, any>(model, view)();
+export default modelView<Out, any>(fgo(model), view)();

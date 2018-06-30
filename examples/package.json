@@ -8,7 +8,7 @@
     "continuous-time": "parcel continuous-time/index.html",
     "fahrenheit-celsius": "parcel fahrenheit-celsius/index.html",
     "simple": "parcel simple/index.html",
-    "todo": "parcel todo/src/index.ts",
+    "todo": "parcel todo/index.html",
     "zip-codes": "parcel zip-codes/index.html",
     "drag": "parcel drag/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
@@ -16,7 +16,7 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "@funkia/rudolph": "0.0.4",
+    "@funkia/rudolph": "0.0.5",
     "todomvc-app-css": "^2.1.0"
   },
   "devDependencies": {

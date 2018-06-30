@@ -38,7 +38,7 @@ import item, {
 import todoFooter, { Params as FooterParams } from "./TodoFooter";
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 
-const isEmpty = (list: any[]) => list.length === 0;
+const isEmpty = (array: any[]) => array.length === 0;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
 const includes = <A>(a: A, list: A[]) => list.indexOf(a) !== -1;
 
@@ -72,8 +72,9 @@ type ListModel<A, B> = {
   itemToKey: (a: A) => B;
   initial: A[];
 };
+
 // This model handles the modification of the list of Todos
-function ListModel<A, B>({
+function listModel<A, B>({
   prependItemS,
   removeKeyListS,
   itemToKey,
@@ -112,7 +113,7 @@ function* model({ addItem, toggleAll, clearCompleted, itemOutputs }: FromView) {
 
   const clearCompletedIdS = snapshot(completedIds, clearCompleted);
   const removeListS = combine(deleteS.map((a) => [a]), clearCompletedIdS);
-  const todoNames = yield ListModel({
+  const todoNames = yield listModel({
     prependItemS: newTodoS,
     removeKeyListS: removeListS,
     itemToKey: getItemId,
@@ -174,7 +175,13 @@ function view(
           ul(
             { class: "todo-list" },
             list(
-              (n) => item({ toggleAll, router, ...n }),
+              (n) =>
+                item({ toggleAll, router, ...n }).output({
+                  completed: "completed",
+                  destroyItemId: "destroyItemId",
+                  id: "id"
+                  completed: "completed"
+                }),
               todoNames,
               (o) => o.id
             ).output((o) => ({ itemOutputs: o }))
@@ -194,4 +201,4 @@ function view(
   ];
 }
 
-export const app = modelView<ToView, FromView, Router>(model, view);
+export const app = modelView<ToView, FromView, Router>(fgo(model), view);
