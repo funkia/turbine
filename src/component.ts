@@ -307,16 +307,19 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-class ModelViewComponent<A extends ReactivesObject> extends Component<{}, A> {
+class ModelViewComponent<M extends ReactivesObject, V> extends Component<
+  {},
+  M
+> {
   constructor(
     private args: any[],
-    private model: (...as: any[]) => Now<A>,
-    private view: (...as: any[]) => Component<A, any>,
+    private model: (...as: any[]) => Now<M>,
+    private view: (...as: any[]) => Child<V>,
     private placeholderNames?: string[]
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, A> {
+  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, M> {
     const { view, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
@@ -329,7 +332,7 @@ class ModelViewComponent<A extends ReactivesObject> extends Component<{}, A> {
         }
       }
     }
-    const { output: viewOutput } = view(placeholders, ...args).run(
+    const { output: viewOutput } = toComponent(view(placeholders, ...args)).run(
       parent,
       destroyed
     );
@@ -350,12 +353,8 @@ class ModelViewComponent<A extends ReactivesObject> extends Component<{}, A> {
 export type ModelReturn<M> = Now<M> | Iterator<any>;
 export type Model<V, M> = (v: V) => ModelReturn<M>;
 export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
-export type View<M, V> =
-  | ((m: M) => Child<V>)
-  | ((m: M) => Iterator<Component<any, any>>);
-export type View1<M, V, A> =
-  | ((m: M, a: A) => Child<V>)
-  | ((m: M, a: A) => Iterator<Component<any, any>>);
+export type View<M, V> = (m: M) => Child<V>;
+export type View1<M, V, A> = (m: M, a: A) => Child<V>;
 
 export function modelView<M extends ReactivesObject, V>(
   model: Model<V, M>,
@@ -372,12 +371,9 @@ export function modelView<M extends ReactivesObject, V>(
   view: any,
   toViewReactiveNames?: string[]
 ): (...args: any[]) => Component<{}, M> {
-  const m = isGeneratorFunction<V, any>(model) ? fgo(model) : model;
-  const v: any = isGeneratorFunction<any, any>(view)
-    ? fgo(view)
-    : (...as: any[]) => toComponent(view(...as));
+  const m: any = isGeneratorFunction(model) ? fgo(model) : model;
   return (...args: any[]) =>
-    new ModelViewComponent<M>(args, m, v, toViewReactiveNames);
+    new ModelViewComponent<M, V>(args, m, view, toViewReactiveNames);
 }
 
 export function viewObserve<A>(
