@@ -43,7 +43,7 @@ making it even better.
 
 ### Email validator
 
-[See the example live here](https://www.webpackbin.com/bins/-KkMDZ7CT-2FIx0SqEJd).
+[See the example live here](https://codesandbox.io/s/jv74x1jny3?module=%2Fsrc%2Findex.js).
 
 ```js
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
@@ -63,7 +63,7 @@ runComponent("#mount", main);
 
 ### Counter
 
-[See the example live here](https://www.webpackbin.com/bins/-KkyWM1zctrimQqzrScj).
+[See the example live here](https://codesandbox.io/s/k9y0po3vv3?module=%2Fsrc%2Findex.js).
 
 ```js
 const counterModel = fgo(function* ({ incrementClick, decrementClick }) {
