@@ -443,7 +443,9 @@ export interface ChildList extends Array<CE> {}
 /**
  * Takes a component type and returns the explicit output of the component.
  */
-export type ComponentExplicitOutput<C> = C extends Component<infer O, any> ? O : never;
+export type ComponentExplicitOutput<C> = C extends Component<infer O, any>
+  ? O
+  : never;
 
 /**
  * Takes a component type and returns the output of the component.
@@ -486,16 +488,6 @@ export type TC<A> = A extends Component<infer O, any>
     : A extends Behavior<Showable> ? Component<{}, {}> : Component<any, any>;
 
 export type ToComponent<A> = A extends Child[] ? ArrayToComponent<A> : TC<A>;
-
-type Arr = [Component<{ a: number }, {}>, string];
-type Arr2 = [
-  Component<{ a: number }, {}>,
-  string,
-  Component<{ b: Behavior<number> }, {}>
-];
-type R = ToComponent<Component<{ a: number }, {}>>;
-type CS = ToComponent<Arr>;
-type CS2 = ToComponent<Arr2>;
 
 export function isChild(a: any): a is Child {
   return (

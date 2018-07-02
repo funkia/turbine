@@ -125,15 +125,13 @@ export type DefaultOutput = {
   [E in EventName]: Stream<HTMLElementEventMap[E]>
 };
 
-export type InitialOutput<
-  P extends InitialProperties
-> = (P["streams"] extends StreamDescriptions
-  ? OutputStream<P["streams"]>
-  : {}) &
-  (P["behaviors"] extends BehaviorDescriptions
-    ? BehaviorOutput<P["behaviors"]>
-    : {}) &
-  DefaultOutput;
+export type InitialOutput<P extends InitialProperties> = Merge<
+  (P["streams"] extends StreamDescriptions ? OutputStream<P["streams"]> : {}) &
+    (P["behaviors"] extends BehaviorDescriptions
+      ? BehaviorOutput<P["behaviors"]>
+      : {}) &
+    DefaultOutput
+>;
 
 // An array of names of all DOM events
 export const allDomEvents: EventName[] = <any>Object.getOwnPropertyNames(
@@ -208,10 +206,9 @@ function handleCustom(
       if (isStreamActions) {
         actionTrigger.subscribe((value) => actionDefinition(elm, value));
       } else {
-        viewObserve(
-          (value) => actionDefinition(elm, value),
-          <any>actionTrigger
-        );
+        viewObserve((value) => actionDefinition(elm, value), <any>(
+          actionTrigger
+        ));
       }
     }
   }
@@ -266,6 +263,7 @@ const propKeywords = new Set([
   "streams",
   "output"
 ]);
+
 export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
   let output: any = {};
 
@@ -387,7 +385,10 @@ type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
 export type ElementCreator<O> = {
   (): Component<{}, O>;
   // Only children
-  <Ch extends Child>(child: Ch): Component<ChildExplicitOutput<Ch>, O>;
+  <Ch extends Child>(child: Ch): Component<
+    ChildExplicitOutput<Ch>,
+    ChildExplicitOutput<Ch> & O
+  >;
   // Only props
   // `output` is given
   <OP extends Record<string, keyof O>>(
