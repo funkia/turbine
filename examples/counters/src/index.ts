@@ -12,6 +12,7 @@ import { main1 } from "./version1";
 import { main2 } from "./version2";
 import { main3 } from "./version3";
 import { counterList as main4 } from "./version4";
+import main5 from "./version5";
 
 const { ul, li, p, br, button, h1, div } = elements;
 
@@ -19,7 +20,8 @@ const numberToApp = {
   1: main1,
   2: main2,
   3: main3,
-  4: main4
+  4: main4,
+  5: main5
 };
 
 type AppId = keyof (typeof numberToApp);
@@ -56,10 +58,17 @@ const versionSelector = modelView<FromModel, FromView>(
       selectorButton("1", selected).output({ select1: "select" }),
       selectorButton("2", selected).output({ select2: "select" }),
       selectorButton("3", selected).output({ select3: "select" }),
-      selectorButton("4", selected).output({ select4: "select" })
+      selectorButton("4", selected).output({ select4: "select" }),
+      selectorButton("5", selected).output({ select5: "select" })
     ])
       .map((o) => ({
-        selectVersion: combine(o.select1, o.select2, o.select3, o.select4)
+        selectVersion: combine(
+          o.select1,
+          o.select2,
+          o.select3,
+          o.select4,
+          o.select5
+        )
       }))
       .output({ selectVersion: "selectVersion" })
 );
