@@ -11,7 +11,9 @@
     "strict": true,
     "strictPropertyInitialization": false,
     "noStrictGenericChecks": true,
-    "lib": ["dom", "es2017"]
+    "lib": ["dom", "es2017"],
+    "jsxFactory": "createElement",
+    "jsx": "react"
   },
   "include": ["src/**/*", "test/**/*", "examples/**/*"],
   "exclude": ["node_modules"]
