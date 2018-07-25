@@ -17,9 +17,9 @@
   "license": "MIT",
   "dependencies": {
     "@funkia/rudolph": "0.0.5",
-    "todomvc-app-css": "^2.1.0"
+    "todomvc-app-css": "^2.1.2"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.9.3"
+    "parcel-bundler": "^1.9.7"
   }
 }
