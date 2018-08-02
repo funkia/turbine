@@ -387,7 +387,7 @@ export function viewObserve<A>(
       isPulling = true;
       let lastVal: A;
       function pull(): void {
-        const newVal = behavior.pull();
+        const newVal = behavior.at();
         if (lastVal !== newVal) {
           lastVal = newVal;
           update(newVal);

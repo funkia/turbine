@@ -9,7 +9,7 @@ import {
   sinkBehavior,
   placeholder,
   Now,
-  publish,
+  push,
   fromFunction,
   Future
 } from "@funkia/hareactive";
@@ -325,7 +325,7 @@ describe("list", () => {
     const { dom } = testComponent(list(createSpan, listB));
     expect(dom).to.have.length(3);
     const elements = dom.childNodes;
-    publish(["!", "there", "Hello "], listB);
+    push(["!", "there", "Hello "], listB);
     expect(dom).to.have.length(3);
     expect(dom).to.contain(elements[0]);
     expect(dom).to.contain(elements[1]);
@@ -338,7 +338,7 @@ describe("list", () => {
     const toBeRemoved = dom.childNodes[1];
     expect(dom).to.have.length(3);
     expect(dom).to.have.text("Hello there!");
-    publish(["Hello ", "!"], listB);
+    push(["Hello ", "!"], listB);
     expect(dom).to.have.length(2);
     expect(dom).to.not.contain(toBeRemoved);
   });

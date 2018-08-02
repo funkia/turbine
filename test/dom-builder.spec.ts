@@ -8,9 +8,8 @@ import {
   fromFunction,
   isBehavior,
   isStream,
-  publish,
-  sinkBehavior,
-  Stream
+  push,
+  sinkBehavior
 } from "@funkia/hareactive";
 
 import { id } from "../src/utils";
@@ -163,9 +162,9 @@ describe("dom-builder", () => {
       );
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.text("0");
-      publish(1, numberB);
+      push(1, numberB);
       expect(spanElm).to.have.text("1");
-      publish(2, numberB);
+      push(2, numberB);
       expect(spanElm).to.have.text("2");
     });
     it("calls function with element and value from pulling behavior", () => {
@@ -256,7 +255,7 @@ describe("dom-builder", () => {
       const { dom } = testComponent(spanC);
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.attribute("style", "background-color: red;");
-      publish("blue", colorB);
+      push("blue", colorB);
       expect(spanElm).to.have.attribute("style", "background-color: blue;");
     });
   });
@@ -274,7 +273,7 @@ describe("dom-builder", () => {
       const { dom } = testComponent(element("a", { attrs: { href: hrefB } })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("href", "/foo");
-      publish("/bar", hrefB);
+      push("/bar", hrefB);
       expect(aElm).to.have.attribute("href", "/bar");
     });
     it("sets boolean attributes correctly", () => {
@@ -291,9 +290,9 @@ describe("dom-builder", () => {
       );
       const aElm = dom.firstChild;
       expect(aElm).to.not.have.attribute("checked");
-      publish(true, checkedB);
+      push(true, checkedB);
       expect(aElm).to.have.attribute("checked", "");
-      publish(false, checkedB);
+      push(false, checkedB);
       expect(aElm).to.not.have.attribute("checked");
     });
     it("sets attributes from root", () => {
@@ -301,7 +300,7 @@ describe("dom-builder", () => {
       const { dom } = testComponent(element("a", { href: hrefB })());
       const aElm = dom.firstChild;
       expect(aElm).to.have.attribute("href", "/foo");
-      publish("/bar", hrefB);
+      push("/bar", hrefB);
       expect(aElm).to.have.attribute("href", "/bar");
     });
   });
@@ -321,7 +320,7 @@ describe("dom-builder", () => {
       );
       const aElm = <Element>dom.firstChild;
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
-      publish("<b>there</b>", htmlB);
+      push("<b>there</b>", htmlB);
       expect(aElm.innerHTML).to.equal("<b>there</b>");
     });
   });
@@ -438,7 +437,7 @@ describe("dom-builder", () => {
       const spanElm = dom.firstChild;
       expect(spanElm).to.have.class("foo");
       expect(spanElm).not.to.have.class("bar");
-      publish("bar", classB);
+      push("bar", classB);
       expect(spanElm).not.to.have.class("foo");
       expect(spanElm).to.have.class("bar");
     });
@@ -462,9 +461,9 @@ describe("dom-builder", () => {
       const { dom } = testComponent(span);
       const spanElm = dom.firstChild;
       expect(spanElm).not.to.have.class("foo");
-      publish(true, boolB);
+      push(true, boolB);
       expect(spanElm).to.have.class("foo");
-      publish(false, boolB);
+      push(false, boolB);
       expect(spanElm).not.to.have.class("foo");
     });
     it("adds classes based on strings in nested arrays", () => {
@@ -490,8 +489,8 @@ describe("dom-builder", () => {
       expect(spanElm).to.have.class("dap");
       expect(spanElm).not.to.have.class("buzz");
       expect(spanElm).not.to.have.class("dip");
-      publish("buzz", classB);
-      publish(true, boolB);
+      push("buzz", classB);
+      push(true, boolB);
       expect(spanElm).not.to.have.class("baz");
       expect(spanElm).to.have.class("buzz");
       expect(spanElm).to.have.class("dip");
