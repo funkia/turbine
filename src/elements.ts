@@ -18,6 +18,16 @@ export const input = element("input", {
   }
 });
 
+export const textarea = element("textarea", {
+  behaviors: {
+    inputValue: behaviorDescription(
+      "input",
+      (evt: any) => evt.target.value as string,
+      (elm: any) => elm.value as string
+    )
+  }
+});
+
 function getTargetChecked(event: any): boolean {
   return event.target.checked;
 }
@@ -131,7 +141,6 @@ export const option = element("option");
 export const output = element("output");
 export const progress = element("progress");
 export const select = element("select");
-export const textarea = element("textarea");
 export const details = element("details");
 export const menuitem = element("menuitem");
 export const summary = element("summary");
