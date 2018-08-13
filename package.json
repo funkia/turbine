@@ -47,7 +47,7 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "^0.2.0",
+    "@funkia/hareactive": "^0.2.1",
     "@types/chai": "^4.1.4",
     "@types/chai-dom": "0.0.6",
     "@types/mocha": "^5.2.5",
@@ -65,7 +65,7 @@
     "karma-typescript": "^3.0.13",
     "mocha": "^5.2.0",
     "np": "^3.0.4",
-    "prettier": "^1.14.0",
+    "prettier": "^1.14.2",
     "tslint": "^5.11.0",
     "typescript": "^3.0.1"
   },
