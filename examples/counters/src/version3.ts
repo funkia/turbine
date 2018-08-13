@@ -8,15 +8,8 @@ import {
   scanS,
   Stream
 } from "@funkia/hareactive";
-import {
-  Component,
-  elements,
-  fgo,
-  list,
-  ModelReturn,
-  modelView
-} from "../../../src";
-const { br, div, button, h1, p, ul } = elements;
+import { elements, fgo, list, ModelReturn, modelView } from "../../../src";
+const { br, div, button, h1, ul } = elements;
 
 const add = (n: number, m: number) => n + m;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -72,7 +65,7 @@ type ModelInput = {
   listOut: Behavior<CounterOutput[]>;
 };
 
-const counterListModel = fgo(function* ({
+const counterListModel = fgo(function*({
   addCounter,
   listOut
 }: ModelInput): Iterator<Now<any>> {
@@ -87,19 +80,14 @@ const counterListModel = fgo(function* ({
   return { counterIds };
 });
 
-const counterListView = ({
-  sum,
-  counterIds
-}: ViewInput) => [
+const counterListView = ({ sum, counterIds }: ViewInput) => [
   h1("Counters"),
   button(
-    { class: "btn btn-primary", output: {addCounter: "click"} },
+    { class: "btn btn-primary", output: { addCounter: "click" } },
     "Add counter"
   ),
   br,
-  ul(
-    list(counter, counterIds).output((o) => ({ listOut: o }))
-  )
+  ul(list(counter, counterIds).output((o) => ({ listOut: o })))
 ];
 
 const counterList = modelView(counterListModel, counterListView);

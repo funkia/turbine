@@ -13,21 +13,18 @@ import { main2 } from "./version2";
 import { main3 } from "./version3";
 import { counterList as main4 } from "./version4";
 
-const { ul, li, p, br, button, h1, div } = elements;
+const { button, div } = elements;
 
 const numberToApp = {
-  1: main1,
-  2: main2,
-  3: main3,
-  4: main4
+  "1": main1,
+  "2": main2,
+  "3": main3,
+  "4": main4
 };
 
 type AppId = keyof (typeof numberToApp);
 
-function selectorButton(
-  n: AppId,
-  selected: Behavior<AppId>
-): Component<{ select: Stream<AppId> }> {
+function selectorButton(n: AppId, selected: Behavior<AppId>) {
   return button(
     {
       class: ["btn btn-default", { active: selected.map((m) => n === m) }]
