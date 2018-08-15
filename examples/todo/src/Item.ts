@@ -15,7 +15,7 @@ import {
 } from "@funkia/hareactive";
 import { Router, routePath } from "@funkia/rudolph";
 
-import { Component, modelView, elements } from "../../../src";
+import { modelView, elements } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
 
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
@@ -113,7 +113,7 @@ const itemModel = fgo(function*(
   // Initialize task to restored values
   const taskName_ = yield sample(stepper(initial.taskName, nameChange));
   const isComplete: Behavior<boolean> = yield sample(
-    stepper(initial.isComplete, combine(toggleTodo, toggleAll).log())
+    stepper(initial.isComplete, combine(toggleTodo, toggleAll))
   );
 
   // Persist todo item

@@ -1,24 +1,11 @@
-import {
-  fromMaybe,
-  lift,
-  Maybe,
-  traverse,
-  fgo,
-  sequence,
-  IO
-} from "@funkia/jabz";
+import { lift, fgo, sequence, IO } from "@funkia/jabz";
 import {
   Behavior,
-  scan,
-  map,
   sample,
   snapshot,
   Stream,
   switchStream,
   combine,
-  Future,
-  switcher,
-  plan,
   performStream,
   changes,
   snapshotWith,
@@ -176,12 +163,15 @@ function view(
             { class: "todo-list" },
             list(
               (n) =>
-                item({ toggleAll, router, ...n }).output({
-                  completed: "completed",
-                  destroyItemId: "destroyItemId",
-                  id: "id"
-                  completed: "completed"
-                }),
+                output(
+                  {
+                    completed: "completed",
+                    destroyItemId: "destroyItemId",
+                    id: "id",
+                    completed: "completed"
+                  },
+                  item({ toggleAll, router, ...n })
+                ),
               todoNames,
               (o) => o.id
             ).output((o) => ({ itemOutputs: o }))

@@ -62,10 +62,9 @@ const model = function*(
 
 const view = ({}, { todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
-  const itemsLeft = moment((at) => {
-    console.log(at(todosB));
-    return at(todosB).filter((t) => console.log(t) || !at(t.completed)).length;
-  });
+  const itemsLeft = moment(
+    (at) => at(todosB).filter((t) => !at(t.completed)).length
+  );
   return footer({ class: ["footer", { hidden }] }, [
     span({ class: "todo-count" }, [
       strong(itemsLeft),
