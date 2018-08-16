@@ -25,7 +25,7 @@ export type Out = {
 };
 
 function* model({ enterPressed, value }: FromView) {
-  const clearedValue = yield sample(
+  const clearedValue: Behavior<string> = yield sample(
     stepper("", combine(enterPressed.mapTo(""), changes(value)))
   );
   const addItem = snapshot(clearedValue, enterPressed).filter(isValidValue);
@@ -43,9 +43,9 @@ const view = ({ clearedValue }) =>
       autocomplete: "off",
       placeholder: "What needs to be done?"
     }
-  }).map((output) => ({
-    enterPressed: output.keyup.filter(isEnterKey),
-    ...output
+  }).output((o) => ({
+    enterPressed: o.keyup.filter(isEnterKey),
+    value: o.value
   }));
 
 export default modelView(fgo(model), view)();

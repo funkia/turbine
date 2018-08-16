@@ -167,35 +167,32 @@ function itemView({
   focusInput,
   hidden
 }: ToView) {
-  return map(
-    (out) => ({ taskName, ...out }),
-    li(
-      {
-        class: ["todo", { completed: isComplete, editing: isEditing, hidden }]
-      },
-      [
-        div({ class: "view" }, [
-          checkbox({
-            class: "toggle",
-            output: { toggleTodo: "checkedChange" },
-            props: { checked: isComplete }
-          }),
-          label({ output: { startEditing: "dblclick" } }, taskName),
-          button({ class: "destroy", output: { deleteClicked: "click" } })
-        ]),
-        input({
-          class: "edit",
-          props: { value: taskName },
-          output: {
-            newNameInput: "input",
-            nameKeyup: "keyup",
-            nameBlur: "blur"
-          },
-          actions: { focus: focusInput }
-        })
-      ]
-    )
-  );
+  return li(
+    {
+      class: ["todo", { completed: isComplete, editing: isEditing, hidden }]
+    },
+    [
+      div({ class: "view" }, [
+        checkbox({
+          class: "toggle",
+          output: { toggleTodo: "checkedChange" },
+          props: { checked: isComplete }
+        }),
+        label({ output: { startEditing: "dblclick" } }, taskName),
+        button({ class: "destroy", output: { deleteClicked: "click" } })
+      ]),
+      input({
+        class: "edit",
+        props: { value: taskName },
+        output: {
+          newNameInput: "input",
+          nameKeyup: "keyup",
+          nameBlur: "blur"
+        },
+        actions: { focus: focusInput }
+      })
+    ]
+  ).output((o) => ({ taskName, ...o }));
 }
 
 export default modelView(itemModel, itemView);

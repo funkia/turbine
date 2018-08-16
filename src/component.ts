@@ -251,7 +251,7 @@ class LoopComponent<O, A> extends Component<O, A> {
   }
 }
 export function loop<O, A extends ReactivesObject>(
-  f: ((a: A) => Child<O, A>),
+  f: ((a: A) => Child<O>),
   placeholderNames?: string[]
 ): Component<O, A> {
   const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
@@ -332,10 +332,9 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
         }
       }
     }
-    const { output: viewOutput } = toComponent(view(placeholders, ...args)).run(
-      parent,
-      destroyed
-    );
+    const { explicit: viewOutput } = toComponent(
+      view(placeholders, ...args)
+    ).run(parent, destroyed);
     const helpfulViewOutput = addErrorHandler(
       model.name,
       view.name,
@@ -406,8 +405,8 @@ export function viewObserve<A>(
 }
 
 // Child element
-export type CE<O = any, A = any> =
-  | Component<O, A>
+export type CE<O = any> =
+  | Component<O, any>
   | Showable
   | Behavior<Showable>
   | ChildList;
@@ -416,7 +415,7 @@ export type CE<O = any, A = any> =
 // component or something that can be converted into a component. This
 // type is not recursive on tuples due to recursive type aliases being
 // impossible.
-export type Child<O = any, A = any> =
+export type Child<O = any> =
   | [CE]
   | [CE, CE]
   | [CE, CE, CE]
@@ -429,7 +428,7 @@ export type Child<O = any, A = any> =
   | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE]
   | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE]
   | [CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE, CE] // 12
-  | CE<O, A>;
+  | CE<O>;
 
 // A dummy interface is required since TypeScript doesn't handle
 // recursive type aliases
