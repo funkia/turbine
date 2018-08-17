@@ -40,11 +40,11 @@ const view = ({ fahren, celsius }: Model) =>
   div([
     div([
       label("Fahrenheit"),
-      input({ props: { value: fahren }, output: { fahrenInput: "input" } })
+      input({ value: fahren, output: { fahrenInput: "input" } })
     ]),
     div([
       label("Celsius"),
-      input({ props: { value: celsius }, output: { celsiusInput: "input" } })
+      input({ value: celsius, output: { celsiusInput: "input" } })
     ])
   ]).output((o) => ({
     fahrenChange: o.fahrenInput.map(getValue),

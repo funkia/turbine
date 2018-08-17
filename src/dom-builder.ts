@@ -264,19 +264,29 @@ const propKeywords = new Set([
   "output"
 ]);
 
+/**
+ * Set of things that should be handled as properties and not attributes.
+ */
+const isProperty = new Set(["value"]);
+
 export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
   let output: any = {};
 
   let attrs = Object.assign({}, props.attrs);
+  let properties = Object.assign({}, props.props);
   for (const [key, value] of Object.entries(props)) {
-    if (!propKeywords.has(key) && attrs[key] === undefined) {
-      attrs[key] = value;
+    if (!propKeywords.has(key)) {
+      if (isProperty.has(key)) {
+        properties[key] = value;
+      } else {
+        attrs[key] = value;
+      }
     }
   }
 
   handleObject(<any>props.style, elm, styleSetter);
   handleObject(attrs, elm, attributeSetter);
-  handleObject(props.props, elm, propertySetter);
+  handleObject(properties, elm, propertySetter);
   if (props.class !== undefined) {
     handleClass(props.class, elm);
   }

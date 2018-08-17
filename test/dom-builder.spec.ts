@@ -14,6 +14,7 @@ import {
 
 import { id } from "../src/utils";
 import { testComponent, element, Component, elements } from "../src";
+const E = elements;
 const { button, div } = elements;
 
 describe("dom-builder", () => {
@@ -322,6 +323,15 @@ describe("dom-builder", () => {
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
       push("<b>there</b>", htmlB);
       expect(aElm.innerHTML).to.equal("<b>there</b>");
+    });
+    it("sets input value", () => {
+      const b = sinkBehavior("foo");
+      const { dom } = testComponent(E.input({ value: b }));
+      const inputElm = <any>dom.firstChild;
+      assert.equal(inputElm.value, "foo");
+      inputElm.value = "foob"; // Simulate user input
+      b.newValue("bar");
+      assert.equal(inputElm.value, "bar");
     });
   });
 
