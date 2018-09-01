@@ -1,17 +1,20 @@
-import { map } from "@funkia/hareactive";
-import { runComponent, elements, go } from "../../src";
+import { map, Now } from "@funkia/hareactive";
+import { elements, modelView, runComponent } from "../../src";
 const { span, input, div } = elements;
 
 const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
 
-const main = go(function* () {
-  yield span("Please enter an email address: ");
-  const { inputValue: email } = yield input();
-  const isValid = map(isValidEmail, email);
-  yield div([
-    "The address is ", map((b) => b ? "valid" : "invalid", isValid)
-  ]);
-});
+const model = ({ email }) => {
+  const isValid = email.map(isValidEmail);
+  return Now.of({ isValid });
+};
 
-// `runComponent` should be the only impure function in application code
-runComponent("#mount", main);
+const view = ({ isValid }) => [
+  span("Please enter an email address: "),
+  input().output({ email: "inputValue" }),
+  div(["The address is ", map((b) => (b ? "valid" : "invalid"), isValid)])
+];
+
+const app = modelView(model, view);
+
+runComponent("#mount", app());
