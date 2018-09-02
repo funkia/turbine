@@ -631,23 +631,23 @@ type ComponentStuff<A> = {
   elms: Node[];
 };
 
-class ComponentList<A, B> extends Component<{}, Behavior<B[]>> {
+class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
   constructor(
-    private compFn: (a: A) => Component<B, any>,
+    private compFn: (a: A) => Component<O, any>,
     private listB: Behavior<A[]>,
     private getKey: (a: A, index: number) => Showable
   ) {
     super();
   }
-  run(parent: DomApi, listDestroyed: Future<boolean>): Out<{}, Behavior<B[]>> {
+  run(parent: DomApi, listDestroyed: Future<boolean>): Out<{}, Behavior<O[]>> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
-    const resultB = sinkBehavior<B[]>([]);
-    let keyToElm: Record<string, ComponentStuff<B>> = {};
+    const resultB = sinkBehavior<O[]>([]);
+    let keyToElm: Record<string, ComponentStuff<O>> = {};
     const parentWrap = new FixedDomPosition(parent, listDestroyed);
     this.listB.subscribe((newAs) => {
-      const newKeyToElm: Record<string, ComponentStuff<B>> = {};
-      const newArray: B[] = [];
+      const newKeyToElm: Record<string, ComponentStuff<O>> = {};
+      const newArray: O[] = [];
       // Re-add existing elements and new elements
       for (let i = 0; i < newAs.length; i++) {
         const a = newAs[i];
@@ -683,10 +683,10 @@ class ComponentList<A, B> extends Component<{}, Behavior<B[]>> {
   }
 }
 
-export function list<A, B>(
-  componentCreator: (a: A) => Component<any, B>,
+export function list<A, O>(
+  componentCreator: (a: A) => Component<O, any>,
   listB: Behavior<A[]>,
   getKey: (a: A, index: number) => Showable = id
-): Component<{}, Behavior<B[]>> {
+): Component<{}, Behavior<O[]>> {
   return new ComponentList(componentCreator, listB, getKey);
 }
