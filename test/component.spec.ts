@@ -161,6 +161,14 @@ describe("component specs", () => {
       b.replaceWith(H.sinkBehavior("Hello"));
       expect(dom).to.have.text("Hello");
     });
+    it("only outputs explicit output", () => {
+      const c = dynamic(
+        H.Behavior.of(Component.of({ foo: 1, bar: 2 }).output({ baz: "bar" }))
+      );
+      const { explicit, out } = testComponent(c);
+      assert.deepEqual(explicit, {});
+      assert.deepEqual(Object.keys(H.at(out)), ["baz"]);
+    });
   });
 
   describe("loop", () => {

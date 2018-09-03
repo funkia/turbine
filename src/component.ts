@@ -570,11 +570,11 @@ class FixedDomPosition implements DomApi {
   }
 }
 
-class DynamicComponent<A> extends Component<{}, Behavior<A>> {
-  constructor(private behavior: Behavior<Child<A>>) {
+class DynamicComponent<O> extends Component<{}, Behavior<O>> {
+  constructor(private behavior: Behavior<Child<O>>) {
     super();
   }
-  run(parent: DomApi, dynamicDestroyed: Future<boolean>): Out<{}, Behavior<A>> {
+  run(parent: DomApi, dynamicDestroyed: Future<boolean>): Out<{}, Behavior<O>> {
     let destroyPrevious: Future<boolean>;
     const parentWrap = new FixedDomPosition(parent, dynamicDestroyed);
 
@@ -583,26 +583,26 @@ class DynamicComponent<A> extends Component<{}, Behavior<A>> {
         destroyPrevious.resolve(true);
       }
       destroyPrevious = sinkFuture<boolean>();
-      const result = toComponent(child).run(
+      const { explicit } = toComponent(child).run(
         parentWrap,
         destroyPrevious.combine(dynamicDestroyed)
       );
-      return result.explicit;
+      return explicit;
     });
     // To activate behavior
-    viewObserve((v) => {}, output);
+    viewObserve(id, output);
 
     return { explicit: {}, output };
   }
 }
 
-export function dynamic<O, A>(
-  behavior: Behavior<Component<O, A>>
-): Component<{}, Behavior<A>>;
-export function dynamic<A>(behavior: Behavior<Child>): Component<{}, any>;
-export function dynamic<A>(
-  behavior: Behavior<Child<A>>
-): Component<{}, Behavior<A>> {
+export function dynamic<O>(
+  behavior: Behavior<Component<O, any>>
+): Component<{}, Behavior<O>>;
+export function dynamic(behavior: Behavior<Child>): Component<{}, {}>;
+export function dynamic<O>(
+  behavior: Behavior<Child<O>>
+): Component<{}, Behavior<O>> {
   return new DynamicComponent(behavior);
 }
 
