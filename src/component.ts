@@ -375,33 +375,25 @@ export function modelView<M extends ReactivesObject, V>(
     new ModelViewComponent<M, V>(args, m, view, toViewReactiveNames);
 }
 
+function pullOnFrame(pull: (t?: number) => void): () => void {
+  let isPulling = true;
+  function frame(): void {
+    if (isPulling) {
+      pull();
+      requestAnimationFrame(frame);
+    }
+  }
+  frame();
+  return () => {
+    isPulling = false;
+  };
+}
+
 export function viewObserve<A>(
   update: (a: A) => void,
   behavior: Behavior<A>
 ): void {
-  let isPulling = false;
-  observe(
-    update,
-    () => {
-      isPulling = true;
-      let lastVal: A;
-      function pull(): void {
-        const newVal = behavior.at();
-        if (lastVal !== newVal) {
-          lastVal = newVal;
-          update(newVal);
-        }
-        if (isPulling) {
-          requestAnimationFrame(pull);
-        }
-      }
-      pull();
-      return () => {
-        isPulling = false;
-      };
-    },
-    behavior
-  );
+  observe(update, pullOnFrame, behavior);
 }
 
 // Child element
