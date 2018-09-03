@@ -169,6 +169,19 @@ describe("component specs", () => {
       assert.deepEqual(explicit, {});
       assert.deepEqual(Object.keys(H.at(out)), ["baz"]);
     });
+    it("dynamic in dynamic", () => {
+      const model = () => {
+        return H.Now.of({
+          content: H.Behavior.of("hello"),
+          isEditing: H.Behavior.of(false)
+        });
+      };
+      const view = ({ content, isEditing }: any) => [
+        dynamic(isEditing.map((_: any) => dynamic(content)))
+      ];
+      const brokenComponent = modelView(model, view);
+      testComponent(brokenComponent());
+    });
   });
 
   describe("loop", () => {
@@ -253,13 +266,16 @@ describe("modelView", () => {
   it("view is function returning array of components", () => {
     type FromView = { inputValue: H.Behavior<any> };
     let fromView: FromView;
-    const c = modelView(function model(args: FromView): H.Now<any> {
-      fromView = args;
-      return H.Now.of({});
-    }, (): Child<FromView> => [
-      span("Hello"),
-      input({ output: { inputValue: "inputValue" } })
-    ])();
+    const c = modelView(
+      function model(args: FromView): H.Now<any> {
+        fromView = args;
+        return H.Now.of({});
+      },
+      (): Child<FromView> => [
+        span("Hello"),
+        input({ output: { inputValue: "inputValue" } })
+      ]
+    )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");

@@ -301,14 +301,13 @@ export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
   }
   if (props.behaviors !== undefined) {
     for (const name of Object.keys(props.behaviors)) {
-      const [evt, extractor, initialFn] = props.behaviors[name];
+      const [evt, extractor, getter] = props.behaviors[name];
       let a: Behavior<any> | undefined = undefined;
-      const initial = initialFn(elm);
       Object.defineProperty(output, name, {
         enumerable: true,
         get: (): Behavior<any> => {
           if (a === undefined) {
-            a = behaviorFromEvent(elm, evt, initial, extractor);
+            a = behaviorFromEvent(elm, evt, getter, extractor);
           }
           return a;
         }
