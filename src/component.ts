@@ -8,7 +8,8 @@ import {
   Stream,
   placeholder,
   Future,
-  sinkFuture
+  sinkFuture,
+  runNow
 } from "@funkia/hareactive";
 import { mergeObj, id, copyRemaps, Merge } from "./utils";
 
@@ -130,8 +131,8 @@ class HandleOutput<O, A, P> extends Component<P, A> {
 type AnyValues<A extends Record<string, any>> = { [K in keyof A]: any };
 
 export type Remap<
-  A extends Record<string, any>,
-  B extends Record<string, keyof A>
+  A extends Record<any, any>,
+  B extends Record<any, keyof A>
 > = { [K in keyof B]: A[B[K]] };
 
 export function output<A, O, P>(
@@ -340,7 +341,7 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
       view.name,
       Object.assign(viewOutput, { destroyed })
     );
-    const behaviors = model(helpfulViewOutput, ...args).run();
+    const behaviors = runNow(model(helpfulViewOutput, ...args));
     // Tie the recursive knot
     for (const name of Object.keys(behaviors)) {
       placeholders[name].replaceWith(behaviors[name]);
