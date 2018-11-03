@@ -42,15 +42,13 @@ const counterView = ({ count }: CounterViewInput) =>
     "Counter ",
     count,
     " ",
-    button(
-      { class: "btn btn-default", output: { incrementClick: "click" } },
-      " + "
-    ),
+    button({ class: "btn btn-default" }, " + ").output({
+      incrementClick: "click"
+    }),
     " ",
-    button(
-      { class: "btn btn-default", output: { decrementClick: "click" } },
-      " - "
-    )
+    button({ class: "btn btn-default" }, " - ").output({
+      decrementClick: "click"
+    })
   ]);
 
 const counter = modelView(counterModel, counterView);
@@ -82,10 +80,9 @@ const counterListModel = fgo(function*({
 
 const counterListView = ({ sum, counterIds }: ViewInput) => [
   h1("Counters"),
-  button(
-    { class: "btn btn-primary", output: { addCounter: "click" } },
-    "Add counter"
-  ),
+  button({ class: "btn btn-primary" }, "Add counter").output({
+    addCounter: "click"
+  }),
   br,
   ul(list(counter, counterIds).output((o) => ({ listOut: o })))
 ];

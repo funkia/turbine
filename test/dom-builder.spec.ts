@@ -37,42 +37,42 @@ describe("dom-builder", () => {
 
   describe("output", () => {
     it("renames output as explicit", () => {
-      const c = button({ output: { buttonClick: "click" } });
+      const c = button().output({ buttonClick: "click" });
       const { out, explicit } = testComponent(c);
-      assert(isStream(out.buttonClick));
+      assert(!isStream(out.buttonClick));
       assert(isStream(explicit.buttonClick));
     });
     it("passes explicit child output through", () => {
-      const c = div(button({ output: { buttonClick: "click" } }));
+      const c = div(button().output({ buttonClick: "click" }));
       const { out, explicit } = testComponent(c);
       assert(isStream(explicit.buttonClick));
     });
     it("merges output from list of elements", () => {
-      const btn = button({ output: { fooClick: "click" } }, "Click me");
-      const btn2 = button({ output: { barClick: "click" } }, "Click me");
+      const btn = button("Click me").output({ fooClick: "click" });
+      const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, btn2]);
       const { out, explicit } = testComponent(c);
       assert(isStream(explicit.fooClick));
       assert(isStream(explicit.barClick));
     });
     it("merges output from list of elements alongside strings", () => {
-      const btn = button({ output: { fooClick: "click" } }, "Click me");
-      const btn2 = button({ output: { barClick: "click" } }, "Click me");
+      const btn = button("Click me").output({ fooClick: "click" });
+      const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, "foo", btn2]);
       const { explicit } = testComponent(c);
       assert(isStream(explicit.fooClick));
       assert(isStream(explicit.barClick));
     });
     it("merges own output with explicit output in child array", () => {
-      const btn = button({ output: { fooClick: "click" } }, "Click me");
-      const myDiv = div({ output: { divClick: "click" } }, [btn]);
+      const btn = button("Click me").output({ fooClick: "click" });
+      const myDiv = div([btn]).output({ divClick: "click" });
       const { explicit } = testComponent(myDiv);
       assert(isStream(explicit.divClick));
       assert(isStream(explicit.fooClick));
     });
     it("merges all output from non-array child", () => {
       const child = Component.of({ bar: 1 }).output({ bar: "bar" });
-      const myDiv = div({ output: { divClick: "click" } }, child);
+      const myDiv = div(child).output({ divClick: "click" });
       const { explicit } = testComponent(myDiv);
       assert(isStream(explicit.divClick));
       assert.strictEqual(explicit.bar, 1);
@@ -118,16 +118,18 @@ describe("dom-builder", () => {
 
   describe("output", () => {
     it("can rename output", () => {
-      const btn = button({ output: { foobar: "click" } }, "Click");
-      const { out } = testComponent(btn);
-      assert(isStream(out.foobar));
+      const btn = button("Click").output(({ click }) => ({
+        foobar: click
+      }));
+      const { explicit } = testComponent(btn);
+      assert(isStream(explicit.foobar));
     });
     it("can rename custom output", () => {
       const myElement = element("span", {
         streams: { customClick: streamDescription("click", id) }
       });
       const { out } = testComponent(
-        myElement({ output: { horse: "customClick" } })
+        myElement().output({ horse: "customClick" })
       );
     });
   });

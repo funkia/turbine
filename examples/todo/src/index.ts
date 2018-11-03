@@ -7,4 +7,4 @@ const router = createRouter({
   useHash: true
 });
 
-runComponent("body", app(router));
+runComponent("#mount", app(router));

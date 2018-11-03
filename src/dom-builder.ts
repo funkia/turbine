@@ -356,14 +356,7 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     const elm = document.createElement(this.tagName);
 
     const output: any = handleProps(this.props, elm);
-
-    const explicitOutput = this.props.output
-      ? Object.keys(this.props.output)
-      : [];
-    const explicit: any = {};
-    for (const name of explicitOutput) {
-      explicit[name] = output[name];
-    }
+    let explicit: any = {};
 
     parent.appendChild(elm);
 
@@ -391,53 +384,58 @@ type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
 >;
 
 // `O` is the parents output
-export type ElementCreator<O> = {
-  (): Component<{}, O>;
-  // Only children
-  <Ch extends Child>(child: Ch): Component<
+export type Wrapped<P, O> = (undefined extends P
+  ? {
+      // Optional props
+      // Only props
+      (props?: P): Component<{}, O>;
+      // Only child
+      <Ch extends Child>(child: Ch): Component<
+        ChildExplicitOutput<Ch>,
+        ChildExplicitOutput<Ch> & O
+      >;
+    }
+  : {
+      // Required props
+      // Only props
+      (props: P): Component<{}, O>;
+    }) & {
+  // Both props and child
+  <Ch extends Child>(props: P, child: Ch): Component<
     ChildExplicitOutput<Ch>,
     ChildExplicitOutput<Ch> & O
   >;
-  // Only props
-  // `output` is given
-  <OP extends Record<string, keyof O>>(
-    props: InitialProperties & { output: OP }
-  ): Component<Remap<O, OP>, Remap<O, OP>>;
-  // `output` is not given
-  (props: InitialProperties): Component<{}, O>;
-  // Props and children
-  // `output` is given
-  <OP extends Record<string, keyof O>, Ch extends Child>(
-    props: InitialProperties & { output: OP },
-    child: Ch
-  ): Component<Merge<Remap<O, OP> & ChildExplicitOutput<Ch>>, Remap<O, OP>>;
-  // `output` is not given
-  <Ch extends Child>(props: Properties<O>, child: Ch): Component<
-    ChildExplicitOutput<Ch>,
-    O
-  >;
 };
 
-export function element<P extends InitialProperties>(
-  tagName: string,
-  props?: P
-): ElementCreator<InitialOutput<P>> {
-  const mergedProps: P = mergeDeep(props, defaultProperties);
-  function createElement(
-    newPropsOrChildren?: InitialProperties | Child,
-    childOrUndefined?: Child
-  ): Component<any, any> {
-    const finalProps =
+export function wrapper<P, O>(
+  fn: (prop: P, child: Component<any, any>) => Component<any, O>
+): Wrapped<P, O> {
+  function wrappedComponent(
+    newPropsOrChildren: P | Child,
+    childOrUndefined: Child | undefined
+  ) {
+    const props =
       newPropsOrChildren !== undefined && !isChild(newPropsOrChildren)
-        ? mergeDeep(mergedProps, newPropsOrChildren)
-        : mergedProps;
+        ? newPropsOrChildren
+        : undefined;
     const child =
       childOrUndefined !== undefined
         ? toComponent(childOrUndefined)
         : isChild(newPropsOrChildren)
           ? toComponent(newPropsOrChildren)
           : undefined;
-    return new DomComponent<any, any, any>(tagName, finalProps, child);
+    return fn(props!, child!);
   }
-  return createElement as any;
+  return <any>wrappedComponent;
+}
+
+export function element<P extends InitialProperties>(
+  tagName: string,
+  defaultElementProps?: P
+) {
+  const mergedProps: P = mergeDeep(defaultElementProps, defaultProperties);
+  return wrapper((p?: InitialProperties, child?: Component<any, any>) => {
+    const finalProps = mergeDeep(mergedProps, p);
+    return new DomComponent(tagName, finalProps, child);
+  });
 }

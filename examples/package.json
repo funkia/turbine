@@ -16,10 +16,10 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "@funkia/rudolph": "0.0.5",
+    "@funkia/rudolph": "0.0.6",
     "todomvc-app-css": "^2.1.2"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.9.7"
+    "parcel-bundler": "^1.10.3"
   }
 }

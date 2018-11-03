@@ -52,17 +52,17 @@ function counterView({ count }: CounterModelOut) {
     "Counter ",
     count,
     " ",
-    button(
-      { class: "btn btn-default", output: { incrementClick: "click" } },
-      " + "
-    ),
+    button({ class: "btn btn-default" }, " + ").output({
+      incrementClick: "click"
+    }),
     " ",
-    button(
-      { class: "btn btn-default", output: { decrementClick: "click" } },
-      " - "
-    ),
+    button({ class: "btn btn-default" }, " - ").output({
+      decrementClick: "click"
+    }),
     " ",
-    button({ class: "btn btn-default", output: { deleteClick: "click" } }, "x")
+    button({ class: "btn btn-default" }, "x").output({
+      deleteClick: "click"
+    })
   ]);
 }
 
@@ -110,19 +110,17 @@ const mainModel = fgo(function*({
   return { counterIds, sum };
 });
 
-const mainView = fgo(function*({ sum, counterIds }: ToView) {
-  yield h1("Counters");
-  yield p(["Sum ", sum]);
-  const { click: addCounter } = yield button(
-    { class: "btn btn-primary" },
-    "Add counter"
-  );
-  const { listOut } = yield ul(
-    list((id) => counter(id).output((o) => o), counterIds).output((o) => ({
-      listOut: o
-    }))
-  );
-  return { addCounter, listOut };
-});
+const counterListView = ({ sum, counterIds }: ToView) => [
+  h1("Counters"),
+  p(["Sum ", sum]),
+  button({ class: "btn btn-primary" }, "Add counter").output({
+    addCounter: "click"
+  }),
+  br,
+  ul(list(counter, counterIds).output((o) => ({ listOut: o })))
+];
 
-export const counterList = modelView<ToView, ToModel>(mainModel, mainView)();
+export const counterList = modelView<ToView, ToModel>(
+  mainModel,
+  counterListView
+)();

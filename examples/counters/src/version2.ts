@@ -27,15 +27,13 @@ const counterView = ({ count }: CounterViewInput) =>
     "Counter ",
     count,
     " ",
-    button(
-      { class: "btn btn-default", output: { incrementClick: "click" } },
-      " + "
-    ),
+    button({ class: "btn btn-default" }, " + ").output({
+      incrementClick: "click"
+    }),
     " ",
-    button(
-      { class: "btn btn-default", output: { decrementClick: "click" } },
-      " - "
-    )
+    button({ class: "btn btn-default" }, " - ").output({
+      decrementClick: "click"
+    })
   ]);
 
 const counter = modelView(counterModel, counterView);
