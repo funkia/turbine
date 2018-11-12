@@ -408,23 +408,23 @@ export type Wrapped<P, O> = (undefined extends P
 };
 
 export function wrapper<P, O>(
-  fn: (prop: P, child: Component<any, any>) => Component<any, O>
+  fn: (props: P, child: Component<any, any> | undefined) => Component<any, O>
 ): Wrapped<P, O> {
   function wrappedComponent(
-    newPropsOrChildren: P | Child,
+    newPropsOrChild: P | Child,
     childOrUndefined: Child | undefined
   ) {
     const props =
-      newPropsOrChildren !== undefined && !isChild(newPropsOrChildren)
-        ? newPropsOrChildren
+      newPropsOrChild !== undefined && !isChild(newPropsOrChild)
+        ? newPropsOrChild
         : undefined;
     const child =
       childOrUndefined !== undefined
         ? toComponent(childOrUndefined)
-        : isChild(newPropsOrChildren)
-          ? toComponent(newPropsOrChildren)
+        : isChild(newPropsOrChild)
+          ? toComponent(newPropsOrChild)
           : undefined;
-    return fn(props!, child!);
+    return fn(props!, child);
   }
   return <any>wrappedComponent;
 }
@@ -434,8 +434,13 @@ export function element<P extends InitialProperties>(
   defaultElementProps?: P
 ) {
   const mergedProps: P = mergeDeep(defaultElementProps, defaultProperties);
-  return wrapper((p?: InitialProperties, child?: Component<any, any>) => {
-    const finalProps = mergeDeep(mergedProps, p);
-    return new DomComponent(tagName, finalProps, child);
-  });
+  return wrapper(
+    (
+      p: InitialProperties | undefined,
+      child: Component<any, any> | undefined
+    ) => {
+      const finalProps = mergeDeep(mergedProps, p);
+      return new DomComponent(tagName, finalProps, child);
+    }
+  );
 }
