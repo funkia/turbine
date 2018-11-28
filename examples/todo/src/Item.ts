@@ -175,21 +175,19 @@ function itemView({
       div({ class: "view" }, [
         checkbox({
           class: "toggle",
-          output: { toggleTodo: "checkedChange" },
           props: { checked: isComplete }
-        }),
-        label({ output: { startEditing: "dblclick" } }, taskName),
-        button({ class: "destroy", output: { deleteClicked: "click" } })
+        }).output({ toggleTodo: "checkedChange" }),
+        label(taskName).output({ startEditing: "dblclick" }),
+        button({ class: "destroy" }).output({ deleteClicked: "click" })
       ]),
       input({
         class: "edit",
         props: { value: taskName },
-        output: {
-          newNameInput: "input",
-          nameKeyup: "keyup",
-          nameBlur: "blur"
-        },
         actions: { focus: focusInput }
+      }).output({
+        newNameInput: "input",
+        nameKeyup: "keyup",
+        nameBlur: "blur"
       })
     ]
   ).output((o) => ({ taskName, ...o }));

@@ -155,9 +155,8 @@ function view(
           checkbox({
             class: "toggle-all",
             attrs: { id: "toggle-all" },
-            props: { checked: areAllCompleted },
-            output: { toggleAll: "checkedChange" }
-          }),
+            props: { checked: areAllCompleted }
+          }).output({ toggleAll: "checkedChange" }),
           label({ attrs: { for: "toggle-all" } }, "Mark all as complete"),
           ul(
             { class: "todo-list" },

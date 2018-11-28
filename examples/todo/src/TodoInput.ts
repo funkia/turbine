@@ -36,7 +36,6 @@ function* model({ enterPressed, value }: FromView) {
 const view = ({ clearedValue }) =>
   input({
     class: "new-todo",
-    output: { keyup: "keyup", value: "inputValue" },
     props: { value: clearedValue },
     attrs: {
       autofocus: "true",
@@ -44,8 +43,8 @@ const view = ({ clearedValue }) =>
       placeholder: "What needs to be done?"
     }
   }).output((o) => ({
-    enterPressed: o.keyup.filter(isEnterKey),
-    value: o.value
+    value: o.inputValue,
+    enterPressed: o.keyup.filter(isEnterKey)
   }));
 
 export default modelView(fgo(model), view)();

@@ -39,7 +39,7 @@ describe("component specs", () => {
       const component = toComponent([
         span("Hello"),
         div("There"),
-        button({ output: { click: "click" } }, "Click me")
+        button("Click me").output({ click: "click" })
       ]);
       const { dom, out } = testComponent(component);
 
@@ -52,7 +52,7 @@ describe("component specs", () => {
     it("only combines explicit output in array", () => {
       const component = toComponent([
         button("Click me"),
-        button({ output: { trigger: "click" } })
+        button().output({ trigger: "click" })
       ]);
       const { dom, out } = testComponent(component);
       expect(out).to.have.property("trigger");
@@ -84,8 +84,8 @@ describe("component specs", () => {
   });
   describe("merge", () => {
     it("merges output", () => {
-      const b1 = button({ output: { click1: "click" } });
-      const b2 = button({ output: { click2: "click" } });
+      const b1 = button().output({ click1: "click" });
+      const b2 = button().output({ click2: "click" });
       const m = merge(b1, b2);
       const { explicit, out } = testComponent(m);
       expect(out).to.have.property("click1");
@@ -273,7 +273,7 @@ describe("modelView", () => {
       },
       (): Child<FromView> => [
         span("Hello"),
-        input({ output: { inputValue: "inputValue" } })
+        input().output({ inputValue: "inputValue" })
       ]
     )();
     const { dom } = testComponent(c);

@@ -9,7 +9,7 @@ import {
 } from "@funkia/hareactive";
 import { elements, fgo, modelView, runComponent } from "../../src/index";
 
-const { input, p, button, div, h1 } = elements;
+const { p, button, h1 } = elements;
 
 const formatTime = (t: number): string =>
   new Date(t).toTimeString().split(" ")[0];

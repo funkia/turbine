@@ -33,13 +33,12 @@ const filterItem = (name: string) =>
       {
         style: {
           cursor: "pointer"
-        },
-        output: {
-          [`filterBtn${name}`]: "click"
         }
       },
       name
-    )
+    ).output({
+      [`filterBtn${name}`]: "click"
+    })
   );
 
 const model = function*(
@@ -80,11 +79,10 @@ const view = ({}, { todosB, areAnyCompleted }: Params) => {
         style: {
           visibility: areAnyCompleted.map((b) => (b ? "visible" : "hidden"))
         },
-        class: "clear-completed",
-        output: { clearCompleted: "click" }
+        class: "clear-completed"
       },
       "Clear completed"
-    )
+    ).output({ clearCompleted: "click" })
   ]);
 };
 
