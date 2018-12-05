@@ -11,7 +11,7 @@ const model = ({ email }: { email: Behavior<string> }) => {
 
 const view = ({ isValid }: { isValid: Behavior<boolean> }) => [
   span("Please enter an email address: "),
-  input().output({ email: "inputValue" }),
+  input().output({ email: "value" }),
   div(["The address is ", map((b) => (b ? "valid" : "invalid"), isValid)])
 ];
 

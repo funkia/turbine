@@ -50,7 +50,7 @@ const isValidEmail = (s: string) => /.+@.+\..+/i.test(s);
 
 function* main() {
   yield span("Please enter an email address: ");
-  const { inputValue: email } = yield input();
+  const { value: email } = yield value();
   const isValid = email.map(isValidEmail);
   yield div([
     "The address is ",
@@ -437,7 +437,7 @@ Let's see what an input element actually looks like.
 ```ts
 const usernameInput = input({
   attrs: { placeholder: "Username" }
-}).output({ username: "inputValue" });
+}).output({ username: "value" });
 ```
 
 Here `usernameInput` has the type
@@ -447,7 +447,7 @@ Component<{username: Behavior<string>}>
 ```
 
 An `input` element produces a string valued behavior named
-`inputValue` that contains the current content of the `input` element.
+`value` that contains the current content of the `input` element.
 We then give the `input` function an object `output` that tells it to
 output the behavior with the property `username`.
 
@@ -582,8 +582,8 @@ the text in the two input fields.
 
 ```typescript
 input({ attrs: { placeholder: "foo" } }).chain(
-  ({ inputValue: aValue }) => input().chain(
-    ({ inputValue: bValue }) => {
+  ({ value: aValue }) => input().chain(
+    ({ value: bValue }) => {
       const concatenated = lift((a, b) => a + b, aValue, bValue);
       return span(["Concatenated text: ", concatenated]).mapTo({concatenated});
     }
@@ -597,8 +597,8 @@ generators.
 
 ```typescript
 go(function*() {
-  const {inputValue: aValue} = yield input();
-  const {inputValue: bValue} = yield input();
+  const {value: aValue} = yield input();
+  const {value: bValue} = yield input();
   const concatenated = lift((a, b) => a + b, aValue, bValue);
   yield span(["Concatenated text: ", concatenated]);
   return {concatenated};
@@ -661,10 +661,10 @@ a function from `A` to `B` over the component and get a new component
 whose output is of type `B`.
 
 In the example below `input` creates a component with an object as
-output. The object contains a behavior named `inputValue`. The
+output. The object contains a behavior named `value`. The
 function given to `map` receives the output from the component. 
 
-We then call `map` on the behavior `inputValue` and take the length of
+We then call `map` on the behavior `value` and take the length of
 the string. The result is that `usernameInput` has the type
 `Component<Behavior<number>>` because it's mapped output is a
 number-valued behavior whose value is the current length of the text
@@ -673,7 +673,7 @@ in the input element.
 ```ts
 const usernameInput =
   input({class: "form-control"})
-    .map((output) => output.inputValue.map((s) => s.length));
+    .map((output) => output.value.map((s) => s.length));
 ```
 
 #### `Component#chain`
@@ -702,7 +702,7 @@ component that works like this:
 Here is an example.
 
 ```typescript
-input().chain((inputOutput) => span(inputOutput.inputValue));
+input().chain((inputOutput) => span(inputOutput.value));
 ```
 
 The above example boils down to this:
@@ -710,8 +710,8 @@ The above example boils down to this:
 ```typescript
 Create input component   Create span component with text content
   ↓                             ↓
-input().chain((inputOutput) => span(inputOutput.inputValue));
-                   ↑                                ↑
+input().chain((inputOutput) => span(inputOutput.value));
+                   ↑                              ↑
       Output from input-element       Behavior of text in input-element
 ```
 
