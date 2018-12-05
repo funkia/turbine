@@ -2,7 +2,6 @@ import {
   map,
   streamFromEvent,
   stepper,
-  Now,
   toggle,
   sample,
   snapshot,
@@ -23,12 +22,20 @@ const mousePosition = stepper(
   mousemove.map((e) => ({ x: e.pageX, y: e.pageY }))
 ).at();
 
-const addPoint = (p1: number, p2: number) => ({
+const addPoint = (p1: Point, p2: Point) => ({
   x: p1.x + p2.x,
   y: p1.y + p2.y
 });
 
-const boxModel = fgo(function*({ startDrag, endDrag }, color: string) {
+type BoxModelInput = {
+  startDrag: Stream<void>;
+  endDrag: Stream<void>;
+};
+
+const boxModel = fgo(function*(
+  { startDrag, endDrag }: BoxModelInput,
+  color: string
+) {
   const startDragAt = snapshot(mousePosition, startDrag);
   const dragOffset = map(
     (p) => map((p2) => ({ x: p2.x - p.x, y: p2.y - p.y }), mousePosition),
@@ -48,7 +55,12 @@ const boxModel = fgo(function*({ startDrag, endDrag }, color: string) {
   return { isBeingDragged, position };
 });
 
-const boxView = ({ isBeingDragged, position }, color: string) =>
+type BoxViewInput = {
+  position: Behavior<Point>;
+  isBeingDragged: Behavior<boolean>;
+};
+
+const boxView = ({ isBeingDragged, position }: BoxViewInput, color: string) =>
   div({
     class: ["box", { dragged: isBeingDragged }],
     style: {
