@@ -46,14 +46,15 @@ making it even better.
 [See the example live here](https://codesandbox.io/s/jv74x1jny3?module=%2Fsrc%2Findex.js).
 
 ```js
-const isValidEmail = (s: string) => s.match(/.+@.+\..+/i);
+const isValidEmail = (s: string) => /.+@.+\..+/i.test(s);
 
 function* main() {
   yield span("Please enter an email address: ");
   const { inputValue: email } = yield input();
   const isValid = email.map(isValidEmail);
   yield div([
-    "The address is ", map((b) => b ? "valid" : "invalid", isValid)
+    "The address is ",
+    map((b) => (b ? "valid" : "invalid"), isValid)
   ]);
 }
 
@@ -74,11 +75,16 @@ const counterModel = fgo(function* ({ incrementClick, decrementClick }) {
   return { count };
 });
 
-const counterView = ({ count }) => div([
+const counterView = ({ count }) =>
+  div([
   "Counter ",
   count,
-  button({ class: "btn btn-default", output: { incrementClick: "click" } }, "+"),
-  button({ class: "btn btn-default", output: { decrementClick: "click" } }, "-")
+    button({ class: "btn btn-default" }, "+").output({
+      incrementClick: "click"
+    }),
+    button({ class: "btn btn-default" }, "-").output({
+      decrementClick: "click"
+    })
 ]);
 
 const counter = modelView(counterModel, counterView);
@@ -141,8 +147,8 @@ As a simple example, say you have the following code:
 
 ```js
 const view = div([
-  myComponent({foo: "bar", something: 12}),
-  myComponent({foo: "bar", something: 12})
+  myComponent({ foo: "bar", something: 12 }),
+  myComponent({ foo: "bar", something: 12 })
 ]);
 ```
 
@@ -429,8 +435,9 @@ that is most convenient.
 Let's see what an input element actually looks like.
 
 ```ts
-const usernameInput =
-  input({attrs: {placeholder: "Username"}, output: {username: "inputValue"}});
+const usernameInput = input({
+  attrs: { placeholder: "Username" }
+}).output({ username: "inputValue" });
 ```
 
 Here `usernameInput` has the type
@@ -456,11 +463,12 @@ button. That is, the view's output should have the type
 The simplest way to get achieve that looks like this:
 
 ```ts
-const counterView = ({ count }) => div([
+const counterView = ({ count }) =>
+  div([
   "Counter ",
   count,
-  button({ output: { incrementClick: "click" } }, "+"),
-  button({ output: { decrementClick: "click" } }, "-"),
+    button("+").output({ incrementClick: "click" }),
+    button("-").output({ decrementClick: "click" })
 ]);
 ```
 
@@ -497,9 +505,7 @@ view function and will be the output of the component that `modelView`
 returns. Here is how we use to create our counter component.
 
 ```ts
-function* counterModel(
-  { incrementClick, decrementClick }: CounterModelInput
-) {
+function* counterModel({ incrementClick, decrementClick }: CounterModelInput) {
   const increment = incrementClick.mapTo(1);
   const decrement = decrementClick.mapTo(-1);
   const changes = combine(increment, decrement);
