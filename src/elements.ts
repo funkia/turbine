@@ -10,7 +10,7 @@ export const input = element("input", {
     focus: (elm: HTMLElement): void => elm.focus()
   },
   behaviors: {
-    inputValue: behaviorDescription(
+    value: behaviorDescription(
       "input",
       (evt: any) => evt.target.value as string,
       (elm: any) => elm.value as string
@@ -20,7 +20,7 @@ export const input = element("input", {
 
 export const textarea = element("textarea", {
   behaviors: {
-    inputValue: behaviorDescription(
+    value: behaviorDescription(
       "input",
       (evt: any) => evt.target.value as string,
       (elm: any) => elm.value as string

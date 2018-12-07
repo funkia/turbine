@@ -43,7 +43,7 @@ const view = ({ clearedValue }) =>
       placeholder: "What needs to be done?"
     }
   }).output((o) => ({
-    value: o.inputValue,
+    value: o.value,
     enterPressed: o.keyup.filter(isEnterKey)
   }));
 

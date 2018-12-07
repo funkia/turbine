@@ -190,7 +190,7 @@ describe("component specs", () => {
       const comp = loop(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
-          ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+          ({ value: name } = yield input({ props: { value: "Foo" } }));
           return { name };
         })
       );
@@ -203,7 +203,7 @@ describe("component specs", () => {
     //     name
     //   }: Looped): IterableIterator<Component<any, any>> {
     //     yield div(name);
-    //     ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+    //     ({ value: name } = yield input({ props: { value: "Foo" } }));
     //     return { name };
     //   });
     // });
@@ -216,7 +216,7 @@ describe("component specs", () => {
         }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
           destroyed.subscribe((b) => (toplevel = b));
-          ({ inputValue: name } = yield input({ props: { value: "Foo" } }));
+          ({ value: name } = yield input({ props: { value: "Foo" } }));
           return { name };
         })
       );
@@ -264,7 +264,7 @@ describe("modelView", () => {
     expect(dom.querySelector("span")).to.have.text("7");
   });
   it("view is function returning array of components", () => {
-    type FromView = { inputValue: H.Behavior<any> };
+    type FromView = { value: H.Behavior<any> };
     let fromView: FromView;
     const c = modelView(
       function model(args: FromView): H.Now<any> {
@@ -273,13 +273,13 @@ describe("modelView", () => {
       },
       (): Child<FromView> => [
         span("Hello"),
-        input().output({ inputValue: "inputValue" })
+        input().output({ value: "value" })
       ]
     )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("Hello");
-    assert(H.isBehavior(fromView!.inputValue));
+    assert(H.isBehavior(fromView!.value));
   });
   it("throws an error message if the view doesn't return the needed properties", () => {
     if (!supportsProxy) {
