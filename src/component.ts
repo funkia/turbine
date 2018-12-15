@@ -15,10 +15,10 @@ import { mergeObj, id, copyRemaps, Merge } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
-export type Showable = string | number;
+export type Showable = string | number | boolean;
 
 function isShowable(s: any): s is Showable {
-  return typeof s === "string" || typeof s === "number";
+  return typeof s === "string" || typeof s === "number" || typeof s === "boolean";
 }
 
 export function isGeneratorFunction<A, T>(
@@ -540,7 +540,7 @@ export function toComponent<A extends Child>(child: A): ToComponent<A> {
   } else if (Array.isArray(child)) {
     return new ListComponent(child) as any;
   } else {
-    throw "Child could not be converted to component";
+    throw new Error("Child could not be converted to component");
   }
 }
 
@@ -628,7 +628,7 @@ class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
   constructor(
     private compFn: (a: A) => Component<O, any>,
     private listB: Behavior<A[]>,
-    private getKey: (a: A, index: number) => Showable
+    private getKey: (a: A, index: number) => number | string
   ) {
     super();
   }
@@ -679,7 +679,7 @@ class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
 export function list<A, O>(
   componentCreator: (a: A) => Component<O, any>,
   listB: Behavior<A[]>,
-  getKey: (a: A, index: number) => Showable = id
+  getKey: (a: A, index: number) => number | string = id
 ): Component<{}, Behavior<O[]>> {
   return new ComponentList(componentCreator, listB, getKey);
 }
