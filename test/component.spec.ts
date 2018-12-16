@@ -27,13 +27,21 @@ const supportsProxy = "Proxy" in window;
 
 describe("component specs", () => {
   describe("toComponent", () => {
-    it("convert behavior of string to component", () => {
+    it("converts a behavior of a string to a component", () => {
       const b = H.sinkBehavior("Hello");
       const component = toComponent(b);
       const { dom } = testComponent(component);
       expect(dom).to.have.text("Hello");
       b.push("world");
       expect(dom).to.have.text("world");
+    });
+    it("converts a behavior of a boolean to a component", () => {
+      const b = H.sinkBehavior(true)
+      const component = toComponent(b);
+      const { dom } = testComponent(component);
+      expect(dom).to.have.text("true");
+      b.push(false);
+      expect(dom).to.have.text("false");
     });
     it("converts an array of components to component", () => {
       const component = toComponent([
