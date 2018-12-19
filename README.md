@@ -414,25 +414,52 @@ _output_ from it.
 Remember that we mentioned how a Turbine component is a description
 about what the component will behave and look like. Part of that
 description also explains what output will come from the component.
-Components are represented by a generic type `Component<A>`. The `A`
-represents the output of the component. I.e. `Component<A>` means:
-"I'm a component that will give you `A` as output".
 
 To get a feel for what "output" means it may be helpful to mention a
 few examples.
 
-* A button will output a stream of click events. So the type of a
-  button may be `Component<Stream<Event>>`
-* A input box could output a behavior of the text inside the input.
-  It's type would be `Component<Behavior<string>>`
-* A checkbox might output a behavior representing wether it is checked
-  or not. It would have type `Component<Behavior<A>>`.
+* A button outputs, among other things, a stream of click events. So
+  part of its output is a stream of the type `Stream<ClickEvent>>`.
+* An input box's output includes a behavior of the text inside the
+  input. The type would be `Behavior<string>`.
+* A checkbox might output a behavior representing whether it is
+  checked or not. It would have type `Behavior<boolean>`.
+
+One way of looking at the output is that it is the information we
+would like to get from the view.
 
 In practice a component will almost always output more than a single
-stream or behavior. The output type is therefore often an object as
-that is most convenient.
+stream or behavior. By convention the output is therefore almost alway
+an object.
 
-Let's see what an input element actually looks like.
+Components are represented by a generic type `Component<O, A>`. The
+`A` represents the _available_ output of the component and the `O`
+represents the _selected_ out of the component.  The difference
+between selected and available output is highlighted in the example
+below.
+
+Constructing an input element looks like this
+
+```ts
+const usernameInput = input({ placeholder: "Username"});
+```
+
+The type of the component constructed above is as follows ( the `...`
+refer to the fact that we have omitted a lot of the output to keep
+things simple).
+
+```ts
+Component<{}, { value: Behavior<string>, click: Stream<ClickEvent>, ... }>
+```
+
+Among its available output an `input` element produces a string valued
+behavior named `value` that contains the current content of the
+`input` element.
+
+Like this input component a newly constructed component always have
+`{}` as its selected output. This means that initially no output is
+selected. We can move output from the available output into the
+selected output by using the `output` method on components.
 
 ```ts
 const usernameInput = input({
@@ -443,13 +470,37 @@ const usernameInput = input({
 Here `usernameInput` has the type
 
 ```ts
-Component<{username: Behavior<string>}>
+Component<{ username: Behavior<string> }, ...>
 ```
 
-An `input` element produces a string valued behavior named
-`value` that contains the current content of the `input` element.
-We then give the `input` function an object `output` that tells it to
-output the behavior with the property `username`.
+In the above code the invocation to `output` means: from the object of
+available output take the `value` property and add it to the object of
+selected output with the property name `username`.
+
+The difference between available output and selected output matters
+when components are combined. In most cases, when components are
+composed or combined all their available output is discarded and only
+the selected output becomes part of the combined component.
+
+For instance, in the code below the `div` is given two children.
+
+```ts
+div([
+  button("Clik me").output({firstButtonClick: "click"}),
+  button("Don't click me")
+])
+```
+
+The `div` element composes the two buttons. When doing so all output
+from the buttons except for the `click` stream from the first button
+is discarded.
+
+Using the `output` method is a bit like adding event handlers in other
+UI frameworks. There are many events that one can add handlers to but
+on any given element only a few events are actually of interest and
+for these one will add event handlers. Similarly, in Turbine
+components have a lot of available output but only the piece of it
+that gets selected will be output in the end.
 
 Back to the counters app. We want our counter view to produce two
 streams as output. One stream should be from whenever the first button
@@ -457,30 +508,91 @@ is clicked and the other stream should contain clicks from the second
 button. That is, the view's output should have the type
 
 ```ts
-{incrementClick: Stream<ClickEvent>, decrementClick: Stream<ClickEvent>}
+{
+  incrementClick: Stream<ClickEvent>,
+  decrementClick: Stream<ClickEvent>
+}
 ```
 
-The simplest way to get achieve that looks like this:
+We can achieve that by using the `output` method in each button.
 
 ```ts
 const counterView = ({ count }) =>
   div([
   "Counter ",
   count,
-    button("+").output({ incrementClick: "click" }),
-    button("-").output({ decrementClick: "click" })
+  " ",
+  button("+").output({ incrementClick: "click" }),
+  " ",
+  button("-").output({ decrementClick: "click" })
 ]);
 ```
 
-The `output` object given to the `button` functions tells them what
-output we're interested in. They will only produce that output. The
-first button will output an object with a stream named
-`incrementClick` and the later with one named `decrementClick`.
+The call to `output` on each `button` tells them what output we are
+interested in. The first buttons selected output is then object with a
+stream named `incrementClick` and the later and object with one named
+`decrementClick`.
 
-The `div` function will combine all the objects output by the
-components in the array passed to it and output that. The result is
-that `counterView` returns a component that produces two streams as
-output.
+The `div` function then combines the selected output from the
+components in the array passed to it and output that as its own
+selected output. The result is that `counterView` returns a component
+that produces two streams as its output.
+
+### An analogy with promises
+
+As mentioned above using the `output` method is a bit like adding
+event listeners in other frameworks. However, there are fundamental
+differences between the two things. If you are familiar with how
+asynchronous functions that takes callbacks differ from asynchronous
+function that returns promises then the following analogy may help
+understand this difference.
+
+An asynchronous function for reading a file may look like this
+
+```js
+readFileCallback("foo.txt", (file) => ...)
+```
+
+A similar function based on promises looks like
+this.
+
+```js
+readFilePromise("foo.txt").then((file) => ...)
+```
+
+Notice that the `readFileCallback` function does not return the file
+that it reads. The file is instead passed to a callback that it gets
+as an argument. The `readFilePromise` function on the other hand
+returns the file wrapped in a promise of the type `Promise<File>`.
+
+Most UI frameworks are similar to the `readFileCallback` function. In
+order to know when a button is pressed you do something like this.
+
+```tsx
+<button onClick={(clickEvent) => ...}>Click me</button>
+```
+
+The click events on the button are not returned from the `button`
+function. Instead they are passed to a callback (or event handler)
+that the `button` function gets as an argumen.
+
+The same thing in Turbine looks like this.
+
+```ts
+button("Click me").output({click: "click"});
+```
+
+This is similar to the `readFilePromise` function. The `button`
+function does not take any callbacks but returns a stream of clicks
+wrapped in a component of the type `Component<{ click:
+Stream<ClickEvent> }, ...>`.
+
+This example should give some intuition about how Turbine differs from
+most other frameworks. Other frameworks handle events similar to doing
+asynchronous computations with callbacks but Turbine handle events
+similarly to doing asynchronous computations with promises. In
+particular when creating components the output is _returned_ as part
+of the component.
 
 ### Adding a model
 
