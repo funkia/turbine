@@ -547,20 +547,30 @@ We hook the view up to a model using `modelView`. Again, the model
 function receives the return value from the view function.
 
 ```js
-function* counterListModel({ addCounter }) {
-  return [{}, {}];
-}
+const counterList = modelView(counterListModel, counterListView);
 
-function* counterListView(): {
-  yield h1("Counters");
-  const { click: addCounter } = yield button({ class: "btn btn-primary" }, "Add counter");
-  return { addCounter };
-}
+const counterListModel = fgo(function*({addCounter, listOut}): {
+  const nextId = yield sample(scanS(add, 2, addCounter.mapTo(1)));
+  const appendCounterFn = map(
+    (id) => (ids: number[]) => ids.concat([id]),
+    nextId
+  );
+  const counterIds = yield sample(scan(apply, [0], appendCounterFn));
+  return { counterIds };
+});
+
+const counterListView = ({ sum, counterIds }) => [
+  h1("Counters"),
+  button({ class: "btn btn-primary" }, "Add counter").output({
+    addCounter: "click"
+  }),
+  ul(list(counter, counterIds).output((o) => ({ listOut: o })))
+];
 
 const counterList = modelView(counterListModel, counterListView);
 ```
 
-To create a dynamic list of counter we have to use the `list` function.
+To create a dynamic list of counters we have to use the `list` function.
 
 ## Documentation
 
@@ -797,6 +807,90 @@ const myComponent = modelView(
 
 myComponent("foo", "bar");
 ```
+
+### `list`
+
+The `list` function is used to create _dynamic_ lists in the UI.
+
+> **Note:** If you are familiar with frameworks like Angular or Vue then you can
+> think of `list` as being similar to `ngRepeat` in Angular 1, `ngFor` in
+> Angular 2, and `v-for` in Vue.
+
+The list function has the following type.
+```ts
+function list<A, O>(
+  componentCreator: (a: A) => Component<O, any>,
+  listB: Behavior<A[]>,
+  getKey: (a: A, index: number) => number | string = id
+): Component<{}, Behavior<O[]>>;
+```
+
+The first parameter, `componentCreator`, is a function that takes a value of
+type `A` and returns a component. This function will be invoked to create the
+elements of the dynamic list. The second argument, `listB`, is a behavior of an
+array where the elements in the array are of some type `A`.
+
+The `list` function will return a component that at any given point is time is
+equivalent to applying `componentCreator` to the current array in `listB` and
+then showing the resulting components one after another.
+
+Whenever `listB` changes the component returned by `list` will react to those
+changes and keep the displayed list up-to-date. To do this, the last argument,
+the `getKey` function, is used to figure out how elements are moved, removed, or
+added. Therefore `getKey` should return a value that is _unique_ for each element.
+
+The following example illustrates the above. Let us say we have a list of users
+where each user is an object with an `id` and a `username`:
+
+```ts
+type User = {
+  id: number;
+  username: string;
+}
+```
+
+The current list of users is represented by a behavior `users:
+Behavior<User[]>`. We want to display the users in a list with their username
+being editable. This can be achieved with the list function.
+
+```ts
+list(
+  (user) => input({ value: user.username }),
+  users,
+  (user) => user.id
+);
+```
+
+If the `users` behavior starts out with the value
+
+```js
+[
+  { username: "foo", id: 1 },
+  { username: "bar", id: 2 }
+]
+```
+
+Then the component created by calling `list` will produce HTML like this
+
+```html
+<input value="foo" />
+<input value="bar" />
+```
+
+Now, if the value of `users` changes into
+
+```js
+[
+  { username: "baz", id: 3}
+  { username: "bar", id: 2 }
+  { username: "foo", id: 1 },
+]
+```
+
+Then `list` will _reorder_ the two existing `input` elements and insert a new
+`input` element in the beginning. Thanks to the `getKey` function `list` can
+efficiently do this by applying `getKey` to the old and the current value of the
+list and figure out how the elements have moved around.
 
 ## Contributing
 
