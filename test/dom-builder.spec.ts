@@ -77,6 +77,9 @@ describe("dom-builder", () => {
       assert(isStream(explicit.divClick));
       assert.strictEqual(explicit.bar, 1);
     });
+    it("can override existing property", () => {
+      testComponent(div(button("Reset").output({ reset: "click" })));
+    });
   });
 
   describe("stream and behavior output descriptions", () => {

@@ -310,6 +310,9 @@ export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
             a = behaviorFromEvent(elm, evt, getter, extractor);
           }
           return a;
+        },
+        set: (value) => {
+          return (a = value);
         }
       });
     }
@@ -326,6 +329,9 @@ export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
               a = streamFromEvent(elm, evt, extractor);
             }
             return a;
+          },
+          set: (value) => {
+            return (a = value);
           }
         });
       }
