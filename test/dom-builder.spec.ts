@@ -39,7 +39,7 @@ describe("dom-builder", () => {
     it("renames output as explicit", () => {
       const c = button().output({ buttonClick: "click" });
       const { out, explicit } = testComponent(c);
-      assert(!isStream(out.buttonClick));
+      assert(!isStream((out as any).buttonClick));
       assert(isStream(explicit.buttonClick));
     });
     it("passes explicit child output through", () => {

@@ -254,8 +254,7 @@ const propKeywords = new Set([
   "setters",
   "entry",
   "behaviors",
-  "streams",
-  "output"
+  "streams"
 ]);
 
 /**
@@ -263,7 +262,7 @@ const propKeywords = new Set([
  */
 const isProperty = new Set(["value"]);
 
-export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
+export function handleProps<A>(props: InitialProperties, elm: HTMLElement): A {
   let output: any = {};
 
   let attrs = Object.assign({}, props.attrs);
@@ -271,9 +270,9 @@ export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
   for (const [key, value] of Object.entries(props)) {
     if (!propKeywords.has(key)) {
       if (isProperty.has(key)) {
-        properties[key] = value;
+        properties[key] = value as any;
       } else {
-        attrs[key] = value;
+        attrs[key] = value as any;
       }
     }
   }
@@ -331,20 +330,13 @@ export function handleProps<A>(props: Properties<A>, elm: HTMLElement): A {
       }
     }
   }
-  if (props.output !== undefined) {
-    for (const name of Object.keys(props.output)) {
-      if (output[name] === undefined) {
-        output[name] = output[props.output[name]];
-      }
-    }
-  }
   return output;
 }
 
 class DomComponent<O, P, A> extends Component<O & P, A & P> {
   constructor(
     private tagName: string,
-    private props: Properties<A>,
+    private props: InitialProperties,
     private child?: Component<P, any>
   ) {
     super();
@@ -374,10 +366,6 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     return { explicit, output };
   }
 }
-
-export type Properties<A> = InitialProperties & {
-  output?: Record<string, keyof A>;
-};
 
 type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
   ToComponent<Ch>
@@ -432,7 +420,7 @@ export function wrapper<P, O>(
 export function element<P extends InitialProperties>(
   tagName: string,
   defaultElementProps?: P
-) {
+): Wrapped<InitialProperties | undefined, InitialOutput<P>> {
   const mergedProps: P = mergeDeep(defaultElementProps, defaultProperties);
   return wrapper(
     (
