@@ -1,29 +1,23 @@
 import {
   Behavior,
-  sinkBehavior,
-  isBehavior,
-  Stream,
-  Now,
-  streamFromEvent,
   behaviorFromEvent,
   Future,
-  empty
+  isBehavior,
+  Stream,
+  streamFromEvent
 } from "@funkia/hareactive";
 import {
-  Component,
-  runComponent,
-  viewObserve,
-  Showable,
   Child,
-  isChild,
-  toComponent,
-  Out,
-  emptyComponent,
-  ToComponent,
+  Component,
   ComponentExplicitOutput,
-  Remap
+  isChild,
+  Out,
+  Showable,
+  toComponent,
+  ToComponent,
+  viewObserve
 } from "./component";
-import { id, mergeDeep, assign, copyRemaps, Merge } from "./utils";
+import { id, Merge, mergeDeep } from "./utils";
 
 export type EventName = keyof HTMLElementEventMap;
 
@@ -428,8 +422,8 @@ export function wrapper<P, O>(
       childOrUndefined !== undefined
         ? toComponent(childOrUndefined)
         : isChild(newPropsOrChild)
-          ? toComponent(newPropsOrChild)
-          : undefined;
+        ? toComponent(newPropsOrChild)
+        : undefined;
     return fn(props!, child);
   }
   return <any>wrappedComponent;

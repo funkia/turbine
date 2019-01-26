@@ -13,10 +13,8 @@
       "es2015.proxy",
       "es2016.array.include"
     ],
-    "noStrictGenericChecks": true,    
+    "noStrictGenericChecks": true,
     "experimentalDecorators": true
   },
-  "exclude": [
-    "node_modules"
-  ]
+  "exclude": ["node_modules"]
 }

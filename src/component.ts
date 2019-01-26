@@ -1,17 +1,17 @@
-import { Monad, monad, go, fgo } from "@funkia/jabz";
 import {
-  Now,
   Behavior,
-  observe,
-  sinkBehavior,
-  isBehavior,
-  Stream,
-  placeholder,
   Future,
+  isBehavior,
+  Now,
+  observe,
+  placeholder,
+  runNow,
+  sinkBehavior,
   sinkFuture,
-  runNow
+  Stream
 } from "@funkia/hareactive";
-import { mergeObj, id, copyRemaps, Merge } from "./utils";
+import { fgo, go, Monad, monad } from "@funkia/jabz";
+import { copyRemaps, id, Merge, mergeObj } from "./utils";
 
 const supportsProxy = "Proxy" in window;
 
@@ -23,7 +23,7 @@ function isShowable(s: any): s is Showable {
 
 export function isGeneratorFunction<A, T>(
   fn: any
-): fn is ((...a: any[]) => IterableIterator<T>) {
+): fn is (...a: any[]) => IterableIterator<T> {
   return (
     fn !== undefined &&
     fn.constructor !== undefined &&
@@ -252,7 +252,7 @@ class LoopComponent<O, A> extends Component<O, A> {
   }
 }
 export function loop<O, A extends ReactivesObject>(
-  f: ((a: A) => Child<O>),
+  f: (a: A) => Child<O>,
   placeholderNames?: string[]
 ): Component<O, A> {
   const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
@@ -472,8 +472,10 @@ export type ArrayToComponent<A extends Array<Child>> =
 export type TC<A> = A extends Component<infer O, any>
   ? Component<O, O>
   : A extends Showable
-    ? Component<{}, {}>
-    : A extends Behavior<Showable> ? Component<{}, {}> : Component<any, any>;
+  ? Component<{}, {}>
+  : A extends Behavior<Showable>
+  ? Component<{}, {}>
+  : Component<any, any>;
 
 export type ToComponent<A> = A extends Child[] ? ArrayToComponent<A> : TC<A>;
 

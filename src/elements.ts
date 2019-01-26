@@ -1,9 +1,4 @@
-import { Behavior, Stream } from "@funkia/hareactive";
-import { Component, ChildList } from "./component";
-import { element, streamDescription, behaviorDescription } from "./dom-builder";
-
-// Required due to exports using the type
-import { ClassDescriptionArray } from "./dom-builder";
+import { behaviorDescription, element, streamDescription } from "./dom-builder";
 
 export const input = element("input", {
   actionDefinitions: {
