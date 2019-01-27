@@ -117,7 +117,11 @@ const counterListView = ({ sum, counterIds }: ToView) => [
     addCounter: "click"
   }),
   br,
-  ul(list(counter, counterIds).output((o) => ({ listOut: o })))
+  ul(
+    list((n) => counter(n).output((o) => o), counterIds).output((o) => ({
+      listOut: o
+    }))
+  )
 ];
 
 export const counterList = modelView<ToView, ToModel>(
