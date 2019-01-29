@@ -13,7 +13,13 @@ import {
 } from "@funkia/hareactive";
 
 import { id } from "../src/utils";
-import { testComponent, element, Component, elements } from "../src";
+import {
+  testComponent,
+  element,
+  svgElement,
+  Component,
+  elements
+} from "../src";
 const E = elements;
 const { button, div } = elements;
 
@@ -33,6 +39,29 @@ describe("dom-builder", () => {
     const btnC = btnFac();
     const { dom: domBtn } = testComponent(btnC);
     expect(domBtn).to.have.html("<button></button>");
+  });
+
+  it("basic SVG elements", () => {
+    const lineFac = svgElement("line");
+    const lineC = lineFac();
+    const { dom: domLine } = testComponent(lineC);
+    expect(domLine).to.have.html(
+      '<line namespace="http://www.w3.org/2000/svg"></line>'
+    );
+
+    const rectFac = svgElement("rect");
+    const rectC = rectFac();
+    const { dom: domRect } = testComponent(rectC);
+    expect(domRect).to.have.html(
+      '<rect namespace="http://www.w3.org/2000/svg"></rect>'
+    );
+
+    const svgFac = svgElement("svg");
+    const svgC = svgFac();
+    const { dom: domSvg } = testComponent(svgC);
+    expect(domSvg).to.have.html(
+      '<svg namespace="http://www.w3.org/2000/svg"></svg>'
+    );
   });
 
   describe("output", () => {

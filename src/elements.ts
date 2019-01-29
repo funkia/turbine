@@ -1,4 +1,9 @@
-import { behaviorDescription, element, streamDescription } from "./dom-builder";
+import {
+  behaviorDescription,
+  element,
+  svgElement,
+  streamDescription
+} from "./dom-builder";
 
 export const input = element("input", {
   actionDefinitions: {
@@ -141,5 +146,20 @@ export const menuitem = element("menuitem");
 export const summary = element("summary");
 export const slot = element("slot");
 export const template = element("template");
+export const circle = svgElement("circle");
+export const rect = svgElement("rect");
+export const ellipse = svgElement("ellipse");
+export const g = svgElement("g");
+export const image = svgElement("image");
+export const line = svgElement("line");
+export const mask = svgElement("mask");
+export const path = svgElement("path");
+export const polygon = svgElement("polygon");
+export const polyline = svgElement("ppolylineolygon");
+export const svg = svgElement("svg");
+export const svgText = svgElement("text");
+export const marker = svgElement("marker");
+export const linearGradient = svgElement("linearGradient");
+export const foreignObject = svgElement("foreignObject");
 
 export { text } from "./component";

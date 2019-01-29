@@ -345,7 +345,13 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     }
   }
   run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
-    const elm = document.createElement(this.tagName);
+    let elm: HTMLElement;
+    if (this.props.namespace) {
+      elm = document.createElementNS(this.props.namespace, this.tagName);
+      delete this.props.namespace;
+    } else {
+      elm = document.createElement(this.tagName);
+    }
 
     const output: any = handleProps(this.props, elm);
     let explicit: any = {};
@@ -431,4 +437,14 @@ export function element<P extends InitialProperties>(
       return new DomComponent(tagName, finalProps, child);
     }
   );
+}
+
+export function svgElement<P extends InitialProperties>(
+  tagName: string,
+  defaultElementProps?: P
+): Wrapped<InitialProperties | undefined, InitialOutput<P>> {
+  return element(tagName, {
+    ...defaultElementProps,
+    namespace: "http://www.w3.org/2000/svg"
+  });
 }
