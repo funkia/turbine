@@ -46,21 +46,21 @@ describe("dom-builder", () => {
     const lineC = lineFac();
     const { dom: domLine } = testComponent(lineC);
     expect(domLine).to.have.html(
-      '<line namespace="http://www.w3.org/2000/svg"></line>'
+      '<line></line>'
     );
 
     const rectFac = svgElement("rect");
     const rectC = rectFac();
     const { dom: domRect } = testComponent(rectC);
     expect(domRect).to.have.html(
-      '<rect namespace="http://www.w3.org/2000/svg"></rect>'
+      '<rect></rect>'
     );
 
     const svgFac = svgElement("svg");
     const svgC = svgFac();
     const { dom: domSvg } = testComponent(svgC);
     expect(domSvg).to.have.html(
-      '<svg namespace="http://www.w3.org/2000/svg"></svg>'
+      '<svg></svg>'
     );
   });
 
