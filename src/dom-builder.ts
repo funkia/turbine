@@ -345,13 +345,12 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     }
   }
   run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
-    const ns: string | undefined = (this.props as any).namespace
-    const elm: HTMLElement = ns 
-      ? (document.createElementNS(ns, this.tagName) as HTMLElement)
+    const {namespace, ...props} = this.props as any
+    const elm: HTMLElement = namespace 
+      ? (document.createElementNS(namespace, this.tagName) as HTMLElement)
       : document.createElement(this.tagName);
-    delete (this.props as any).namespace
-  
-    const output: any = handleProps(this.props, elm);
+      
+    const output: any = handleProps(props, elm);
     let explicit: any = {};
 
     parent.appendChild(elm);

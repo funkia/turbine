@@ -24,7 +24,7 @@ const E = elements;
 const { button, div } = elements;
 
 describe("dom-builder", () => {
-  it("basic DOM elements", () => {
+  it("renders basic DOM elements", () => {
     const spanFac = element("span");
     const spanC = spanFac();
     const { dom: domSpan } = testComponent(spanC);
@@ -41,7 +41,7 @@ describe("dom-builder", () => {
     expect(domBtn).to.have.html("<button></button>");
   });
 
-  it("basic SVG elements", () => {
+  it("renders basic SVG elements", () => {
     const lineFac = svgElement("line");
     const lineC = lineFac();
     const { dom: domLine } = testComponent(lineC);
