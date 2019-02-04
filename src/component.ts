@@ -18,7 +18,9 @@ const supportsProxy = "Proxy" in window;
 export type Showable = string | number | boolean;
 
 function isShowable(s: any): s is Showable {
-  return typeof s === "string" || typeof s === "number" || typeof s === "boolean";
+  return (
+    typeof s === "string" || typeof s === "number" || typeof s === "boolean"
+  );
 }
 
 export function isGeneratorFunction<A, T>(
@@ -56,8 +58,11 @@ export abstract class Component<O, A> implements Monad<A> {
   of<B>(b: B): Component<{}, B> {
     return new OfComponent(b);
   }
+  flatMap<B>(f: (a: A) => Component<O, B>): Component<O, B> {
+    return new FlatMapComponent(this, f);
+  }
   chain<B>(f: (a: A) => Component<O, B>): Component<O, B> {
-    return new ChainComponent(this, f);
+    return new FlatMapComponent(this, f);
   }
   output<P>(f: (a: A) => P): Component<O & P, A>;
   output<B extends Record<string, keyof A>>(
@@ -156,7 +161,7 @@ export function output<A>(
  */
 export const emptyComponent = Component.of({});
 
-class ChainComponent<O, A, B> extends Component<O, B> {
+class FlatMapComponent<O, A, B> extends Component<O, B> {
   constructor(
     private component: Component<O, A>,
     private f: (a: A) => Component<O, B>
