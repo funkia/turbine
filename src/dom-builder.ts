@@ -254,7 +254,8 @@ const propKeywords = new Set([
   "setters",
   "entry",
   "behaviors",
-  "streams"
+  "streams",
+  "namespace"
 ]);
 
 /**
@@ -345,12 +346,12 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     }
   }
   run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
-    const {namespace, ...props} = this.props as any
-    const elm: HTMLElement = namespace 
+    const namespace = (this.props as any).namespace
+    const elm: HTMLElement = namespace
       ? (document.createElementNS(namespace, this.tagName) as HTMLElement)
       : document.createElement(this.tagName);
       
-    const output: any = handleProps(props, elm);
+    const output: any = handleProps(this.props, elm);
     let explicit: any = {};
 
     parent.appendChild(elm);
