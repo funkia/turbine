@@ -1004,6 +1004,24 @@ Then `list` will _reorder_ the two existing `input` elements and insert a new
 efficiently do this by applying `getKey` to the old and the current value of the
 list and figure out how the elements have moved around.
 
+### SVG
+
+You can use embed SVG in Turbine in much the same way you'd embed it in HTML:
+
+```js
+svg({ height: "100", width: "100" }, [
+  circle({
+    cx: "50",
+    cy: "50",
+    r: "40",
+    fill: "red"
+  }),
+  svgText({ x: 100, y: 30 }, "Hello SVG!")
+]);
+```
+
+The only element with a different name is `svgText` because `text` in Turbine is an HTML Text Node.
+
 ## Contributing
 
 Turbine is developed by Funkia. We write functional libraries. You can
