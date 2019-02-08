@@ -13,7 +13,7 @@ import {
 import { fgo, go, Monad, monad } from "@funkia/jabz";
 import { copyRemaps, id, Merge, mergeObj } from "./utils";
 
-const supportsProxy = "Proxy" in window;
+const supportsProxy = typeof Proxy !== "undefined";
 
 export type Showable = string | number | boolean;
 

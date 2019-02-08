@@ -346,11 +346,11 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
     }
   }
   run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
-    const namespace = (this.props as any).namespace
+    const namespace = (this.props as any).namespace;
     const elm: HTMLElement = namespace
       ? (document.createElementNS(namespace, this.tagName) as HTMLElement)
       : document.createElement(this.tagName);
-      
+
     const output: any = handleProps(this.props, elm);
     let explicit: any = {};
 
