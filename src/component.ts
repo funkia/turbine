@@ -79,7 +79,6 @@ export abstract class Component<O, A> implements Monad<A> {
     }
     // return new OutputComponent(remaps, this);
   }
-  // explicitOutput: string[] | undefined;
   static multi: boolean = false;
   multi: boolean = false;
   abstract run(
@@ -101,6 +100,27 @@ class OfComponent<A> extends Component<{}, A> {
   run(_1: Node, _2: Future<boolean>): { explicit: {}; output: A } {
     return { explicit: {}, output: this.value };
   }
+}
+
+class PerformComponent<A> extends Component<{}, A> {
+  constructor(private cb: () => A) {
+    super();
+  }
+  run(_1: Node, _2: Future<boolean>): { explicit: {}; output: A } {
+    return { explicit: {}, output: this.cb() };
+  }
+}
+
+/**
+ * Takes a callback, potentially with side-effects. The callback is invoked when
+ * the component is run and the return value becomes the components output.
+ */
+export function performComponent<A>(callback: () => A): Component<{}, A> {
+  return new PerformComponent(callback);
+}
+
+export function liftNow<A>(now: Now<A>): Component<{}, A> {
+  return performComponent(() => runNow(now));
 }
 
 class OutputComponent extends Component<any, any> {

@@ -19,13 +19,35 @@ import {
   list,
   runComponent,
   output,
-  merge
+  merge,
+  performComponent,
+  liftNow
 } from "../src";
 const { span, div, button, input } = elements;
 
 const supportsProxy = "Proxy" in window;
 
 describe("component specs", () => {
+  describe("performComponent", () => {
+    it("invokes callback", () => {
+      let result: number | undefined = undefined;
+      const c = performComponent(() => (result = 12));
+      assert.strictEqual(result, undefined);
+      const { out: actual } = testComponent(c);
+      assert.strictEqual(result, 12);
+      assert.strictEqual(actual, 12);
+    });
+  });
+  describe("liftNow", () => {
+    it("runs now", () => {
+      let result: number | undefined = undefined;
+      const c = liftNow(H.perform(() => (result = 12)));
+      assert.strictEqual(result, undefined);
+      const { out: actual } = testComponent(c);
+      assert.strictEqual(result, 12);
+      assert.strictEqual(actual, 12);
+    });
+  });
   describe("toComponent", () => {
     it("converts a behavior of a string to a component", () => {
       const b = H.sinkBehavior("Hello");
@@ -36,7 +58,7 @@ describe("component specs", () => {
       expect(dom).to.have.text("world");
     });
     it("converts a behavior of a boolean to a component", () => {
-      const b = H.sinkBehavior(true)
+      const b = H.sinkBehavior(true);
       const component = toComponent(b);
       const { dom } = testComponent(component);
       expect(dom).to.have.text("true");
@@ -279,10 +301,7 @@ describe("modelView", () => {
         fromView = args;
         return H.Now.of({});
       },
-      (): Child<FromView> => [
-        span("Hello"),
-        input().output({ value: "value" })
-      ]
+      (): Child<FromView> => [span("Hello"), input().output({ value: "value" })]
     )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
