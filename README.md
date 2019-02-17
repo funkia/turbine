@@ -648,7 +648,7 @@ Let's begin by defining a view function that creates a header and a
 button.
 
 ```js
-function* counterListView(): {
+function* counterListView() {
   yield h1("Counters");
   const { click: addCounter } = yield button({ class: "btn btn-primary" }, "Add counter");
   return { addCounter };
@@ -661,7 +661,7 @@ function receives the return value from the view function.
 ```js
 const counterList = modelView(counterListModel, counterListView);
 
-const counterListModel = fgo(function*({addCounter, listOut}): {
+const counterListModel = fgo(function*({addCounter, listOut}) {
   const nextId = yield sample(scanS(add, 2, addCounter.mapTo(1)));
   const appendCounterFn = map(
     (id) => (ids: number[]) => ids.concat([id]),
