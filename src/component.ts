@@ -425,6 +425,7 @@ export function viewObserve<A>(
 // Child element
 export type CE<O = any> =
   | Component<O, any>
+  | Behavior<Component<any, any>>
   | Showable
   | Behavior<Showable>
   | ChildList;
