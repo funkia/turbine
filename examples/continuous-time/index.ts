@@ -1,7 +1,6 @@
 import {
   Behavior,
   map,
-  sample,
   snapshot,
   stepper,
   Stream,
@@ -28,8 +27,9 @@ const model = fgo(function*({ snapClick }: ViewOut) {
     (t) => "You last pressed the button at " + formatTime(t),
     snapshot(time, snapClick)
   );
-  const message = yield sample(
-    stepper("You've not clicked the button yet", msgFromClick)
+  const message = yield stepper(
+    "You've not clicked the button yet",
+    msgFromClick
   );
   return { time, message };
 });

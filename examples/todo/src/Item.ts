@@ -1,4 +1,4 @@
-import { combine, fromMaybe, lift, map, Maybe, fgo } from "@funkia/jabz";
+import { combine } from "@funkia/jabz";
 import {
   Behavior,
   changes,
@@ -10,12 +10,12 @@ import {
   snapshot,
   stepper,
   Stream,
-  switcher,
+  lift,
   toggle
 } from "@funkia/hareactive";
 import { Router, routePath } from "@funkia/rudolph";
 
-import { modelView, elements } from "../../../src";
+import { modelView, elements, fgo } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
 
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
@@ -82,22 +82,20 @@ const itemModel = fgo(function*(
   { toggleAll, name: initialName, id, router }: Input
 ): any {
   const enterPress = filter(isKey(enter), nameKeyup);
-  const enterNotPressed = yield sample(toggle(true, startEditing, enterPress));
+  const enterNotPressed = yield toggle(true, startEditing, enterPress);
   const cancel = filter(isKey(esc), nameKeyup);
-  const notCancelled = yield sample(toggle(true, startEditing, cancel));
+  const notCancelled = yield toggle(true, startEditing, cancel);
   const stopEditing = combine(
     enterPress,
     keepWhen(nameBlur, enterNotPressed),
     cancel
   );
-  const isEditing = yield sample(toggle(false, startEditing, stopEditing));
-  const newName = yield sample(
-    stepper(
-      initialName,
-      combine(
-        newNameInput.map((ev) => ev.target.value),
-        snapshot(taskName, cancel)
-      )
+  const isEditing = yield toggle(false, startEditing, stopEditing);
+  const newName = yield stepper(
+    initialName,
+    combine(
+      newNameInput.map((ev) => ev.target.value),
+      snapshot(taskName, cancel)
     )
   );
   const nameChange = snapshot(newName, keepWhen(stopEditing, notCancelled));
@@ -111,9 +109,13 @@ const itemModel = fgo(function*(
       : savedItem;
 
   // Initialize task to restored values
-  const taskName_ = yield sample(stepper(initial.taskName, nameChange));
-  const isComplete: Behavior<boolean> = yield sample(
-    stepper(initial.isComplete, combine(toggleTodo, toggleAll))
+  const taskName_: Behavior<string> = yield stepper(
+    initial.taskName,
+    nameChange
+  );
+  const isComplete: Behavior<boolean> = yield stepper(
+    initial.isComplete,
+    combine(toggleTodo, toggleAll)
   );
 
   // Persist todo item

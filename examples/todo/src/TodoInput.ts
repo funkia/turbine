@@ -4,8 +4,7 @@ import {
   changes,
   combine,
   Behavior,
-  stepper,
-  sample
+  stepper
 } from "@funkia/hareactive";
 
 import { elements, modelView, fgo } from "../../../src";
@@ -25,15 +24,17 @@ export type Out = {
 };
 
 function* model({ enterPressed, value }: FromView) {
-  const clearedValue: Behavior<string> = yield sample(
-    stepper("", combine(enterPressed.mapTo(""), changes(value)))
+  const clearedValue: Behavior<string> = yield stepper(
+    "",
+    combine(enterPressed.mapTo(""), changes(value))
   );
+
   const addItem = snapshot(clearedValue, enterPressed).filter(isValidValue);
 
   return { addItem, clearedValue };
 }
 
-const view = ({ clearedValue }) =>
+const view = ({ clearedValue }: { clearedValue: Behavior<string> }) =>
   input({
     class: "new-todo",
     props: { value: clearedValue },

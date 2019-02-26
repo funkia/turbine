@@ -3,7 +3,6 @@ import {
   changes,
   Now,
   performStreamLatest,
-  sample,
   split,
   stepper,
   Stream
@@ -17,13 +16,7 @@ import {
   right,
   withEffectsP
 } from "@funkia/jabz";
-import {
-  Component,
-  elements,
-  modelView,
-  runComponent,
-  fgo
-} from "../../src/index";
+import { elements, modelView, runComponent, fgo } from "../../src/index";
 
 const { span, br, input } = elements;
 
@@ -31,8 +24,8 @@ const apiUrl = "http://api.zippopotam.us/us/";
 
 const fetchJSON = withEffectsP(
   (url: string): Promise<any> => {
-    return fetch(url).then(
-      (resp) => (resp.ok ? resp.json() : Promise.reject("Not found"))
+    return fetch(url).then((resp) =>
+      resp.ok ? resp.json() : Promise.reject("Not found")
     );
   }
 );
@@ -76,18 +69,16 @@ const model = fgo(function*({ zipCode }: ViewOut): Iterator<Now<any>> {
   const results: Stream<Either<string, ZipResult>> = yield performStreamLatest(
     requests
   );
-  const status = yield sample(
-    stepper(
-      "",
-      combine(
-        invalidZipCodeChange.mapTo("Not a valid zip code"),
-        validZipCodeChange.mapTo("Loading ..."),
-        results.map((r) =>
-          r.match({
-            left: () => "Zip code does not exist",
-            right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
-          })
-        )
+  const status = yield stepper(
+    "",
+    combine(
+      invalidZipCodeChange.mapTo("Not a valid zip code"),
+      validZipCodeChange.mapTo("Loading ..."),
+      results.map((r) =>
+        r.match({
+          left: () => "Zip code does not exist",
+          right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
+        })
       )
     )
   );

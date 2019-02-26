@@ -3,16 +3,16 @@ import {
   combine,
   map,
   Now,
-  sample,
+  accum,
   scan,
-  scanS,
   Stream
 } from "@funkia/hareactive";
+
 import { elements, fgo, list, ModelReturn, modelView } from "../../../src";
 const { br, div, button, h1, ul } = elements;
 
 const add = (n: number, m: number) => n + m;
-const apply = <A>(f: (a: A) => A, a: A) => f(a);
+const apply = <A, B>(f: (a: A) => B, a: A) => f(a);
 
 type CounterModelInput = {
   incrementClick: Stream<any>;
@@ -33,7 +33,7 @@ const counterModel = fgo(function*({
 }: CounterModelInput): ModelReturn<CounterViewInput> {
   const increment = incrementClick.mapTo(1);
   const decrement = decrementClick.mapTo(-1);
-  const count = yield sample(scan(add, 0, combine(increment, decrement)));
+  const count = yield accum(add, 0, combine(increment, decrement));
   return { count };
 });
 
@@ -67,14 +67,16 @@ const counterListModel = fgo(function*({
   addCounter,
   listOut
 }: ModelInput): Iterator<Now<any>> {
-  const nextId: Stream<number> = yield sample(
-    scanS(add, 2, addCounter.mapTo(1))
-  );
+  const nextId: Stream<number> = yield scan(add, 2, addCounter.mapTo(1));
   const appendCounterFn = map(
     (id) => (ids: number[]) => ids.concat([id]),
     nextId
   );
-  const counterIds = yield sample(scan(apply, [0], appendCounterFn));
+  const counterIds = yield accum<(a: number[]) => number[], number[]>(
+    apply,
+    [0],
+    appendCounterFn
+  );
   return { counterIds };
 });
 

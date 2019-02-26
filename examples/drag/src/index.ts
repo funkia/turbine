@@ -3,24 +3,24 @@ import {
   streamFromEvent,
   stepper,
   toggle,
-  sample,
   snapshot,
   switcher,
   Behavior,
   combine,
-  scan
+  lift,
+  runNow,
+  Stream,
+  accum
 } from "@funkia/hareactive";
-import { lift } from "@funkia/jabz";
 import { runComponent, elements, go, fgo, modelView } from "../../../src";
 const { div } = elements;
 
 type Point = { x: number; y: number };
 
 const mousemove = streamFromEvent(window, "mousemove");
-const mousePosition = stepper(
-  { x: 0, y: 0 },
-  mousemove.map((e) => ({ x: e.pageX, y: e.pageY }))
-).at();
+const mousePosition = runNow(
+  stepper({ x: 0, y: 0 }, mousemove.map((e) => ({ x: e.pageX, y: e.pageY })))
+);
 
 const addPoint = (p1: Point, p2: Point) => ({
   x: p1.x + p2.x,
@@ -41,17 +41,17 @@ const boxModel = fgo(function*(
     (p) => map((p2) => ({ x: p2.x - p.x, y: p2.y - p.y }), mousePosition),
     startDragAt
   );
-  const offset: Behavior<Point> = yield sample(
-    switcher(
-      Behavior.of({ x: 0, y: 0 }),
-      combine(dragOffset, endDrag.mapTo(Behavior.of({ x: 0, y: 0 })))
-    )
+  const offset: Behavior<Point> = yield switcher(
+    Behavior.of({ x: 0, y: 0 }),
+    combine(dragOffset, endDrag.mapTo(Behavior.of({ x: 0, y: 0 })))
   );
-  const committed = yield sample(
-    scan(addPoint, { x: 0, y: 0 }, snapshot(offset, endDrag))
+  const committed: Behavior<Point> = yield accum(
+    addPoint,
+    { x: 0, y: 0 },
+    snapshot(offset, endDrag)
   );
   const position = lift(addPoint, committed, offset);
-  const isBeingDragged = yield sample(toggle(false, startDrag, endDrag));
+  const isBeingDragged = yield toggle(false, startDrag, endDrag);
   return { isBeingDragged, position };
 });
 

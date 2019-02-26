@@ -1,5 +1,5 @@
-import { Behavior, combine, sample, stepper, Stream } from "@funkia/hareactive";
-import { elements, fgo, modelView, runComponent, toComponent } from "../../src";
+import { Behavior, combine, stepper, Stream } from "@funkia/hareactive";
+import { elements, fgo, modelView, runComponent } from "../../src";
 
 const { input, div, label } = elements;
 
@@ -21,17 +21,13 @@ const parseNumbers = (s: Stream<string>) =>
 const model = fgo(function*({ fahrenChange, celsiusChange }: View) {
   const fahrenNrChange = parseNumbers(fahrenChange);
   const celsiusNrChange = parseNumbers(celsiusChange);
-  const celsius = yield sample(
-    stepper(
-      0,
-      combine(celsiusNrChange, fahrenNrChange.map((f) => (f - 32) / 1.8))
-    )
+  const celsius = yield stepper(
+    0,
+    combine(celsiusNrChange, fahrenNrChange.map((f) => (f - 32) / 1.8))
   );
-  const fahren = yield sample(
-    stepper(
-      0,
-      combine(fahrenNrChange, celsiusNrChange.map((c) => (c * 9) / 5 + 32))
-    )
+  const fahren = yield stepper(
+    0,
+    combine(fahrenNrChange, celsiusNrChange.map((c) => (c * 9) / 5 + 32))
   );
   return { celsius, fahren };
 });

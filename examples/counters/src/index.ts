@@ -1,13 +1,6 @@
-import { Behavior, combine, sample, stepper, Stream } from "@funkia/hareactive";
+import { Behavior, combine, stepper, Stream } from "@funkia/hareactive";
 import { go } from "@funkia/jabz";
-import {
-  Component,
-  dynamic,
-  elements,
-  fgo,
-  modelView,
-  runComponent
-} from "../../../src";
+import { elements, fgo, modelView, runComponent } from "../../../src";
 import { main1 } from "./version1";
 import { main2 } from "./version2";
 import { main3 } from "./version3";
@@ -45,7 +38,7 @@ type FromModel = {
 
 const versionSelector = modelView<FromModel, FromView>(
   fgo(function*({ selectVersion }) {
-    const selected = yield sample(stepper("1", selectVersion));
+    const selected = yield stepper("1", selectVersion);
     return { selected };
   }),
   ({ selected }) =>
@@ -64,7 +57,7 @@ const versionSelector = modelView<FromModel, FromView>(
 const main = go(function*() {
   const { selected } = yield versionSelector();
   const currentApp = selected.map((n: AppId) => numberToApp[n]);
-  yield div(dynamic(currentApp));
+  yield div(currentApp);
   return {};
 });
 

@@ -2,7 +2,6 @@ import { Behavior, Stream, moment, combine } from "@funkia/hareactive";
 import { Component, elements, modelView, fgo } from "../../../src";
 const { span, button, ul, li, a, footer, strong } = elements;
 import { navigate, Router } from "@funkia/rudolph";
-import { get } from "../../../src/utils";
 
 // import {mapTraverseFlat} from "./TodoApp";
 import { Output as ItemOut } from "./Item";
@@ -48,7 +47,7 @@ const model = function*(
     filterBtnCompleted,
     clearCompleted
   }: FromView,
-  { router }
+  { router }: { router: Router }
 ) {
   const navs = combine(
     filterBtnAll.mapTo("all"),

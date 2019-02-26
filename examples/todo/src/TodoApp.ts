@@ -1,16 +1,17 @@
-import { lift, fgo, sequence, IO } from "@funkia/jabz";
+import { fgo, sequence, IO, combine } from "@funkia/jabz";
 import {
   Behavior,
   sample,
   snapshot,
   Stream,
-  switchStream,
-  combine,
   performStream,
   changes,
+  lift,
   snapshotWith,
-  scanCombine,
-  moment
+  accumCombine,
+  moment,
+  shiftCurrent,
+  empty
 } from "@funkia/hareactive";
 import { modelView, elements, list, output } from "../../../src";
 const { h1, p, header, footer, section, checkbox, ul, label } = elements;
@@ -67,18 +68,15 @@ function listModel<A, B>({
   itemToKey,
   initial
 }: ListModel<A, B>) {
-  return sample(
-    scanCombine(
+  return accumCombine(
+    [
+      [prependItemS, (item, list) => [item].concat(list)],
       [
-        [prependItemS, (item, list) => [item].concat(list)],
-        [
-          removeKeyListS,
-          (keys, list) =>
-            list.filter((item) => !includes(itemToKey(item), keys))
-        ]
-      ],
-      initial
-    )
+        removeKeyListS,
+        (keys, list) => list.filter((item) => !includes(itemToKey(item), keys))
+      ]
+    ],
+    initial
   );
 }
 
@@ -88,22 +86,22 @@ function* model({ addItem, toggleAll, clearCompleted, itemOutputs }: FromView) {
   );
 
   const newTodoS = snapshotWith((name, id) => ({ name, id }), nextId, addItem);
-  const deleteS = switchStream(
-    itemOutputs.map((list) => combine(...list.map((o) => o.destroyItemId)))
+  const deleteS = shiftCurrent(
+    itemOutputs.map((list) =>
+      list.length > 0 ? combine(...list.map((o) => o.destroyItemId)) : empty
+    )
   );
   const completedIds = getCompletedIds(itemOutputs);
 
   const savedTodoName: ItemParams[] = yield sample(todoListStorage);
   const restoredTodoName = savedTodoName === null ? [] : savedTodoName;
 
-  const getItemId = ({ id }: ItemParams) => id;
-
   const clearCompletedIdS = snapshot(completedIds, clearCompleted);
   const removeListS = combine(deleteS.map((a) => [a]), clearCompletedIdS);
-  const todoNames = yield listModel({
+  const todoNames = yield listModel<{ id: number; name: string }, number>({
     prependItemS: newTodoS,
     removeKeyListS: removeListS,
-    itemToKey: getItemId,
+    itemToKey: ({ id }) => id,
     initial: restoredTodoName
   });
 
@@ -166,8 +164,7 @@ function view(
                   {
                     completed: "completed",
                     destroyItemId: "destroyItemId",
-                    id: "id",
-                    completed: "completed"
+                    id: "id"
                   },
                   item({ toggleAll, router, ...n })
                 ),
