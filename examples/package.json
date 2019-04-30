@@ -16,11 +16,12 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "@funkia/hareactive": "^0.3.1",
+    "@funkia/hareactive": "^0.3.2",
     "@funkia/rudolph": "0.0.7",
+    "@funkia/turbine": "file:..",
     "todomvc-app-css": "^2.2.0"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.11.0"
+    "parcel-bundler": "^1.12.3"
   }
 }

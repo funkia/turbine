@@ -1,11 +1,9 @@
+import { Behavior, Future, isBehavior, Stream } from "@funkia/hareactive";
 import {
-  Behavior,
   behaviorFromEvent,
-  Future,
-  isBehavior,
-  Stream,
-  streamFromEvent
-} from "@funkia/hareactive";
+  streamFromEvent,
+  render
+} from "@funkia/hareactive/dom";
 import {
   Child,
   Component,
@@ -14,10 +12,9 @@ import {
   Out,
   Showable,
   toComponent,
-  ToComponent,
-  viewObserve
+  ToComponent
 } from "./component";
-import { id, Merge, mergeDeep } from "./utils";
+import { id, mergeDeep } from "./utils";
 
 export type EventName = keyof HTMLElementEventMap;
 
@@ -119,13 +116,15 @@ export type DefaultOutput = {
   [E in EventName]: Stream<HTMLElementEventMap[E]>
 };
 
-export type InitialOutput<P extends InitialProperties> = Merge<
-  (P["streams"] extends StreamDescriptions ? OutputStream<P["streams"]> : {}) &
-    (P["behaviors"] extends BehaviorDescriptions
-      ? BehaviorOutput<P["behaviors"]>
-      : {}) &
-    DefaultOutput
->;
+export type InitialOutput<
+  P extends InitialProperties
+> = (P["streams"] extends StreamDescriptions
+  ? OutputStream<P["streams"]>
+  : {}) &
+  (P["behaviors"] extends BehaviorDescriptions
+    ? BehaviorOutput<P["behaviors"]>
+    : {}) &
+  DefaultOutput;
 
 // An array of names of all DOM events
 export const allDomEvents: EventName[] = <any>Object.getOwnPropertyNames(
@@ -179,7 +178,7 @@ function handleObject<A>(
     for (const key of Object.keys(object)) {
       const value = object[key];
       if (isBehavior(value)) {
-        viewObserve((newValue) => setter(key, newValue), value);
+        render((newValue) => setter(key, newValue), value);
       } else {
         setter(key, value);
       }
@@ -200,9 +199,7 @@ function handleCustom(
       if (isStreamActions) {
         actionTrigger.subscribe((value) => actionDefinition(elm, value));
       } else {
-        viewObserve((value) => actionDefinition(elm, value), <any>(
-          actionTrigger
-        ));
+        render((value) => actionDefinition(elm, value), <any>actionTrigger);
       }
     }
   }
@@ -214,7 +211,7 @@ function handleClass(
 ): void {
   if (isBehavior(desc)) {
     let previousClasses: string[];
-    viewObserve((value) => {
+    render((value) => {
       if (previousClasses !== undefined) {
         elm.classList.remove(...previousClasses);
       }

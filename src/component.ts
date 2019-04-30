@@ -10,6 +10,7 @@ import {
   sinkFuture,
   Stream
 } from "@funkia/hareactive";
+import { render } from "@funkia/hareactive/dom";
 import { fgo, go, Monad, monad } from "@funkia/jabz";
 import { copyRemaps, id, Merge, mergeObj } from "./utils";
 
@@ -401,27 +402,6 @@ export function modelView<M extends ReactivesObject, V>(
     new ModelViewComponent<M, V>(args, m, view, toViewReactiveNames);
 }
 
-function pullOnFrame(pull: (t?: number) => void): () => void {
-  let isPulling = true;
-  function frame(): void {
-    if (isPulling) {
-      pull();
-      requestAnimationFrame(frame);
-    }
-  }
-  frame();
-  return () => {
-    isPulling = false;
-  };
-}
-
-export function viewObserve<A>(
-  update: (a: A) => void,
-  behavior: Behavior<A>
-): void {
-  observe(update, pullOnFrame, behavior);
-}
-
 // Child element
 export type CE<O = any> =
   | Component<O, any>
@@ -474,7 +454,7 @@ export type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
 
 // Merge component
 export type MC<C1 extends CE, C2 extends CE> = Component<
-  Merge<ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>>,
+  ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>,
   Merge<ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>>
 >;
 
@@ -611,7 +591,7 @@ class DynamicComponent<O> extends Component<{}, Behavior<O>> {
       return explicit;
     });
     // To activate behavior
-    viewObserve(id, output);
+    render(id, output);
 
     return { explicit: {}, output };
   }
