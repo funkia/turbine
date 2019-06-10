@@ -1,9 +1,8 @@
 import { Behavior, Stream, moment, combine } from "@funkia/hareactive";
-import { Component, elements, modelView, fgo } from "../../../src";
+import { elements, modelView, fgo } from "../../../src";
 const { span, button, ul, li, a, footer, strong } = elements;
-import { navigate, Router } from "@funkia/rudolph";
+import { navigate, Router, routePath } from "@funkia/rudolph";
 
-// import {mapTraverseFlat} from "./TodoApp";
 import { Output as ItemOut } from "./Item";
 
 export type Params = {
@@ -26,20 +25,6 @@ type FromView = {
 const isEmpty = (list: any[]) => list.length === 0;
 const formatRemainer = (value: number) => ` item${value === 1 ? "" : "s"} left`;
 
-const filterItem = (name: string) =>
-  li(
-    a(
-      {
-        style: {
-          cursor: "pointer"
-        }
-      },
-      name
-    ).output({
-      [`filterBtn${name}`]: "click"
-    })
-  );
-
 const model = function*(
   {
     filterBtnActive,
@@ -58,20 +43,72 @@ const model = function*(
   return { clearCompleted };
 };
 
-const view = ({}, { todosB, areAnyCompleted }: Params) => {
+const view = ({  }: Out, { router, todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
   const itemsLeft = moment(
     (at) => at(todosB).filter((t) => !at(t.completed)).length
   );
+
+  const selectedClass = routePath(
+    {
+      active: () => "active",
+      completed: () => "completed",
+      "*": () => "all"
+    },
+    router
+  );
+
   return footer({ class: ["footer", { hidden }] }, [
     span({ class: "todo-count" }, [
       strong(itemsLeft),
       itemsLeft.map(formatRemainer)
     ]),
     ul({ class: "filters" }, [
-      filterItem("All"),
-      filterItem("Active"),
-      filterItem("Completed")
+      li(
+        a(
+          {
+            style: {
+              cursor: "pointer"
+            },
+            class: {
+              selected: selectedClass.map((s) => s === "all")
+            }
+          },
+          "All"
+        ).output({
+          filterBtnAll: "click"
+        })
+      ),
+      li(
+        a(
+          {
+            style: {
+              cursor: "pointer"
+            },
+            class: {
+              selected: selectedClass.map((s) => s === "active")
+            }
+          },
+          "Active"
+        ).output({
+          filterBtnActive: "click"
+        })
+      ),
+      li(
+        a(
+          {
+            style: {
+              cursor: "pointer"
+            },
+            class: {
+              selected: selectedClass.map((s) => s === "completed")
+            }
+          },
+          "Completed"
+        ).output({
+          filterBtnCompleted: "click"
+        })
+      )
     ]),
     button(
       {
