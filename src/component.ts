@@ -24,9 +24,9 @@ function isShowable(s: any): s is Showable {
   );
 }
 
-export function isGeneratorFunction<A, T>(
+export function isGeneratorFunction(
   fn: any
-): fn is (...a: any[]) => IterableIterator<T> {
+): fn is (...a: any[]) => IterableIterator<any> {
   return (
     fn !== undefined &&
     fn.constructor !== undefined &&
@@ -542,7 +542,7 @@ export function toComponent<A extends Child>(child: A): ToComponent<A> {
   } else if (isBehavior(child)) {
     return dynamic(child).mapTo({}) as any;
   } else if (isGeneratorFunction(child)) {
-    return go(<any>child);
+    return go(child);
   } else if (isShowable(child)) {
     return text(child) as any;
   } else if (Array.isArray(child)) {
