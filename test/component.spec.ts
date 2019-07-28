@@ -288,7 +288,7 @@ describe("modelView", () => {
   it("passes argument to view", () => {
     const c = modelView(
       ({ click }) => H.Now.of({}),
-      ({}, n: number) => span(n).output({ click: "click" })
+      ({  }: {}, n: number) => span(n).output({ click: "click" })
     );
     const { dom } = testComponent(c(7));
     expect(dom.querySelector("span")).to.have.text("7");

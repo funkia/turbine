@@ -684,10 +684,20 @@ class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
   }
 }
 
+export function list<A extends string | number, O>(
+  componentCreator: (a: A) => Component<O, any>,
+  listB: Behavior<A[]>,
+  getKey?: (a: A, index: number) => number | string
+): Component<{}, Behavior<O[]>>;
 export function list<A, O>(
   componentCreator: (a: A) => Component<O, any>,
   listB: Behavior<A[]>,
-  getKey: (a: A, index: number) => number | string = id
+  getKey: (a: A, index: number) => number | string
+): Component<{}, Behavior<O[]>>;
+export function list<A, O>(
+  componentCreator: (a: A) => Component<O, any>,
+  listB: Behavior<A[]>,
+  getKey: (a: A, index: number) => number | string = id as any
 ): Component<{}, Behavior<O[]>> {
   return new ComponentList(componentCreator, listB, getKey);
 }

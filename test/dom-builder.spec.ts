@@ -45,23 +45,17 @@ describe("dom-builder", () => {
     const lineFac = svgElement("line");
     const lineC = lineFac();
     const { dom: domLine } = testComponent(lineC);
-    expect(domLine).to.have.html(
-      '<line></line>'
-    );
+    expect(domLine).to.have.html("<line></line>");
 
     const rectFac = svgElement("rect");
     const rectC = rectFac();
     const { dom: domRect } = testComponent(rectC);
-    expect(domRect).to.have.html(
-      '<rect></rect>'
-    );
+    expect(domRect).to.have.html("<rect></rect>");
 
     const svgFac = svgElement("svg");
     const svgC = svgFac();
     const { dom: domSvg } = testComponent(svgC);
-    expect(domSvg).to.have.html(
-      '<svg></svg>'
-    );
+    expect(domSvg).to.have.html("<svg></svg>");
   });
 
   describe("output", () => {

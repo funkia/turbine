@@ -1,14 +1,5 @@
 language: node_js
 node_js:
  - node
-install:
- - npm install
-script:
- - ./node_modules/.bin/karma start karma-ci.conf.js
 after_success:
  - npm run codecov
-addons:
-  sauce_connect:
-    username: funnel
-  jwt:
-    secure: "M0WrdxkxO4I31L9+aR+48rQ+KTMofAtyQTd8fOYmej1WiD6pG8iAsZCqUXywm6JW6TvMG6Q+GAJtqWEyykgv+GuijcrFlU/OZeScvonpAwNNRbfpKWuFrde/psTJnIsUw9KJYZYab7N/oRMZdRqzRb5NB/rRvqm7POJweDWPw6AuVjMGUWLeKXKjdZ53G1O1WDGO041l2eL/IKWz6MAdk8JHWpnYMyDIoAC9853wDSj5RtwIdX7HGr5OrTCI8J3pDJv0N+1z8cXmqeGBnLZ3G/zztChojLxfCPSff7Yj5/TNfSpvLH5tdp+sO4kRQNkXSPQIP/zAWa5AjywX9TN9vo9NVooM0M1ldby3VrvSXt6Lo1SIlMU5vzf55GTsVUMniPjSawub4ggCUNVw33N/omAkvOHfTtZudS3WzmSS2R9JUxR5/CHnuodLbSVmh6YDexEP2XYq1dtQdWArpkdBvDYW/u/8aoKFDTtfQFh9W+vekZcqERc4ApNzZckpRBSZszurotHlWBDg5o1WvqqW+fdGM/dmJxjHR/Rg3Wofxv1M1pbTkMSixUN3nMjijuUiDENjosUlAeXJZr/4C8qZ9+2mPRVbAYyzK9PBpol/KHZW/uZu8YUmFHZ6P6Bs3mrk1C8O4S2NtgG39e5OCGVoyStCI+8GK2987QsV8pMXxvg="

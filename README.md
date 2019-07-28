@@ -8,7 +8,6 @@ programming. Experimental.
 [![Gitter](https://img.shields.io/gitter/room/funkia/General.svg)](https://gitter.im/funkia/General)
 [![Build Status](https://travis-ci.org/funkia/turbine.svg?branch=master)](https://travis-ci.org/funkia/turbine)
 [![codecov](https://codecov.io/gh/funkia/turbine/branch/master/graph/badge.svg)](https://codecov.io/gh/funkia/turbine)
-[![Sauce Test Status](https://saucelabs.com/browser-matrix/funnel.svg)](https://saucelabs.com/u/funnel)
 
 # Table of contents
 

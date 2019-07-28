@@ -10,7 +10,6 @@
     "experimentalDecorators": true,
     "strict": true,
     "strictPropertyInitialization": false,
-    "noStrictGenericChecks": true,
     "lib": ["dom", "es2017"]
   },
   "include": ["src/**/*", "test/**/*", "examples/**/*"],

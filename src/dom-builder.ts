@@ -127,11 +127,8 @@ export type InitialOutput<
   DefaultOutput;
 
 // An array of names of all DOM events
-export const allDomEvents: EventName[] = <any>Object.getOwnPropertyNames(
-  Object.getPrototypeOf(Object.getPrototypeOf(document))
-)
-  .filter((i) => i.indexOf("on") === 0)
-  .map((name) => name.slice(2));
+// prettier-ignore
+export const allDomEvents: EventName[] = ["readystatechange","beforescriptexecute","afterscriptexecute","selectionchange","fullscreenchange","fullscreenerror","pointerlockchange","pointerlockerror","visibilitychange","copy","cut","paste","abort","blur","focus","auxclick","canplay","canplaythrough","change","click","close","contextmenu","cuechange","dblclick","drag","dragend","dragenter","dragexit","dragleave","dragover","dragstart","drop","durationchange","emptied","ended","input","invalid","keydown","keypress","keyup","load","loadeddata","loadedmetadata","loadend","loadstart","mousedown","mouseenter","mouseleave","mousemove","mouseout","mouseover","mouseup","wheel","pause","play","playing","progress","ratechange","reset","resize","scroll","seeked","seeking","select","show","stalled","submit","suspend","timeupdate","volumechange","waiting","selectstart","toggle","pointercancel","pointerdown","pointerup","pointermove","pointerout","pointerover","pointerenter","pointerleave","gotpointercapture","lostpointercapture","animationcancel","animationend","animationiteration","animationstart","transitioncancel","transitionend","transitionrun","transitionstart","error"] as any;
 
 // Output streams that _all_ elements share
 const defaultStreams: StreamDescriptions = {};
