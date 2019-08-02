@@ -25,6 +25,23 @@ type FromView = {
 const isEmpty = (list: any[]) => list.length === 0;
 const formatRemainer = (value: number) => ` item${value === 1 ? "" : "s"} left`;
 
+const filterItem = (name: string, selectedClass: Behavior<string>) =>
+  li(
+    a(
+      {
+        style: {
+          cursor: "pointer"
+        },
+        class: {
+          selected: selectedClass.map((s) => s === name)
+        }
+      },
+      name
+    ).output({
+      [`filterBtn${name}`]: "click"
+    })
+  );
+
 const model = function*(
   {
     filterBtnActive,
@@ -51,9 +68,9 @@ const view = ({  }: Out, { router, todosB, areAnyCompleted }: Params) => {
 
   const selectedClass = routePath(
     {
-      active: () => "active",
-      completed: () => "completed",
-      "*": () => "all"
+      active: () => "Active",
+      completed: () => "Completed",
+      "*": () => "All"
     },
     router
   );
@@ -64,51 +81,9 @@ const view = ({  }: Out, { router, todosB, areAnyCompleted }: Params) => {
       itemsLeft.map(formatRemainer)
     ]),
     ul({ class: "filters" }, [
-      li(
-        a(
-          {
-            style: {
-              cursor: "pointer"
-            },
-            class: {
-              selected: selectedClass.map((s) => s === "all")
-            }
-          },
-          "All"
-        ).output({
-          filterBtnAll: "click"
-        })
-      ),
-      li(
-        a(
-          {
-            style: {
-              cursor: "pointer"
-            },
-            class: {
-              selected: selectedClass.map((s) => s === "active")
-            }
-          },
-          "Active"
-        ).output({
-          filterBtnActive: "click"
-        })
-      ),
-      li(
-        a(
-          {
-            style: {
-              cursor: "pointer"
-            },
-            class: {
-              selected: selectedClass.map((s) => s === "completed")
-            }
-          },
-          "Completed"
-        ).output({
-          filterBtnCompleted: "click"
-        })
-      )
+      filterItem("All", selectedClass),
+      filterItem("Active", selectedClass),
+      filterItem("Completed", selectedClass)
     ]),
     button(
       {
