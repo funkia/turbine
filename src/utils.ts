@@ -11,27 +11,8 @@ function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
   return result;
 }
 
-export function fst<A, B>(a: [A, B]): A {
-  return a[0];
-}
-
-export function snd<A, B>(a: [A, B]): B {
-  return a[1];
-}
-
 function isObject(item: any): item is Object {
   return typeof item === "object" && !Array.isArray(item) && !isBehavior(item);
-}
-
-export function get<K extends string>(prop: K): any {
-  return <V, Obj extends Record<K, V>>(obj: Obj): Obj[K] => obj[prop];
-}
-
-export function assign<A, B>(a: A, b: B): A & B {
-  for (const key of Object.keys(b) as (keyof B)[]) {
-    (a as any)[key] = b[key];
-  }
-  return a as any;
 }
 
 export function mergeObj<A, B>(a: A, b: B): A & B {

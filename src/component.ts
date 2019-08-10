@@ -3,7 +3,6 @@ import {
   Future,
   isBehavior,
   Now,
-  observe,
   placeholder,
   runNow,
   sinkBehavior,
@@ -78,7 +77,6 @@ export abstract class Component<O, A> implements Monad<A> {
         this
       );
     }
-    // return new OutputComponent(remaps, this);
   }
   static multi: boolean = false;
   multi: boolean = false;
@@ -124,22 +122,6 @@ export function liftNow<A>(now: Now<A>): Component<{}, A> {
   return performComponent(() => runNow(now));
 }
 
-class OutputComponent extends Component<any, any> {
-  constructor(
-    private remaps: Record<string, string>,
-    private comp: Component<any, any>
-  ) {
-    super();
-    // this.explicitOutput = Object.keys(remaps);
-  }
-  run(parent: DomApi, destroyed: Future<boolean>): any {
-    const { explicit, output } = this.comp.run(parent, destroyed);
-    const newExplicit = copyRemaps(this.remaps, output);
-    const finalExplicit = mergeObj(output, newExplicit);
-    return { explicit: newExplicit, output };
-  }
-}
-
 class HandleOutput<O, A, P> extends Component<P, A> {
   constructor(
     private readonly handler: (explicit: O, output: A) => P,
@@ -153,8 +135,6 @@ class HandleOutput<O, A, P> extends Component<P, A> {
     return { explicit: newExplicit, output };
   }
 }
-
-type AnyValues<A extends Record<string, any>> = { [K in keyof A]: any };
 
 export type Remap<
   A extends Record<any, any>,
@@ -194,10 +174,7 @@ class FlatMapComponent<O, A, B> extends Component<O, B> {
       parent,
       destroyed
     );
-    const { explicit: _discarded, output } = this.f(outputFirst).run(
-      parent,
-      destroyed
-    );
+    const { output } = this.f(outputFirst).run(parent, destroyed);
     return { explicit, output };
   }
 }
@@ -445,8 +422,6 @@ export type ComponentExplicitOutput<C> = C extends Component<infer O, any>
  * Takes a component type and returns the output of the component.
  */
 export type ComponentOutput<C> = C extends Component<any, infer A> ? A : never;
-
-type Co<O> = Component<O, any>;
 
 export type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
   ToComponent<Ch>
