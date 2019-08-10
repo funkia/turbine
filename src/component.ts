@@ -70,10 +70,10 @@ export abstract class Component<O, A> implements Monad<A> {
   ): Component<O & Remap<A, B>, A>;
   output(handler: any): Component<any, A> {
     if (typeof handler === "function") {
-      return new HandleOutput((e, o) => mergeObj(e, handler(o)), this);
+      return new HandleOutput((e, o) => [mergeObj(e, handler(o)), o], this);
     } else {
       return new HandleOutput(
-        (e, o) => mergeObj(e, copyRemaps(handler, o)),
+        (e, o) => [mergeObj(e, copyRemaps(handler, o)), o],
         this
       );
     }
@@ -122,17 +122,17 @@ export function liftNow<A>(now: Now<A>): Component<{}, A> {
   return performComponent(() => runNow(now));
 }
 
-class HandleOutput<O, A, P> extends Component<P, A> {
+class HandleOutput<O, A, P, B> extends Component<P, B> {
   constructor(
-    private readonly handler: (explicit: O, output: A) => P,
+    private readonly handler: (explicit: O, output: A) => [P, B],
     private readonly c: Component<O, A>
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<P, A> {
+  run(parent: DomApi, destroyed: Future<boolean>): Out<P, B> {
     const { explicit, output } = this.c.run(parent, destroyed);
-    const newExplicit = this.handler(explicit, output);
-    return { explicit: newExplicit, output };
+    const [newExplicit, newOutput] = this.handler(explicit, output);
+    return { explicit: newExplicit, output: newOutput };
   }
 }
 
@@ -377,6 +377,10 @@ export function modelView<M extends ReactivesObject, V>(
   const m: any = isGeneratorFunction(model) ? fgo(model) : model;
   return (...args: any[]) =>
     new ModelViewComponent<M, V>(args, m, view, toViewReactiveNames);
+}
+
+export function view<O>(c: Component<O, any>): Component<{}, O> {
+  return new HandleOutput((explicit, _) => [{}, explicit], c);
 }
 
 // Child element

@@ -12,6 +12,7 @@ import {
   toComponent,
   Component,
   modelView,
+  view,
   emptyComponent,
   elements,
   loop,
@@ -341,6 +342,16 @@ describe("modelView", () => {
     destroy(true);
     expect(dom.querySelector("span")).to.not.exist;
     expect(toplevel).to.equal(true);
+  });
+});
+
+describe("view", () => {
+  it("turns selected output into available output", () => {
+    const obj = { a: 0, b: 1 };
+    const c = view(Component.of(obj).output((o) => o));
+    const { out, explicit } = testComponent(c);
+    expect(explicit).to.deep.equal({});
+    expect(out).to.deep.equal(obj);
   });
 });
 
