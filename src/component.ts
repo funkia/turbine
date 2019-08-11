@@ -78,6 +78,9 @@ export abstract class Component<O, A> implements Monad<A> {
       );
     }
   }
+  view(): Component<{}, O> {
+    return view(this);
+  }
   static multi: boolean = false;
   multi: boolean = false;
   abstract run(
@@ -318,13 +321,13 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
   constructor(
     private args: any[],
     private model: (...as: any[]) => Now<M>,
-    private view: (...as: any[]) => Child<V>,
+    private viewF: (...as: any[]) => Child<V>,
     private placeholderNames?: string[]
   ) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<{}, M> {
-    const { view, model, args } = this;
+    const { viewF, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
       placeholders = new Proxy({}, placeholderProxyHandler);
@@ -337,11 +340,11 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
       }
     }
     const { explicit: viewOutput } = toComponent(
-      view(placeholders, ...args)
+      viewF(placeholders, ...args)
     ).run(parent, destroyed);
     const helpfulViewOutput = addErrorHandler(
       model.name,
-      view.name,
+      viewF.name,
       Object.assign(viewOutput, { destroyed })
     );
     const behaviors = runNow(model(helpfulViewOutput, ...args));

@@ -346,9 +346,17 @@ describe("modelView", () => {
 });
 
 describe("view", () => {
+  const obj = { a: 0, b: 1 };
   it("turns selected output into available output", () => {
-    const obj = { a: 0, b: 1 };
     const c = view(Component.of(obj).output((o) => o));
+    const { out, explicit } = testComponent(c);
+    expect(explicit).to.deep.equal({});
+    expect(out).to.deep.equal(obj);
+  });
+  it("is available as method", () => {
+    const c = Component.of(obj)
+      .output((o) => o)
+      .view();
     const { out, explicit } = testComponent(c);
     expect(explicit).to.deep.equal({});
     expect(out).to.deep.equal(obj);
