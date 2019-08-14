@@ -79,7 +79,7 @@ const todoFooterView = (
         selectAll: o.click.mapTo("all")
       })),
       filterItem("Active", selectedClass).output((o) => ({
-        selectActive: o.click.mapTo("all")
+        selectActive: o.click.mapTo("active")
       })),
       filterItem("Completed", selectedClass).output((o) => ({
         selectCompleted: o.click.mapTo("completed")
