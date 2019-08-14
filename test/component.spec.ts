@@ -217,6 +217,20 @@ describe("component specs", () => {
 
   describe("loop", () => {
     type Looped = { name: H.Behavior<string>; destroyed: H.Future<boolean> };
+    it("passed explicit output as argument", () => {
+      let b: H.Behavior<number> | undefined = undefined;
+      const comp = loop<{ foo: H.Behavior<number> }>((input) => {
+        b = input.foo;
+        return Component.of({
+          foo: H.Behavior.of(2),
+          bar: H.Behavior.of(3)
+        }).output({ foo: "foo" });
+      });
+      const { out, explicit } = testComponent(comp);
+      assert.deepEqual(Object.keys(explicit), []);
+      assert.deepEqual(Object.keys(out), ["foo", "bar"]);
+      // expect(H.at(b!)).to.equal(2);
+    });
     it("works with explicit fgo and looped behavior", () => {
       const comp = loop(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
@@ -229,15 +243,6 @@ describe("component specs", () => {
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
     });
-    // it("can be called directly with generator function", () => {
-    //   const comp = loop(function*({
-    //     name
-    //   }: Looped): IterableIterator<Component<any, any>> {
-    //     yield div(name);
-    //     ({ value: name } = yield input({ props: { value: "Foo" } }));
-    //     return { name };
-    //   });
-    // });
     it("can be told to destroy", () => {
       let toplevel = false;
       const comp = loop(

@@ -139,10 +139,17 @@ class HandleOutput<O, A, P, B> extends Component<P, B> {
   }
 }
 
+/**
+ * This type is sometimes useful to trick TypeScript into evaulating types
+ * that it would otherwise not evaluating. This can make some types
+ * significantly more readable.
+ */
+type Id<T extends object> = {} & { [P in keyof T]: T[P] };
+
 export type Remap<
   A extends Record<any, any>,
   B extends Record<any, keyof A>
-> = { [K in keyof B]: A[B[K]] };
+> = Id<{ [K in keyof B]: A[B[K]] }>;
 
 export function output<A, O, P>(
   f: (a: A) => P,
@@ -231,11 +238,14 @@ const placeholderProxyHandler = {
   }
 };
 
-class LoopComponent<O, A> extends Component<O, A> {
-  constructor(private f: (a: A) => Child, private placeholderNames?: string[]) {
+class LoopComponent<O> extends Component<{}, O> {
+  constructor(
+    private f: (o: O) => Child<O>,
+    private placeholderNames?: string[]
+  ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<O, A> {
+  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, O> {
     let placeholderObject: any = { destroyed };
     if (supportsProxy) {
       placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
@@ -250,19 +260,20 @@ class LoopComponent<O, A> extends Component<O, A> {
       parent,
       destroyed
     );
-    const returned: (keyof A)[] = <any>Object.keys(output);
+    const returned: (keyof O)[] = <any>Object.keys(output);
     for (const name of returned) {
       placeholderObject[name].replaceWith(output[name]);
     }
-    return { explicit, output };
+    return { explicit: {}, output };
   }
 }
-export function loop<O, A extends ReactivesObject>(
-  f: (a: A) => Child<O>,
+
+export function loop<O extends ReactivesObject>(
+  f: (o: O) => Component<O, any>,
   placeholderNames?: string[]
-): Component<O, A> {
-  const f2 = isGeneratorFunction(f) ? fgo<A>(f) : f;
-  return new LoopComponent<O, A>(f2, placeholderNames);
+): Component<{}, O> {
+  const f2 = isGeneratorFunction(f) ? fgo<O>(f) : f;
+  return new LoopComponent<O>(f2, placeholderNames);
 }
 
 class MergeComponent<
