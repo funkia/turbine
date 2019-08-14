@@ -7,7 +7,7 @@ import {
 import {
   Child,
   Component,
-  ComponentExplicitOutput,
+  ComponentSelectedOutput,
   isChild,
   Out,
   Showable,
@@ -32,7 +32,7 @@ export type StreamDescriptions = {
 };
 
 export type OutputStream<T extends StreamDescriptions> = {
-  [K in keyof T]: Stream<T[K][2]>
+  [K in keyof T]: Stream<T[K][2]>;
 };
 
 export type BehaviorDescription<A> = [
@@ -55,7 +55,7 @@ export type BehaviorDescriptions = {
 };
 
 export type BehaviorOutput<T extends BehaviorDescriptions> = {
-  [K in keyof T]: Behavior<T[K][3]>
+  [K in keyof T]: Behavior<T[K][3]>;
 };
 
 export type ActionDefinitions = {
@@ -73,7 +73,7 @@ export type Setters = {
 export type Style = {
   [N in keyof CSSStyleDeclaration]?:
     | Behavior<CSSStyleDeclaration[N]>
-    | CSSStyleDeclaration[N]
+    | CSSStyleDeclaration[N];
 };
 
 export type ClassNames = Behavior<string> | string;
@@ -113,7 +113,7 @@ export type InitialProperties =
   | (_InitialProperties & Attributes);
 
 export type DefaultOutput = {
-  [E in EventName]: Stream<HTMLElementEventMap[E]>
+  [E in EventName]: Stream<HTMLElementEventMap[E]>;
 };
 
 export type InitialOutput<
@@ -346,14 +346,14 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
       : document.createElement(this.tagName);
 
     const output: any = handleProps(this.props, elm);
-    let explicit: any = {};
+    let selected: any = {};
 
     parent.appendChild(elm);
 
     if (this.child !== undefined) {
       const childResult = this.child.run(elm, destroyed.mapTo(false));
-      Object.assign(explicit, childResult.explicit);
-      Object.assign(output, childResult.explicit);
+      Object.assign(selected, childResult.selected);
+      Object.assign(output, childResult.selected);
     }
     destroyed.subscribe((toplevel) => {
       if (toplevel) {
@@ -361,11 +361,11 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
       }
       // TODO: cleanup listeners
     });
-    return { explicit, output };
+    return { selected, output };
   }
 }
 
-type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
+type ChildSelectedOutput<Ch extends Child> = ComponentSelectedOutput<
   ToComponent<Ch>
 >;
 
@@ -377,8 +377,8 @@ export type Wrapped<P, O> = (undefined extends P
       (props?: P): Component<{}, O>;
       // Only child
       <Ch extends Child>(child: Ch): Component<
-        ChildExplicitOutput<Ch>,
-        ChildExplicitOutput<Ch> & O
+        ChildSelectedOutput<Ch>,
+        ChildSelectedOutput<Ch> & O
       >;
     }
   : {
@@ -388,8 +388,8 @@ export type Wrapped<P, O> = (undefined extends P
     }) & {
   // Both props and child
   <Ch extends Child>(props: P, child: Ch): Component<
-    ChildExplicitOutput<Ch>,
-    ChildExplicitOutput<Ch> & O
+    ChildSelectedOutput<Ch>,
+    ChildSelectedOutput<Ch> & O
   >;
 };
 

@@ -40,7 +40,7 @@ export interface DomApi {
 }
 
 export type Out<O, A> = {
-  explicit: O;
+  selected: O;
   output: A;
 };
 
@@ -86,7 +86,7 @@ export abstract class Component<O, A> implements Monad<A> {
   abstract run(
     parent: DomApi,
     destroyed: Future<boolean>
-  ): { explicit: O; output: A };
+  ): { selected: O; output: A };
   // Definitions below are inserted by Jabz
   flatten: <B>() => Component<O, B>;
   map: <B>(f: (a: A) => B) => Component<O, B>;
@@ -99,8 +99,8 @@ class OfComponent<A> extends Component<{}, A> {
   constructor(private value: A) {
     super();
   }
-  run(_1: Node, _2: Future<boolean>): { explicit: {}; output: A } {
-    return { explicit: {}, output: this.value };
+  run(_1: Node, _2: Future<boolean>): { selected: {}; output: A } {
+    return { selected: {}, output: this.value };
   }
 }
 
@@ -108,8 +108,8 @@ class PerformComponent<A> extends Component<{}, A> {
   constructor(private cb: () => A) {
     super();
   }
-  run(_1: Node, _2: Future<boolean>): { explicit: {}; output: A } {
-    return { explicit: {}, output: this.cb() };
+  run(_1: Node, _2: Future<boolean>): { selected: {}; output: A } {
+    return { selected: {}, output: this.cb() };
   }
 }
 
@@ -127,15 +127,15 @@ export function liftNow<A>(now: Now<A>): Component<{}, A> {
 
 class HandleOutput<O, A, P, B> extends Component<P, B> {
   constructor(
-    private readonly handler: (explicit: O, output: A) => [P, B],
+    private readonly handler: (selected: O, output: A) => [P, B],
     private readonly c: Component<O, A>
   ) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<P, B> {
-    const { explicit, output } = this.c.run(parent, destroyed);
-    const [newExplicit, newOutput] = this.handler(explicit, output);
-    return { explicit: newExplicit, output: newOutput };
+    const { selected, output } = this.c.run(parent, destroyed);
+    const [newSelected, newOutput] = this.handler(selected, output);
+    return { selected: newSelected, output: newOutput };
   }
 }
 
@@ -180,12 +180,12 @@ class FlatMapComponent<O, A, B> extends Component<O, B> {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<O, B> {
-    const { explicit, output: outputFirst } = this.component.run(
+    const { selected, output: outputFirst } = this.component.run(
       parent,
       destroyed
     );
     const { output } = this.f(outputFirst).run(parent, destroyed);
-    return { explicit, output };
+    return { selected, output };
   }
 }
 
@@ -211,14 +211,14 @@ export function testComponent<O, A>(
 ): {
   out: A;
   dom: HTMLDivElement;
-  explicit: O;
+  selected: O;
   destroy: (toplevel: boolean) => void;
 } {
   const dom = document.createElement("div");
   const destroyed = sinkFuture<boolean>();
-  const { output: out, explicit } = c.run(dom, destroyed);
+  const { output: out, selected } = c.run(dom, destroyed);
   const destroy = destroyed.resolve.bind(destroyed);
-  return { out, dom, destroy, explicit };
+  return { out, dom, destroy, selected };
 }
 
 export function isComponent(c: any): c is Component<any, any> {
@@ -256,7 +256,7 @@ class LoopComponent<O> extends Component<{}, O> {
         }
       }
     }
-    const { explicit, output } = toComponent(this.f(placeholderObject)).run(
+    const { selected, output } = toComponent(this.f(placeholderObject)).run(
       parent,
       destroyed
     );
@@ -264,7 +264,7 @@ class LoopComponent<O> extends Component<{}, O> {
     for (const name of returned) {
       placeholderObject[name].replaceWith(output[name]);
     }
-    return { explicit: {}, output };
+    return { selected: {}, output };
   }
 }
 
@@ -286,15 +286,15 @@ class MergeComponent<
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, O & P> {
-    const { explicit: explicit1 } = this.c1.run(parent, destroyed);
-    const { explicit: explicit2 } = this.c2.run(parent, destroyed);
-    const merged = Object.assign({}, explicit1, explicit2);
-    return { explicit: merged, output: merged };
+    const { selected: selected1 } = this.c1.run(parent, destroyed);
+    const { selected: selected2 } = this.c2.run(parent, destroyed);
+    const merged = Object.assign({}, selected1, selected2);
+    return { selected: merged, output: merged };
   }
 }
 
 /**
- * Merges two components. Their explicit output is combined.
+ * Merges two components. Their selected output is combined.
  */
 export function merge<O extends object, A, P extends object, B>(
   c1: Component<O, A>,
@@ -350,7 +350,7 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
         }
       }
     }
-    const { explicit: viewOutput } = toComponent(
+    const { selected: viewOutput } = toComponent(
       viewF(placeholders, ...args)
     ).run(parent, destroyed);
     const helpfulViewOutput = addErrorHandler(
@@ -363,7 +363,7 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
     for (const name of Object.keys(behaviors)) {
       placeholders[name].replaceWith(behaviors[name]);
     }
-    return { explicit: {}, output: behaviors };
+    return { selected: {}, output: behaviors };
   }
 }
 
@@ -394,7 +394,7 @@ export function modelView<M extends ReactivesObject, V>(
 }
 
 export function view<O>(c: Component<O, any>): Component<{}, O> {
-  return new HandleOutput((explicit, _) => [{}, explicit], c);
+  return new HandleOutput((selected, _) => [{}, selected], c);
 }
 
 // Child element
@@ -430,9 +430,9 @@ export type Child<O = any> =
 export interface ChildList extends Array<CE> {}
 
 /**
- * Takes a component type and returns the explicit output of the component.
+ * Takes a component type and returns the selected output of the component.
  */
-export type ComponentExplicitOutput<C> = C extends Component<infer O, any>
+export type ComponentSelectedOutput<C> = C extends Component<infer O, any>
   ? O
   : never;
 
@@ -441,14 +441,14 @@ export type ComponentExplicitOutput<C> = C extends Component<infer O, any>
  */
 export type ComponentOutput<C> = C extends Component<any, infer A> ? A : never;
 
-export type ChildExplicitOutput<Ch extends Child> = ComponentExplicitOutput<
+export type ChildSelectedOutput<Ch extends Child> = ComponentSelectedOutput<
   ToComponent<Ch>
 >;
 
 // Merge component
 export type MC<C1 extends CE, C2 extends CE> = Component<
-  ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>,
-  Merge<ComponentExplicitOutput<TC<C1>> & ComponentExplicitOutput<TC<C2>>>
+  ComponentSelectedOutput<TC<C1>> & ComponentSelectedOutput<TC<C2>>,
+  Merge<ComponentSelectedOutput<TC<C1>> & ComponentSelectedOutput<TC<C2>>>
 >;
 
 // prettier-ignore
@@ -500,7 +500,7 @@ class TextComponent extends Component<{}, {}> {
         parent.removeChild(node);
       }
     });
-    return { explicit: {}, output: {} };
+    return { selected: {}, output: {} };
   }
 }
 
@@ -522,10 +522,10 @@ class ListComponent extends Component<any, any> {
     const output: Record<string, any> = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
-      const { explicit } = component.run(parent, destroyed);
-      Object.assign(output, explicit);
+      const { selected } = component.run(parent, destroyed);
+      Object.assign(output, selected);
     }
-    return { explicit: output, output };
+    return { selected: output, output };
   }
 }
 
@@ -577,16 +577,16 @@ class DynamicComponent<O> extends Component<{}, Behavior<O>> {
         destroyPrevious.resolve(true);
       }
       destroyPrevious = sinkFuture<boolean>();
-      const { explicit } = toComponent(child).run(
+      const { selected } = toComponent(child).run(
         parentWrap,
         destroyPrevious.combine(dynamicDestroyed)
       );
-      return explicit;
+      return selected;
     });
     // To activate behavior
     render(id, output);
 
-    return { explicit: {}, output };
+    return { selected: {}, output };
   }
 }
 
@@ -654,7 +654,7 @@ class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
             recorder,
             destroy.combine(listDestroyed)
           );
-          stuff = { elms: recorder.elms, out: out.explicit, destroy };
+          stuff = { elms: recorder.elms, out: out.selected, destroy };
         } else {
           for (const elm of stuff.elms) {
             parentWrap.appendChild(elm);
@@ -673,7 +673,7 @@ class ComponentList<A, O> extends Component<{}, Behavior<O[]>> {
       keyToElm = newKeyToElm;
       resultB.push(newArray);
     });
-    return { explicit: {}, output: resultB };
+    return { selected: {}, output: resultB };
   }
 }
 

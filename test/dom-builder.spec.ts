@@ -59,46 +59,46 @@ describe("dom-builder", () => {
   });
 
   describe("output", () => {
-    it("renames output as explicit", () => {
+    it("renames output as selected", () => {
       const c = button().output({ buttonClick: "click" });
-      const { out, explicit } = testComponent(c);
+      const { out, selected } = testComponent(c);
       assert(!isStream((out as any).buttonClick));
-      assert(isStream(explicit.buttonClick));
+      assert(isStream(selected.buttonClick));
     });
-    it("passes explicit child output through", () => {
+    it("passes selected child output through", () => {
       const c = div(button().output({ buttonClick: "click" }));
-      const { out, explicit } = testComponent(c);
-      assert(isStream(explicit.buttonClick));
+      const { out, selected } = testComponent(c);
+      assert(isStream(selected.buttonClick));
     });
     it("merges output from list of elements", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, btn2]);
-      const { out, explicit } = testComponent(c);
-      assert(isStream(explicit.fooClick));
-      assert(isStream(explicit.barClick));
+      const { out, selected } = testComponent(c);
+      assert(isStream(selected.fooClick));
+      assert(isStream(selected.barClick));
     });
     it("merges output from list of elements alongside strings", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, "foo", btn2]);
-      const { explicit } = testComponent(c);
-      assert(isStream(explicit.fooClick));
-      assert(isStream(explicit.barClick));
+      const { selected } = testComponent(c);
+      assert(isStream(selected.fooClick));
+      assert(isStream(selected.barClick));
     });
-    it("merges own output with explicit output in child array", () => {
+    it("merges own output with selected output in child array", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const myDiv = div([btn]).output({ divClick: "click" });
-      const { explicit } = testComponent(myDiv);
-      assert(isStream(explicit.divClick));
-      assert(isStream(explicit.fooClick));
+      const { selected } = testComponent(myDiv);
+      assert(isStream(selected.divClick));
+      assert(isStream(selected.fooClick));
     });
     it("merges all output from non-array child", () => {
       const child = Component.of({ bar: 1 }).output({ bar: "bar" });
       const myDiv = div(child).output({ divClick: "click" });
-      const { explicit } = testComponent(myDiv);
-      assert(isStream(explicit.divClick));
-      assert.strictEqual(explicit.bar, 1);
+      const { selected } = testComponent(myDiv);
+      assert(isStream(selected.divClick));
+      assert.strictEqual(selected.bar, 1);
     });
     it("can override existing property", () => {
       testComponent(div(button("Reset").output({ reset: "click" })));
@@ -147,8 +147,8 @@ describe("dom-builder", () => {
       const btn = button("Click").output(({ click }) => ({
         foobar: click
       }));
-      const { explicit } = testComponent(btn);
-      assert(isStream(explicit.foobar));
+      const { selected } = testComponent(btn);
+      assert(isStream(selected.foobar));
     });
     it("can rename custom output", () => {
       const myElement = element("span", {

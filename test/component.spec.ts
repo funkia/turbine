@@ -80,7 +80,7 @@ describe("component specs", () => {
       expect(dom.querySelector("div")).to.have.text("There");
       expect(dom.querySelector("button")).to.have.text("Click me");
     });
-    it("only combines explicit output in array", () => {
+    it("only combines selected output in array", () => {
       const component = toComponent([
         button("Click me"),
         button().output({ trigger: "click" })
@@ -90,26 +90,26 @@ describe("component specs", () => {
       expect(out).to.not.have.property("click");
     });
   });
-  describe("explicit output", () => {
+  describe("selected output", () => {
     it("has output method", () => {
       const comp = Component.of({ foo: 1, bar: 2, baz: 3 }).output({
         newFoo: "foo",
         newBar: "bar"
       });
-      const { dom, out, explicit } = testComponent(comp);
-      expect(explicit.newFoo).to.equal(1);
-      expect(explicit.newBar).to.equal(2);
+      const { dom, out, selected } = testComponent(comp);
+      expect(selected.newFoo).to.equal(1);
+      expect(selected.newBar).to.equal(2);
       expect((out as any).newFoo).to.be.undefined;
     });
     it("has output function", () => {
       const comp = Component.of({ foo: 1, bar: "two", baz: 3 });
       const comp2 = output({ newFoo: "foo", newBar: "bar" }, comp);
-      const { dom, out, explicit } = testComponent(comp2);
+      const { dom, out, selected } = testComponent(comp2);
       // type asserts to check that the types work
-      explicit.newFoo as number;
-      explicit.newBar as string;
-      expect(explicit.newFoo).to.equal(1);
-      expect(explicit.newBar).to.equal("two");
+      selected.newFoo as number;
+      selected.newBar as string;
+      expect(selected.newFoo).to.equal(1);
+      expect(selected.newBar).to.equal("two");
       expect((out as any).newFoo).to.be.undefined;
     });
   });
@@ -118,11 +118,11 @@ describe("component specs", () => {
       const b1 = button().output({ click1: "click" });
       const b2 = button().output({ click2: "click" });
       const m = merge(b1, b2);
-      const { explicit, out } = testComponent(m);
+      const { selected, out } = testComponent(m);
       expect(out).to.have.property("click1");
       expect(out).to.have.property("click2");
-      expect(explicit).to.have.property("click1");
-      expect(explicit).to.have.property("click2");
+      expect(selected).to.have.property("click1");
+      expect(selected).to.have.property("click2");
     });
   });
   describe("empty component", () => {
@@ -192,12 +192,12 @@ describe("component specs", () => {
       b.replaceWith(H.sinkBehavior("Hello"));
       expect(dom).to.have.text("Hello");
     });
-    it("only outputs explicit output", () => {
+    it("only outputs selected output", () => {
       const c = dynamic(
         H.Behavior.of(Component.of({ foo: 1, bar: 2 }).output({ baz: "bar" }))
       );
-      const { explicit, out } = testComponent(c);
-      assert.deepEqual(explicit, {});
+      const { selected, out } = testComponent(c);
+      assert.deepEqual(selected, {});
       assert.deepEqual(Object.keys(H.at(out)), ["baz"]);
     });
     it("dynamic in dynamic", () => {
@@ -217,7 +217,7 @@ describe("component specs", () => {
 
   describe("loop", () => {
     type Looped = { name: H.Behavior<string>; destroyed: H.Future<boolean> };
-    it("passed explicit output as argument", () => {
+    it("passed selected output as argument", () => {
       let b: H.Behavior<number> | undefined = undefined;
       const comp = loop<{ foo: H.Behavior<number> }>((input) => {
         b = input.foo;
@@ -226,12 +226,12 @@ describe("component specs", () => {
           bar: H.Behavior.of(3)
         }).output({ foo: "foo" });
       });
-      const { out, explicit } = testComponent(comp);
-      assert.deepEqual(Object.keys(explicit), []);
+      const { out, selected } = testComponent(comp);
+      assert.deepEqual(Object.keys(selected), []);
       assert.deepEqual(Object.keys(out), ["foo", "bar"]);
       // expect(H.at(b!)).to.equal(2);
     });
-    it("works with explicit fgo and looped behavior", () => {
+    it("works with selected fgo and looped behavior", () => {
       const comp = loop(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
@@ -280,7 +280,7 @@ describe("modelView", () => {
     expect(dom.querySelector("span")).to.exist;
     expect(dom.querySelector("span")).to.have.text("World");
   });
-  it("passes explicit output to model", () => {
+  it("passes selected output to model", () => {
     const c = modelView(
       (input: { spanClicked: H.Stream<any> }, n: number) => {
         assert.deepEqual(Object.keys(input), ["spanClicked", "destroyed"]);
@@ -354,16 +354,16 @@ describe("view", () => {
   const obj = { a: 0, b: 1 };
   it("turns selected output into available output", () => {
     const c = view(Component.of(obj).output((o) => o));
-    const { out, explicit } = testComponent(c);
-    expect(explicit).to.deep.equal({});
+    const { out, selected } = testComponent(c);
+    expect(selected).to.deep.equal({});
     expect(out).to.deep.equal(obj);
   });
   it("is available as method", () => {
     const c = Component.of(obj)
       .output((o) => o)
       .view();
-    const { out, explicit } = testComponent(c);
-    expect(explicit).to.deep.equal({});
+    const { out, selected } = testComponent(c);
+    expect(selected).to.deep.equal({});
     expect(out).to.deep.equal(obj);
   });
 });
@@ -401,10 +401,10 @@ describe("list", () => {
   });
   it("outputs object with property", () => {
     const listB = H.sinkBehavior(initial);
-    const { explicit } = testComponent(
+    const { selected } = testComponent(
       list(createSpan, listB).output((o) => ({ foobar: o }))
     );
-    assert.notEqual(explicit.foobar, undefined);
+    assert.notEqual(selected.foobar, undefined);
   });
 });
 
