@@ -328,32 +328,32 @@ export function handleProps<A>(props: InitialProperties, elm: HTMLElement): A {
   return output;
 }
 
-class DomComponent<O, P, A> extends Component<O & P, A & P> {
+class DomComponent<O, P, A> extends Component<A & P, O & P> {
   constructor(
     private tagName: string,
     private props: InitialProperties,
-    private child?: Component<P, any>
+    private child?: Component<any, P>
   ) {
     super();
     if (child !== undefined) {
       this.child = toComponent(child);
     }
   }
-  run(parent: Node, destroyed: Future<boolean>): Out<O & P, A & P> {
+  run(parent: Node, destroyed: Future<boolean>): Out<A & P, O & P> {
     const namespace = (this.props as any).namespace;
     const elm: HTMLElement = namespace
       ? (document.createElementNS(namespace, this.tagName) as HTMLElement)
       : document.createElement(this.tagName);
 
-    const output: any = handleProps(this.props, elm);
-    let selected: any = {};
+    const available: any = handleProps(this.props, elm);
+    let output: any = {};
 
     parent.appendChild(elm);
 
     if (this.child !== undefined) {
       const childResult = this.child.run(elm, destroyed.mapTo(false));
-      Object.assign(selected, childResult.selected);
-      Object.assign(output, childResult.selected);
+      Object.assign(output, childResult.output);
+      Object.assign(available, childResult.output);
     }
     destroyed.subscribe((toplevel) => {
       if (toplevel) {
@@ -361,7 +361,7 @@ class DomComponent<O, P, A> extends Component<O & P, A & P> {
       }
       // TODO: cleanup listeners
     });
-    return { selected, output };
+    return { output, available };
   }
 }
 
@@ -374,22 +374,22 @@ export type Wrapped<P, O> = (undefined extends P
   ? {
       // Optional props
       // Only props
-      (props?: P): Component<{}, O>;
+      (props?: P): Component<O, {}>;
       // Only child
       <Ch extends Child>(child: Ch): Component<
-        ChildSelectedOutput<Ch>,
-        ChildSelectedOutput<Ch> & O
+        ChildSelectedOutput<Ch> & O,
+        ChildSelectedOutput<Ch>
       >;
     }
   : {
       // Required props
       // Only props
-      (props: P): Component<{}, O>;
+      (props: P): Component<O, {}>;
     }) & {
   // Both props and child
   <Ch extends Child>(props: P, child: Ch): Component<
-    ChildSelectedOutput<Ch>,
-    ChildSelectedOutput<Ch> & O
+    ChildSelectedOutput<Ch> & O,
+    ChildSelectedOutput<Ch>
   >;
 };
 
@@ -420,11 +420,9 @@ export function element<P extends InitialProperties>(
   defaultElementProps?: P
 ): Wrapped<InitialProperties | undefined, InitialOutput<P>> {
   const mergedProps: P = mergeDeep(defaultElementProps, defaultProperties);
+  // @ts-ignore
   return wrapper(
-    (
-      p: InitialProperties | undefined,
-      child: Component<any, any> | undefined
-    ) => {
+    (p, child): Component<any, any> => {
       const finalProps = mergeDeep(mergedProps, p);
       return new DomComponent(tagName, finalProps, child);
     }

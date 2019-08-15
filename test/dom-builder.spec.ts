@@ -59,46 +59,48 @@ describe("dom-builder", () => {
   });
 
   describe("output", () => {
-    it("renames output as selected", () => {
+    it("renames output as output", () => {
       const c = button().output({ buttonClick: "click" });
-      const { out, selected } = testComponent(c);
-      assert(!isStream((out as any).buttonClick));
-      assert(isStream(selected.buttonClick));
+      const { available, output } = testComponent(c);
+      assert(!isStream((available as any).buttonClick));
+      assert(isStream(output.buttonClick));
     });
-    it("passes selected child output through", () => {
+    it("passes output child output through", () => {
       const c = div(button().output({ buttonClick: "click" }));
-      const { out, selected } = testComponent(c);
-      assert(isStream(selected.buttonClick));
+      const { output } = testComponent(c);
+      assert(isStream(output.buttonClick));
     });
     it("merges output from list of elements", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, btn2]);
-      const { out, selected } = testComponent(c);
-      assert(isStream(selected.fooClick));
-      assert(isStream(selected.barClick));
+      const { output } = testComponent(c);
+      assert(isStream(output.fooClick));
+      assert(isStream(output.barClick));
     });
     it("merges output from list of elements alongside strings", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const btn2 = button("Click me").output({ barClick: "click" });
       const c = div({}, [btn, "foo", btn2]);
-      const { selected } = testComponent(c);
-      assert(isStream(selected.fooClick));
-      assert(isStream(selected.barClick));
+      const { output } = testComponent(c);
+      assert(isStream(output.fooClick));
+      assert(isStream(output.barClick));
     });
-    it("merges own output with selected output in child array", () => {
+    it("merges own output with output output in child array", () => {
       const btn = button("Click me").output({ fooClick: "click" });
       const myDiv = div([btn]).output({ divClick: "click" });
-      const { selected } = testComponent(myDiv);
-      assert(isStream(selected.divClick));
-      assert(isStream(selected.fooClick));
+      const { output } = testComponent(myDiv);
+      assert(isStream(output.divClick));
+      assert(isStream(output.fooClick));
     });
     it("merges all output from non-array child", () => {
-      const child = Component.of({ bar: 1 }).output({ bar: "bar" });
+      const child = Component.of({ bar: 1 })
+        .view()
+        .output({ bar: "bar" });
       const myDiv = div(child).output({ divClick: "click" });
-      const { selected } = testComponent(myDiv);
-      assert(isStream(selected.divClick));
-      assert.strictEqual(selected.bar, 1);
+      const { output } = testComponent(myDiv);
+      assert(isStream(output.divClick));
+      assert.strictEqual(output.bar, 1);
     });
     it("can override existing property", () => {
       testComponent(div(button("Reset").output({ reset: "click" })));
@@ -111,8 +113,8 @@ describe("dom-builder", () => {
         streams: { customClick: streamDescription("click", id) }
       });
       const myCreatedElement = myElement();
-      const { out } = testComponent(myCreatedElement);
-      assert.isTrue(isStream(out.customClick));
+      const { available } = testComponent(myCreatedElement);
+      assert.isTrue(isStream(available.customClick));
     });
     it("can add custom behavior output", () => {
       const myElement = element("span", {
@@ -121,24 +123,24 @@ describe("dom-builder", () => {
         }
       });
       const myCreatedElement = myElement();
-      const { out } = testComponent(myCreatedElement);
-      assert.isTrue(isBehavior(out.x));
+      const { available } = testComponent(myCreatedElement);
+      assert.isTrue(isBehavior(available.x));
     });
     it("does not overwrite descriptions", () => {
       const myElement = element("span", {
         streams: { customClick: streamDescription("click", id) }
       });
       const myCreatedElement = myElement({ streams: {} });
-      const { out } = testComponent(myCreatedElement);
-      assert.isTrue(isStream(out.customClick));
+      const { available } = testComponent(myCreatedElement);
+      assert.isTrue(isStream(available.customClick));
     });
     it("contains a stream for all DOM events", () => {
       const myElement = element("span");
       const myCreatedElement = myElement();
-      const { out } = testComponent(myCreatedElement);
-      assert(isStream(out.keyup));
-      assert(isStream(out.drag));
-      assert(isStream(out.load));
+      const { available } = testComponent(myCreatedElement);
+      assert(isStream(available.keyup));
+      assert(isStream(available.drag));
+      assert(isStream(available.load));
     });
   });
 
@@ -147,16 +149,17 @@ describe("dom-builder", () => {
       const btn = button("Click").output(({ click }) => ({
         foobar: click
       }));
-      const { selected } = testComponent(btn);
-      assert(isStream(selected.foobar));
+      const { output } = testComponent(btn);
+      assert(isStream(output.foobar));
     });
     it("can rename custom output", () => {
       const myElement = element("span", {
         streams: { customClick: streamDescription("click", id) }
       });
-      const { out } = testComponent(
+      const { output } = testComponent(
         myElement().output({ horse: "customClick" })
       );
+      assert.isTrue(isStream(output.horse));
     });
   });
 
@@ -229,7 +232,7 @@ describe("dom-builder", () => {
       const spanFac = element("span");
       const h1Fac = element("h1");
       const span = h1Fac([spanFac("Test")]);
-      const { dom, out } = testComponent(span);
+      const { dom } = testComponent(span);
       expect(dom.querySelector("h1")).to.have.length(1);
       expect(dom.querySelector("h1")).to.contain("span");
       expect(dom.querySelector("span")).to.have.text("Test");
@@ -237,7 +240,7 @@ describe("dom-builder", () => {
 
     it("nested", () => {
       const root = div(div("Test"));
-      const { dom, out } = testComponent(root);
+      const { dom } = testComponent(root);
       expect(dom.firstChild).to.have.length(1);
     });
   });
