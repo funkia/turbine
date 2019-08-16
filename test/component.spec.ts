@@ -234,20 +234,21 @@ describe("component specs", () => {
       const { available, output } = testComponent(comp);
       assert.deepEqual(Object.keys(output), []);
       assert.deepEqual(Object.keys(available), ["foo"]);
-      // expect(H.at(b!)).to.equal(2);
+      expect(H.at(b!)).to.equal(2);
     });
     it("works with selected fgo and looped behavior", () => {
       const comp = loop(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
-          ({ value: name } = yield input({ props: { value: "Foo" } }));
+          ({ name } = yield input({ props: { value: "Foo" } }).output({
+            name: "value"
+          }));
           return { name };
         })
       );
       const { dom } = testComponent(comp);
       expect(dom).to.have.length(2);
-      // FIXME: Seems to be a bug in Hareactive
-      // expect(dom.firstChild).to.have.text("Foo");
+      expect(dom.firstChild).to.have.text("Foo");
     });
     it("can be told to destroy", () => {
       let toplevel = false;
@@ -258,14 +259,15 @@ describe("component specs", () => {
         }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
           destroyed.subscribe((b) => (toplevel = b));
-          ({ value: name } = yield input({ props: { value: "Foo" } }));
+          ({ name } = yield input({ props: { value: "Foo" } }).output({
+            name: "value"
+          }));
           return { name };
         })
       );
       const { dom, destroy } = testComponent(comp);
       expect(dom).to.have.length(2);
-      // FIXME: Seems to be a bug in Hareactive
-      // expect(dom.firstChild).to.have.text("Foo");
+      expect(dom.firstChild).to.have.text("Foo");
       destroy(true);
       expect(dom).to.have.length(0);
       expect(toplevel).to.equal(true);

@@ -46,7 +46,7 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "^0.3.2",
+    "@funkia/hareactive": "^0.3.3",
     "@types/chai": "^4.1.7",
     "@types/chai-dom": "0.0.7",
     "@types/jest": "^24.0.15",
