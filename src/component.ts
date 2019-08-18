@@ -230,9 +230,19 @@ export function isComponent(c: any): c is Component<any, any> {
   return c instanceof Component;
 }
 
+type Reactive = Behavior<any> | Stream<any> | Future<any>;
+
 export interface ReactivesObject {
-  [a: string]: Behavior<any> | Stream<any> | Future<any>;
+  [a: string]: Reactive;
 }
+
+/**
+ * Removes all properties from a type except those that are either
+ * streams, behaviors, or futures.
+ */
+type OnlyReactives<R> = {
+  [K in keyof R]: R[K] extends Reactive ? R[K] : never;
+};
 
 const placeholderProxyHandler = {
   get: function(target: any, name: string): Behavior<any> | Stream<any> {
@@ -336,7 +346,7 @@ function addErrorHandler(modelName: string, viewName: string, obj: any): any {
   });
 }
 
-class ModelViewComponent<M extends ReactivesObject, V> extends Component<
+class ModelViewComponent<M extends Record<string, any>, V> extends Component<
   M,
   {}
 > {
@@ -381,20 +391,20 @@ class ModelViewComponent<M extends ReactivesObject, V> extends Component<
 export type ModelReturn<M> = Now<M> | Iterator<any>;
 export type Model<V, M> = (v: V) => ModelReturn<M>;
 export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
-export type View<M, V> = (m: M) => Child<V>;
-export type View1<M, V, A> = (m: M, a: A) => Child<V>;
+export type View<M, V> = (m: OnlyReactives<M>) => Child<V>;
+export type View1<M, V, A> = (m: OnlyReactives<M>, a: A) => Child<V>;
 
-export function modelView<M extends ReactivesObject, V>(
+export function modelView<M extends Record<string, any>, V>(
   model: Model<V, M>,
   view: View<M, V>,
   toViewReactiveNames?: string[]
 ): () => Component<M, {}>;
-export function modelView<M extends ReactivesObject, V, A>(
+export function modelView<M extends Record<string, any>, V, A>(
   model: Model1<V, M, A>,
   view: View1<M, V, A>,
   toViewReactiveNames?: string[]
 ): (a: A) => Component<M, {}>;
-export function modelView<M extends ReactivesObject, V>(
+export function modelView<M extends Record<string, any>, V>(
   model: any,
   view: any,
   toViewReactiveNames?: string[]

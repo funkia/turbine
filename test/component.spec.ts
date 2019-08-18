@@ -367,6 +367,15 @@ describe("modelView", () => {
     expect(dom.querySelector("span")).to.not.exist;
     expect(toplevel).to.equal(true);
   });
+  it("model can return non-reactive but the view can't use it", () => {
+    const c = modelView(
+      ({}) => H.Now.of({ foo: H.Behavior.of("foo"), bar: "bar" }),
+      // Using `bar` in the view below would give a type error.
+      ({ foo }) => span(["World", dynamic(foo)])
+    )();
+    const { available } = testComponent(c);
+    assert.strictEqual(available.bar, "bar");
+  });
 });
 
 describe("view", () => {
