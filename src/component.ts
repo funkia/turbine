@@ -265,8 +265,14 @@ class LoopComponent<O> extends Component<O, {}> {
       parent,
       destroyed
     );
-    const returned: (keyof O)[] = <any>Object.keys(output);
-    for (const name of returned) {
+    const needed = Object.keys(placeholderObject);
+    for (const name of needed) {
+      if (name === "destroyed") {
+        continue;
+      }
+      if (output[name] === undefined) {
+        throw new Error(`The property ${name} is missing.`);
+      }
       placeholderObject[name].replaceWith(output[name]);
     }
     return { available: output, output: {} };

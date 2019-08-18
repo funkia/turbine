@@ -272,6 +272,16 @@ describe("component specs", () => {
       expect(dom).to.have.length(0);
       expect(toplevel).to.equal(true);
     });
+    it("throws helpful error is a reactive is missing", () => {
+      const c = loop((props: { foo: H.Behavior<string> }) => {
+        // Access something that isn't there
+        (props as any).bar;
+        return div([dynamic(props.foo)]).output((_) => ({
+          foo: H.Behavior.of("foo")
+        }));
+      });
+      assert.throws(() => testComponent(c), /bar/);
+    });
   });
 });
 
