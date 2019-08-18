@@ -1,7 +1,7 @@
-import { Behavior, Stream, moment, combine } from "@funkia/hareactive";
-import { elements, modelView, view, fgo } from "../../../src";
+import { Behavior, Stream, moment } from "@funkia/hareactive";
+import { elements, view } from "../../../src";
 const { span, button, ul, li, a, footer, strong } = elements;
-import { navigate, Router, routePath } from "@funkia/rudolph";
+import { Router, routePath } from "@funkia/rudolph";
 
 import { Output as ItemOut } from "./Item";
 
@@ -15,24 +15,19 @@ export type Out = {
   clearCompleted: Stream<any>;
 };
 
-type FromView = {
-  selectAll: Stream<string>;
-  selectActive: Stream<string>;
-  selectCompleted: Stream<string>;
-  clearCompleted: Stream<unknown>;
-};
-
 const isEmpty = (list: any[]) => list.length === 0;
 const formatRemainer = (value: number) => ` item${value === 1 ? "" : "s"} left`;
 
-const filterItem = (name: string, selectedClass: Behavior<string>) =>
+const filterItem = (
+  name: string,
+  path: string,
+  selectedClass: Behavior<string>
+) =>
   view(
     li(
       a(
         {
-          style: {
-            cursor: "pointer"
-          },
+          href: `#/${path}`,
           class: {
             selected: selectedClass.map((s) => s === name)
           }
@@ -42,19 +37,7 @@ const filterItem = (name: string, selectedClass: Behavior<string>) =>
     )
   );
 
-function* todoFooterModel(
-  { selectAll, selectActive, selectCompleted, clearCompleted }: FromView,
-  { router }: { router: Router }
-) {
-  const navs = combine(selectAll, selectActive, selectCompleted);
-  yield navigate(router, navs);
-  return { clearCompleted };
-}
-
-const todoFooterView = (
-  {  }: Out,
-  { router, todosB, areAnyCompleted }: Params
-) => {
+const todoFooter = ({ router, todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
   const itemsLeft = moment(
     (at) => at(todosB).filter((t) => !at(t.completed)).length
@@ -62,8 +45,8 @@ const todoFooterView = (
 
   const selectedClass = routePath(
     {
-      active: () => "Active",
-      completed: () => "Completed",
+      "/active": () => "Active",
+      "/completed": () => "Completed",
       "*": () => "All"
     },
     router
@@ -75,15 +58,9 @@ const todoFooterView = (
       itemsLeft.map(formatRemainer)
     ]),
     ul({ class: "filters" }, [
-      filterItem("All", selectedClass).output((o) => ({
-        selectAll: o.click.mapTo("all")
-      })),
-      filterItem("Active", selectedClass).output((o) => ({
-        selectActive: o.click.mapTo("active")
-      })),
-      filterItem("Completed", selectedClass).output((o) => ({
-        selectCompleted: o.click.mapTo("completed")
-      }))
+      filterItem("All", "", selectedClass),
+      filterItem("Active", "active", selectedClass),
+      filterItem("Completed", "completed", selectedClass)
     ]),
     button(
       {
@@ -96,10 +73,5 @@ const todoFooterView = (
     ).output({ clearCompleted: "click" })
   ]);
 };
-
-const todoFooter = modelView<Out, FromView, Params>(
-  fgo(todoFooterModel),
-  todoFooterView
-);
 
 export default todoFooter;

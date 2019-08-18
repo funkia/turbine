@@ -3,7 +3,6 @@ import {
   Behavior,
   changes,
   filter,
-  Future,
   keepWhen,
   performStream,
   sample,
@@ -139,8 +138,8 @@ const itemModel = fgo(function*(
 
   const shouldHide = routePath(
     {
-      active: () => (a: boolean) => a,
-      completed: () => (a: boolean) => !a,
+      "/active": () => (a: boolean) => a,
+      "/completed": () => (a: boolean) => !a,
       "*": () => () => false
     },
     router
@@ -165,7 +164,6 @@ function itemView({
   taskName,
   isComplete,
   isEditing,
-  newName,
   focusInput,
   hidden
 }: ToView) {
