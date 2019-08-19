@@ -255,7 +255,7 @@ const placeholderProxyHandler = {
 
 class LoopComponent<O> extends Component<O, {}> {
   constructor(
-    private f: (o: O) => Child<O>,
+    private f: (o: O) => Child<O> | Now<Child<O>>,
     private placeholderNames?: string[]
   ) {
     super();
@@ -271,10 +271,9 @@ class LoopComponent<O> extends Component<O, {}> {
         }
       }
     }
-    const { output } = toComponent(this.f(placeholderObject)).run(
-      parent,
-      destroyed
-    );
+    const res = this.f(placeholderObject);
+    const child = Now.is(res) ? runNow(res) : res;
+    const { output } = toComponent(child).run(parent, destroyed);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
       if (name === "destroyed") {
@@ -290,7 +289,7 @@ class LoopComponent<O> extends Component<O, {}> {
 }
 
 export function loop<O extends ReactivesObject>(
-  f: (o: O) => Component<any, O>,
+  f: (o: O) => Child<O> | Now<Child<O>>,
   placeholderNames?: string[]
 ): Component<O, {}> {
   const f2 = isGeneratorFunction(f) ? fgo<O>(f) : f;
