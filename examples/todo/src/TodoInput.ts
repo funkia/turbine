@@ -21,6 +21,7 @@ type FromView = {
 
 export type Out = {
   addItem: Stream<string>;
+  clearedValue: Behavior<string>;
 };
 
 function* model({ enterPressed, value }: FromView) {
@@ -48,4 +49,4 @@ const view = ({ clearedValue }: { clearedValue: Behavior<string> }) =>
     enterPressed: o.keyup.filter(isEnterKey)
   }));
 
-export default modelView(fgo(model), view)();
+export default modelView<Out, FromView>(fgo(model), view)();

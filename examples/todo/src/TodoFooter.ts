@@ -1,14 +1,13 @@
 import { Behavior, Stream, moment } from "@funkia/hareactive";
 import { elements, view } from "../../../src";
 const { span, button, ul, li, a, footer, strong } = elements;
-import { Router, routePath } from "@funkia/rudolph";
 
 import { Output as ItemOut } from "./Item";
 
 export type Params = {
+  currentFilter: Behavior<string>;
   todosB: Behavior<ItemOut[]>;
   areAnyCompleted: Behavior<boolean>;
-  router: Router;
 };
 
 export type Out = {
@@ -21,7 +20,7 @@ const formatRemainer = (value: number) => ` item${value === 1 ? "" : "s"} left`;
 const filterItem = (
   name: string,
   path: string,
-  selectedClass: Behavior<string>
+  currentFilter: Behavior<string>
 ) =>
   view(
     li(
@@ -29,7 +28,7 @@ const filterItem = (
         {
           href: `#/${path}`,
           class: {
-            selected: selectedClass.map((s) => s === name)
+            selected: currentFilter.map((s) => s === path)
           }
         },
         name
@@ -37,19 +36,10 @@ const filterItem = (
     )
   );
 
-const todoFooter = ({ router, todosB, areAnyCompleted }: Params) => {
+const todoFooter = ({ currentFilter, todosB, areAnyCompleted }: Params) => {
   const hidden = todosB.map(isEmpty);
   const itemsLeft = moment(
     (at) => at(todosB).filter((t) => !at(t.completed)).length
-  );
-
-  const selectedClass = routePath(
-    {
-      "/active": () => "Active",
-      "/completed": () => "Completed",
-      "*": () => "All"
-    },
-    router
   );
 
   return footer({ class: ["footer", { hidden }] }, [
@@ -58,9 +48,9 @@ const todoFooter = ({ router, todosB, areAnyCompleted }: Params) => {
       itemsLeft.map(formatRemainer)
     ]),
     ul({ class: "filters" }, [
-      filterItem("All", "", selectedClass),
-      filterItem("Active", "active", selectedClass),
-      filterItem("Completed", "completed", selectedClass)
+      filterItem("All", "", currentFilter),
+      filterItem("Active", "active", currentFilter),
+      filterItem("Completed", "completed", currentFilter)
     ]),
     button(
       {

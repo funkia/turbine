@@ -12,9 +12,8 @@ import {
   lift,
   toggle
 } from "@funkia/hareactive";
-import { Router, routePath } from "@funkia/rudolph";
 
-import { modelView, elements, fgo } from "../../../src";
+import { modelView, elements, fgo, Component } from "../../../src";
 const { div, li, input, label, button, checkbox } = elements;
 
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
@@ -40,7 +39,7 @@ export type Input = {
   name: string;
   id: number;
   toggleAll: Stream<boolean>;
-  router: Router;
+  currentFilter: Behavior<string>;
 };
 
 type FromView = {
@@ -48,24 +47,21 @@ type FromView = {
   taskName: Behavior<string>;
   startEditing: Stream<any>;
   nameBlur: Stream<any>;
-  deleteClicked: Stream<number>;
+  deleteClicked: Stream<any>;
   nameKeyup: Stream<any>;
   newNameInput: Stream<any>;
 };
 
-type ToView = {
+export type Output = {
   taskName: Behavior<string>;
   isComplete: Behavior<boolean>;
   newName: Behavior<string>;
   isEditing: Behavior<boolean>;
   focusInput: Stream<any>;
   hidden: Behavior<boolean>;
-};
-
-export type Output = {
-  id: number;
   destroyItemId: Stream<number>;
   completed: Behavior<boolean>;
+  id: number;
 };
 
 const itemModel = fgo(function*(
@@ -78,7 +74,7 @@ const itemModel = fgo(function*(
     newNameInput,
     taskName
   }: FromView,
-  { toggleAll, name: initialName, id, router }: Input
+  { toggleAll, name: initialName, id, currentFilter }: Input
 ): any {
   const enterPress = filter(isKey(enter), nameKeyup);
   const enterNotPressed = yield toggle(true, startEditing, enterPress);
@@ -136,16 +132,13 @@ const itemModel = fgo(function*(
   // Remove persist todo item
   yield performStream(destroyItem.mapTo(removeItemIO(persistKey)));
 
-  const shouldHide = routePath(
-    {
-      "/active": () => (a: boolean) => a,
-      "/completed": () => (a: boolean) => !a,
-      "*": () => () => false
-    },
-    router
+  const hidden = lift(
+    (complete, filter) =>
+      (filter === "completed" && !complete) ||
+      (filter === "active" && complete),
+    isComplete,
+    currentFilter
   );
-
-  const hidden = lift((a, fn) => fn(a), isComplete, shouldHide);
 
   return {
     taskName: taskName_,
@@ -160,13 +153,10 @@ const itemModel = fgo(function*(
   };
 });
 
-function itemView({
-  taskName,
-  isComplete,
-  isEditing,
-  focusInput,
-  hidden
-}: ToView) {
+function itemView(
+  { taskName, isComplete, isEditing, focusInput, hidden }: Output,
+  _: Input
+): Component<any, FromView> {
   return li(
     {
       class: ["todo", { completed: isComplete, editing: isEditing, hidden }]

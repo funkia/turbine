@@ -15,7 +15,7 @@ import {
 } from "@funkia/hareactive";
 import { modelView, elements, list, output } from "../../../src";
 const { h1, p, header, footer, section, checkbox, ul, label } = elements;
-import { Router } from "@funkia/rudolph";
+import { Router, routePath } from "@funkia/rudolph";
 
 import todoInput, { Out as InputOut } from "./TodoInput";
 import item, {
@@ -27,7 +27,6 @@ import todoFooter, { Params as FooterParams } from "./TodoFooter";
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 
 const isEmpty = (array: any[]) => array.length === 0;
-const apply = <A>(f: (a: A) => A, a: A) => f(a);
 const includes = <A>(a: A, list: A[]) => list.indexOf(a) !== -1;
 
 type FromView = {
@@ -139,11 +138,19 @@ function view(
   }: ToView,
   router: Router
 ) {
+  const currentFilter = routePath(
+    {
+      "/active": () => "active",
+      "/completed": () => "completed",
+      "*": () => ""
+    },
+    router
+  );
   return [
     section({ class: "todoapp" }, [
       header({ class: "header" }, [
         h1("todos"),
-        output({ addItem: "addItem" }, todoInput)
+        todoInput.output({ addItem: "addItem" })
       ]),
       section(
         {
@@ -160,14 +167,11 @@ function view(
             { class: "todo-list" },
             list(
               (n) =>
-                output(
-                  {
-                    completed: "completed",
-                    destroyItemId: "destroyItemId",
-                    id: "id"
-                  },
-                  item({ toggleAll, router, ...n })
-                ),
+                item({ toggleAll, currentFilter, ...n }).output({
+                  completed: "completed",
+                  destroyItemId: "destroyItemId",
+                  id: "id"
+                }),
               todoNames,
               (o) => o.id
             ).output((o) => ({ itemOutputs: o }))
@@ -176,7 +180,7 @@ function view(
       ),
       output(
         { clearCompleted: "clearCompleted" },
-        todoFooter({ todosB: itemOutputs, areAnyCompleted, router })
+        todoFooter({ todosB: itemOutputs, areAnyCompleted, currentFilter })
       )
     ]),
     footer({ class: "info" }, [
