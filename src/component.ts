@@ -84,6 +84,9 @@ export abstract class Component<A, O> implements Monad<O> {
       );
     }
   }
+  result<R>(o: R): Result<R, O> {
+    return { output: o, child: this };
+  }
   view(): Component<O, {}> {
     return view(this);
   }
@@ -253,9 +256,17 @@ const placeholderProxyHandler = {
   }
 };
 
-class LoopComponent<O> extends Component<O, {}> {
+type Result<R, O> = { output: R; child: Child<O> };
+
+function isLoopResult(r: any): r is Result<any, any> {
+  return typeof r === "object" && "child" in r;
+}
+
+class LoopComponent<L, O> extends Component<O, {}> {
   constructor(
-    private f: (o: O) => Child<O> | Now<Child<O>>,
+    private f: (
+      o: L
+    ) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
     private placeholderNames?: string[]
   ) {
     super();
@@ -272,28 +283,39 @@ class LoopComponent<O> extends Component<O, {}> {
       }
     }
     const res = this.f(placeholderObject);
-    const child = Now.is(res) ? runNow(res) : res;
-    const { output } = toComponent(child).run(parent, destroyed);
+    const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
+    const { output, child } = isLoopResult(result)
+      ? result
+      : { output: {} as O, child: result };
+    const { output: looped } = toComponent(child).run(parent, destroyed);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
       if (name === "destroyed") {
         continue;
       }
-      if (output[name] === undefined) {
+      if (looped[name] === undefined) {
         throw new Error(`The property ${name} is missing.`);
       }
-      placeholderObject[name].replaceWith(output[name]);
+      placeholderObject[name].replaceWith(looped[name]);
     }
     return { available: output, output: {} };
   }
 }
 
-export function loop<O extends ReactivesObject>(
-  f: (o: O) => Child<O> | Now<Child<O>>,
+export function component<L extends ReactivesObject>(
+  f: (l: L) => Child<L> | Now<Child<L>>,
+  placeholderNames?: string[]
+): Component<{}, {}>;
+export function component<L extends ReactivesObject, O>(
+  f: (l: L) => Result<O, L> | Now<Result<O, L>>,
+  placeholderNames?: string[]
+): Component<O, {}>;
+export function component<L, O extends ReactivesObject>(
+  f: (l: L) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
   placeholderNames?: string[]
 ): Component<O, {}> {
-  const f2 = isGeneratorFunction(f) ? fgo<O>(f) : f;
-  return new LoopComponent<O>(f2, placeholderNames);
+  const f2 = isGeneratorFunction(f) ? fgo<L>(f) : f;
+  return new LoopComponent<L, O>(f2, placeholderNames);
 }
 
 class MergeComponent<

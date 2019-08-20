@@ -15,7 +15,7 @@ import {
   view,
   emptyComponent,
   elements,
-  loop,
+  component,
   testComponent,
   list,
   runComponent,
@@ -221,23 +221,26 @@ describe("component specs", () => {
     });
   });
 
-  describe("loop", () => {
+  describe("component loop", () => {
     type Looped = { name: H.Behavior<string>; destroyed: H.Future<boolean> };
     it("passed selected output as argument", () => {
       let b: H.Behavior<number> | undefined = undefined;
-      const comp = loop<{ foo: H.Behavior<number> }>((input) => {
+      const comp = component<
+        { foo: H.Behavior<number> },
+        { bar: H.Behavior<number> }
+      >((input) => {
         b = input.foo;
         return Component.of({
           foo: H.Behavior.of(2)
-        });
+        }).result({ bar: H.Behavior.of(3) });
       });
       const { available, output } = testComponent(comp);
       assert.deepEqual(Object.keys(output), []);
-      assert.deepEqual(Object.keys(available), ["foo"]);
+      assert.deepEqual(Object.keys(available), ["bar"]);
       expect(H.at(b!)).to.equal(2);
     });
     it("works with selected fgo and looped behavior", () => {
-      const comp = loop(
+      const comp = component(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
           ({ name } = yield input({ props: { value: "Foo" } }).output({
@@ -252,7 +255,7 @@ describe("component specs", () => {
     });
     it("can be told to destroy", () => {
       let toplevel = false;
-      const comp = loop(
+      const comp = component(
         fgo(function*({
           name,
           destroyed
@@ -273,7 +276,7 @@ describe("component specs", () => {
       expect(toplevel).to.equal(true);
     });
     it("throws helpful error is a reactive is missing", () => {
-      const c = loop((props: { foo: H.Behavior<string> }) => {
+      const c = component((props: { foo: H.Behavior<string> }) => {
         // Access something that isn't there
         (props as any).bar;
         return div([dynamic(props.foo)]).output((_) => ({
