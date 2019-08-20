@@ -58,10 +58,10 @@ export abstract class Component<A, O> implements Monad<O> {
   of<P>(p: P): Component<{}, P> {
     return new OfComponent(p);
   }
-  flatMap<P>(f: (o: O) => Component<A, P>): Component<A, P> {
+  flatMap<B, P>(f: (o: O) => Component<B, P>): Component<A, P> {
     return new FlatMapComponent(this, f);
   }
-  chain<P>(f: (o: O) => Component<A, P>): Component<A, P> {
+  chain<B, P>(f: (o: O) => Component<B, P>): Component<A, P> {
     return new FlatMapComponent(this, f);
   }
   output<P>(f: (a: A) => P): Component<A, O & P>;
@@ -91,7 +91,7 @@ export abstract class Component<A, O> implements Monad<O> {
   multi: boolean = false;
   abstract run(parent: DomApi, destroyed: Future<boolean>): Out<A, O>;
   // Definitions below are inserted by Jabz
-  flatten: <B>() => Component<O, B>;
+  flatten: <B, P>(this: Component<A, Component<B, P>>) => Component<A, P>;
   map: <P>(f: (a: O) => P) => Component<A, P>;
   mapTo: <P>(b: P) => Component<A, P>;
   ap: <P>(a: Component<A, (o: O) => P>) => Component<A, P>;
@@ -177,10 +177,10 @@ export function output<A>(
  */
 export const emptyComponent = Component.of({});
 
-class FlatMapComponent<A, O, P> extends Component<A, P> {
+class FlatMapComponent<A, O, B, P> extends Component<A, P> {
   constructor(
     private readonly component: Component<A, O>,
-    private readonly f: (o: O) => Component<A, P>
+    private readonly f: (o: O) => Component<B, P>
   ) {
     super();
   }
