@@ -328,7 +328,7 @@ export function handleProps<A>(props: InitialProperties, elm: HTMLElement): A {
   return output;
 }
 
-class DomComponent<O, P, A> extends Component<A & P, O & P> {
+class DomComponent<O, P, A> extends Component<A, O & P> {
   constructor(
     private tagName: string,
     private props: InitialProperties,
@@ -353,7 +353,6 @@ class DomComponent<O, P, A> extends Component<A & P, O & P> {
     if (this.child !== undefined) {
       const childResult = this.child.run(elm, destroyed.mapTo(false));
       Object.assign(output, childResult.output);
-      Object.assign(available, childResult.output);
     }
     destroyed.subscribe((toplevel) => {
       if (toplevel) {
@@ -376,10 +375,7 @@ export type Wrapped<P, O> = (undefined extends P
       // Only props
       (props?: P): Component<O, {}>;
       // Only child
-      <Ch extends Child>(child: Ch): Component<
-        ChildSelectedOutput<Ch> & O,
-        ChildSelectedOutput<Ch>
-      >;
+      <Ch extends Child>(child: Ch): Component<O, ChildSelectedOutput<Ch>>;
     }
   : {
       // Required props
@@ -388,7 +384,7 @@ export type Wrapped<P, O> = (undefined extends P
     }) & {
   // Both props and child
   <Ch extends Child>(props: P, child: Ch): Component<
-    ChildSelectedOutput<Ch> & O,
+    O,
     ChildSelectedOutput<Ch>
   >;
 };
