@@ -7,6 +7,7 @@ import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 
 const enter = 13;
 const esc = 27;
+export const itemIdToPersistKey = (id: number) => `todoItem:${id}`;
 
 export type Props = {
   name: string;
@@ -19,11 +20,10 @@ type FromView = {
   toggleTodo: H.Stream<boolean>;
   taskName: H.Behavior<string>;
   startEditing: H.Stream<any>;
-  nameBlur: H.Stream<any>;
   deleteClicked: H.Stream<any>;
-  cancel: H.Stream<any>;
-  enter: H.Stream<any>;
-  newNameInput: H.Stream<any>;
+  stopEditing: H.Stream<boolean>;
+  newName: H.Behavior<string>;
+  editing: H.Behavior<boolean>;
 };
 
 export type Output = {
@@ -35,33 +35,19 @@ export type Output = {
 export default (props: Props) =>
   component<FromView, Output>(
     fgo(function*(on) {
-      const enterNotPressed = yield H.toggle(true, on.startEditing, on.enter);
-      const notCancelled = yield H.toggle(true, on.startEditing, on.cancel);
-      const stopEditing = combine(
-        on.enter,
-        H.keepWhen(on.nameBlur, enterNotPressed),
-        on.cancel
-      );
-      const editing = yield H.toggle(false, on.startEditing, stopEditing);
-      const newName = yield H.stepper(
-        props.name,
-        combine(
-          on.newNameInput.map((ev) => ev.target.value),
-          H.snapshot(on.taskName, on.cancel)
-        )
-      );
-      const nameChange = H.snapshot(
-        newName,
-        H.keepWhen(stopEditing, notCancelled)
-      );
-
       // Restore potentially persisted todo item
-      const persistKey = "todoItem:" + props.id;
+      const persistKey = itemIdToPersistKey(props.id);
       const savedItem = yield H.sample(itemBehavior(persistKey));
       const initial =
         savedItem === null
           ? { taskName: props.name, completed: false }
           : savedItem;
+
+      const editing = yield H.toggle(false, on.startEditing, on.stopEditing);
+      const nameChange = H.snapshot(
+        on.newName,
+        on.stopEditing.filter((b) => b)
+      );
 
       // Initialize task to restored values
       const taskName: H.Behavior<string> = yield H.stepper(
@@ -111,16 +97,18 @@ export default (props: Props) =>
         ]),
         input({
           class: "edit",
-          value: taskName,
+          value: H.snapshot(on.taskName, on.startEditing),
           actions: { focus: on.startEditing }
         }).output((o) => ({
-          newNameInput: o.input,
-          nameBlur: o.blur,
-          enter: o.keyup.filter((ev) => ev.keyCode === enter),
-          cancel: o.keyup.filter((ev) => ev.keyCode === esc)
+          newName: o.value,
+          stopEditing: H.combine(
+            o.keyup.filter((ev) => ev.keyCode === enter).mapTo(true),
+            H.keepWhen(o.blur, editing).mapTo(true),
+            o.keyup.filter((ev) => ev.keyCode === esc).mapTo(false)
+          )
         }))
       ])
-        .output(() => ({ taskName }))
+        .output(() => ({ taskName, editing }))
         .result({ destroyItemId, completed, id: props.id });
     })
   );
