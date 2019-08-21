@@ -308,6 +308,14 @@ describe("dom-builder", () => {
       push("/bar", hrefB);
       expect(aElm).to.have.attribute("href", "/bar");
     });
+    it("sets attributes from streams", () => {
+      const hrefS = sinkStream<string>();
+      const { dom } = testComponent(element("a", { attrs: { href: hrefS } })());
+      const aElm = dom.firstChild;
+      expect(aElm).to.not.have.attribute("href");
+      push("/bar", hrefS);
+      expect(aElm).to.have.attribute("href", "/bar");
+    });
     it("sets boolean attributes correctly", () => {
       const { dom } = testComponent(
         element("a", { attrs: { contenteditable: true } })()
@@ -354,6 +362,30 @@ describe("dom-builder", () => {
       expect(aElm.innerHTML).to.equal("<b>Hi</b>");
       push("<b>there</b>", htmlB);
       expect(aElm.innerHTML).to.equal("<b>there</b>");
+    });
+    it("sets properties from stream", () => {
+      const value = sinkStream<string>();
+      const { dom } = testComponent(element("input", { props: { value } })());
+      const inputElm = dom.firstChild! as HTMLInputElement;
+      assert.strictEqual(inputElm.value, "");
+      push("bar", value);
+      assert.strictEqual(inputElm.value, "bar");
+    });
+    it("sets properties from stream", () => {
+      const value = sinkStream<string>();
+      const { dom } = testComponent(element("input", { props: { value } })());
+      const inputElm = dom.firstChild! as HTMLInputElement;
+      assert.strictEqual(inputElm.value, "");
+      push("bar", value);
+      assert.strictEqual(inputElm.value, "bar");
+    });
+    it("sets input value from stream", () => {
+      const value = sinkStream<string>();
+      const { dom } = testComponent(element("input", { value })());
+      const inputElm = dom.firstChild! as HTMLInputElement;
+      assert.strictEqual(inputElm.value, "");
+      push("bar", value);
+      assert.strictEqual(inputElm.value, "bar");
     });
     it("sets input value", () => {
       const b = sinkBehavior("foo");

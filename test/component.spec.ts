@@ -34,7 +34,7 @@ describe("component specs", () => {
       let result: number | undefined = undefined;
       const c = performComponent(() => (result = 12));
       assert.strictEqual(result, undefined);
-      const { output, available } = testComponent(c);
+      const { output } = testComponent(c);
       assert.strictEqual(result, 12);
       assert.strictEqual(output, 12);
     });
@@ -98,7 +98,7 @@ describe("component specs", () => {
           newFoo: "foo",
           newBar: "bar"
         });
-      const { dom, available, output } = testComponent(comp);
+      const { available, output } = testComponent(comp);
       expect(output.newFoo).to.equal(1);
       expect(output.newBar).to.equal(2);
       expect((available as any).newFoo).to.be.undefined;

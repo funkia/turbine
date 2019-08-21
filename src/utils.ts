@@ -1,4 +1,4 @@
-import { isBehavior } from "@funkia/hareactive";
+import { isBehavior, isStream } from "@funkia/hareactive";
 
 function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
   const result = [];
@@ -12,7 +12,12 @@ function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
 }
 
 function isObject(item: any): item is Object {
-  return typeof item === "object" && !Array.isArray(item) && !isBehavior(item);
+  return (
+    typeof item === "object" &&
+    !Array.isArray(item) &&
+    !isBehavior(item) &&
+    !isStream(item)
+  );
 }
 
 export function mergeObj<A, B>(a: A, b: B): A & B {
