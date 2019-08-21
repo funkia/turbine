@@ -121,10 +121,33 @@ describe("component specs", () => {
       const b2 = button().output({ click2: "click" });
       const m = merge(b1, b2);
       const { output, available } = testComponent(m);
-      expect(available).to.have.property("click1");
-      expect(available).to.have.property("click2");
+      assert.deepEqual(available, {});
       expect(output).to.have.property("click1");
       expect(output).to.have.property("click2");
+    });
+    it("merges colliding streams", () => {
+      const sink1 = H.sinkStream<number>();
+      const sink2 = H.sinkStream<number>();
+      const m = merge(
+        Component.of({ click: sink1 }),
+        Component.of({ click: sink2 })
+      );
+      const { output } = testComponent(m);
+      expect(output).to.have.property("click");
+      const result: number[] = [];
+      output.click.subscribe((n) => result.push(n));
+      sink1.push(0);
+      sink2.push(1);
+      assert.deepEqual(result, [0, 1]);
+    });
+    it("throws on all other collisions", () => {
+      assert.throws(() => {
+        const m = merge(
+          Component.of({ click: H.Behavior.of(0) }),
+          Component.of({ click: H.empty })
+        );
+        testComponent(m);
+      }, "colliding");
     });
   });
   describe("empty component", () => {

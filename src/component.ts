@@ -71,14 +71,17 @@ export abstract class Component<A, O> implements Monad<O> {
   output(handler: any): Component<A, any> {
     if (typeof handler === "function") {
       return new HandleOutput(
-        (a, o) => ({ available: a, output: mergeObj(o, handler(a)) }),
+        (a, o) => ({
+          available: a,
+          output: mergeObj(mergeObj({}, handler(a)), o)
+        }),
         this
       );
     } else {
       return new HandleOutput(
         (a, o) => ({
           available: a,
-          output: mergeObj(o, copyRemaps(handler, a))
+          output: mergeObj(mergeObj({}, o), copyRemaps(handler, a))
         }),
         this
       );
@@ -323,15 +326,17 @@ class MergeComponent<
   O extends object,
   B,
   P extends object
-> extends Component<O & P, O & P> {
+> extends Component<{}, O & P> {
   constructor(private c1: Component<A, O>, private c2: Component<B, P>) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, O & P> {
-    const { output: o1 } = this.c1.run(parent, destroyed);
-    const { output: o2 } = this.c2.run(parent, destroyed);
-    const output = Object.assign({}, o1, o2);
-    return { available: output, output };
+  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, O & P> {
+    const res1 = this.c1.run(parent, destroyed);
+    const res2 = this.c2.run(parent, destroyed);
+    return {
+      available: {},
+      output: mergeObj(mergeObj({}, res2.output), res1.output)
+    };
   }
 }
 
@@ -341,7 +346,7 @@ class MergeComponent<
 export function merge<O extends object, A, P extends object, B>(
   c1: Component<A, O>,
   c2: Component<B, P>
-): Component<O & P, O & P> {
+): Component<{}, O & P> {
   return new MergeComponent(c1, c2);
 }
 
@@ -561,11 +566,11 @@ class ListComponent extends Component<any, any> {
     }
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<any, any> {
-    const output: Record<string, any> = {};
+    let output: Record<string, any> = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
       const res = component.run(parent, destroyed);
-      Object.assign(output, res.output);
+      mergeObj(output, res.output);
     }
     return { available: output, output };
   }
