@@ -270,20 +270,22 @@ class LoopComponent<L, O> extends Component<O, {}> {
     private f: (
       o: L
     ) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
-    private placeholderNames?: string[]
+    private placeholderNames?: (keyof L)[]
   ) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<O, {}> {
     let placeholderObject: any = { destroyed };
-    if (supportsProxy) {
+    if (this.placeholderNames !== undefined) {
+      for (const name of this.placeholderNames) {
+        placeholderObject[name] = placeholder();
+      }
+    } else if (supportsProxy) {
       placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
     } else {
-      if (this.placeholderNames !== undefined) {
-        for (const name of this.placeholderNames) {
-          placeholderObject[name] = placeholder();
-        }
-      }
+      throw new Error(
+        "component called with no list of names and proxies are not supported."
+      );
     }
     const res = this.f(placeholderObject);
     const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
@@ -307,15 +309,15 @@ class LoopComponent<L, O> extends Component<O, {}> {
 
 export function component<L extends ReactivesObject>(
   f: (l: L) => Child<L> | Now<Child<L>>,
-  placeholderNames?: string[]
+  placeholderNames?: (keyof L)[]
 ): Component<{}, {}>;
 export function component<L extends ReactivesObject, O>(
   f: (l: L) => Result<O, L> | Now<Result<O, L>>,
-  placeholderNames?: string[]
+  placeholderNames?: (keyof L)[]
 ): Component<O, {}>;
 export function component<L, O extends ReactivesObject>(
   f: (l: L) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
-  placeholderNames?: string[]
+  placeholderNames?: (keyof L)[]
 ): Component<O, {}> {
   const f2 = isGeneratorFunction(f) ? fgo<L>(f) : f;
   return new LoopComponent<L, O>(f2, placeholderNames);
