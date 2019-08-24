@@ -1,4 +1,4 @@
-import { isBehavior } from "@funkia/hareactive";
+import { isBehavior, isStream } from "@funkia/hareactive";
 
 function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
   const result = [];
@@ -12,18 +12,34 @@ function arrayConcat<A>(arr1: A[], arr2: A[]): A[] {
 }
 
 function isObject(item: any): item is Object {
-  return typeof item === "object" && !Array.isArray(item) && !isBehavior(item);
+  return (
+    typeof item === "object" &&
+    !Array.isArray(item) &&
+    !isBehavior(item) &&
+    !isStream(item)
+  );
 }
 
-export function mergeObj<A, B>(a: A, b: B): A & B {
-  const c: { [key: string]: any } = {};
-  for (const key of Object.keys(a) as (keyof A & string)[]) {
-    c[key] = a[key];
+export function mergeObj<
+  A extends Record<string, any>,
+  B extends Record<string, any>
+>(a: A, b: B): A & B {
+  for (const key of Object.keys(b) as string[]) {
+    const valueA: any = a[key];
+    const valueB: any = b[key];
+    if (valueA !== undefined) {
+      if (isStream(valueA) && isStream(valueB)) {
+        (a as any)[key] = valueA.combine(valueB);
+      } else {
+        throw new Error(
+          `Components was merged with colliding output on key ${key}`
+        );
+      }
+    } else {
+      (a as any)[key] = valueB;
+    }
   }
-  for (const key of Object.keys(b) as (keyof B & string)[]) {
-    c[key] = b[key];
-  }
-  return <any>c;
+  return <any>a;
 }
 
 export type Merge<T> = { [K in keyof T]: T[K] };

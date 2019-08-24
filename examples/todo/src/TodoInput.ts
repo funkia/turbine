@@ -1,52 +1,40 @@
-import {
-  Stream,
-  snapshot,
-  changes,
-  combine,
-  Behavior,
-  stepper
-} from "@funkia/hareactive";
+import * as H from "@funkia/hareactive";
 
-import { elements, modelView, fgo } from "../../../src";
+import { elements, fgo, component } from "../../../src";
 const { input } = elements;
 
 const KEYCODE_ENTER = 13;
-const isEnterKey = (ev: any) => ev.keyCode === KEYCODE_ENTER;
-const isValidValue = (value: string) => value !== "";
 
 type FromView = {
-  enterPressed: Stream<Event>;
-  value: Behavior<string>;
+  enterPressed: H.Stream<Event>;
+  value: H.Behavior<string>;
 };
 
 export type Out = {
-  addItem: Stream<string>;
-  clearedValue: Behavior<string>;
+  addItem: H.Stream<string>;
 };
 
-function* model({ enterPressed, value }: FromView) {
-  const clearedValue: Behavior<string> = yield stepper(
-    "",
-    combine(enterPressed.mapTo(""), changes(value))
-  );
+export default component<FromView, Out>(
+  fgo(function*(on) {
+    const clearedValue: H.Behavior<string> = yield H.stepper(
+      "",
+      H.combine(on.enterPressed.mapTo(""), H.changes(on.value))
+    );
+    const addItem = H.snapshot(clearedValue, on.enterPressed).filter(
+      (title) => title !== ""
+    );
 
-  const addItem = snapshot(clearedValue, enterPressed).filter(isValidValue);
-
-  return { addItem, clearedValue };
-}
-
-const view = ({ clearedValue }: { clearedValue: Behavior<string> }) =>
-  input({
-    class: "new-todo",
-    props: { value: clearedValue },
-    attrs: {
+    return input({
+      class: "new-todo",
+      value: clearedValue,
       autofocus: "true",
       autocomplete: "off",
       placeholder: "What needs to be done?"
-    }
-  }).output((o) => ({
-    value: o.value,
-    enterPressed: o.keyup.filter(isEnterKey)
-  }));
-
-export default modelView<Out, FromView>(fgo(model), view)();
+    })
+      .output((o) => ({
+        value: o.value,
+        enterPressed: o.keyup.filter((ev) => ev.keyCode === KEYCODE_ENTER)
+      }))
+      .result({ addItem });
+  })
+);

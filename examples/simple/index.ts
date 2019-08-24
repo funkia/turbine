@@ -1,20 +1,18 @@
-import { map, Now, Behavior } from "@funkia/hareactive";
-import { elements, modelView, runComponent } from "../../src";
+import { elements, runComponent, component } from "../../src";
+import { Behavior } from "@funkia/hareactive";
 const { span, input, div } = elements;
 
 const isValidEmail = (s: string) => /.+@.+\..+/i.test(s);
 
-const model = ({ email }: { email: Behavior<string> }) => {
-  const isValid = email.map(isValidEmail);
-  return Now.of({ isValid });
-};
+type On = { email: Behavior<string> };
 
-const view = ({ isValid }: { isValid: Behavior<boolean> }) => [
-  span("Please enter an email address: "),
-  input().output({ email: "value" }),
-  div(["The address is ", map((b) => (b ? "valid" : "invalid"), isValid)])
-];
+const app = component<On>((on) => {
+  const isValid = on.email.map(isValidEmail);
+  return [
+    span("Please enter an email address: "),
+    input().output({ email: "value" }),
+    div(["The address is ", isValid.map((b) => (b ? "valid" : "invalid"))])
+  ];
+});
 
-const app = modelView(model, view);
-
-runComponent("#mount", app());
+runComponent("#mount", app);

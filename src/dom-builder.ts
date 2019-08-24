@@ -1,4 +1,10 @@
-import { Behavior, Future, isBehavior, Stream } from "@funkia/hareactive";
+import {
+  Behavior,
+  Future,
+  isBehavior,
+  Stream,
+  isStream
+} from "@funkia/hareactive";
 import {
   behaviorFromEvent,
   streamFromEvent,
@@ -90,16 +96,17 @@ export type ClassDescription =
 export interface ClassDescriptionArray extends Array<ClassDescription> {}
 
 export type Attributes = {
-  [name: string]: (Showable | boolean) | Behavior<Showable | boolean>;
+  [name: string]:
+    | (Showable | boolean)
+    | Stream<Showable | boolean>
+    | Behavior<Showable | boolean>;
 };
 
 type _InitialProperties = {
   streams?: StreamDescriptions;
   behaviors?: BehaviorDescriptions;
   style?: Style;
-  props?: {
-    [name: string]: Showable | Behavior<Showable | boolean>;
-  };
+  props?: Attributes;
   attrs?: Attributes;
   actionDefinitions?: ActionDefinitions;
   actions?: Actions;
@@ -166,7 +173,7 @@ const styleSetter = (element: HTMLElement) => (key: string, value: string) =>
   (element.style[<any>key] = value);
 
 function handleObject<A>(
-  object: { [key: string]: A | Behavior<A> } | undefined,
+  object: { [key: string]: A | Behavior<A> | Stream<A> } | undefined,
   element: HTMLElement,
   createSetter: (element: HTMLElement) => (key: string, value: A) => void
 ): void {
@@ -176,6 +183,8 @@ function handleObject<A>(
       const value = object[key];
       if (isBehavior(value)) {
         render((newValue) => setter(key, newValue), value);
+      } else if (isStream(value)) {
+        value.subscribe((newValue) => setter(key, newValue));
       } else {
         setter(key, value);
       }

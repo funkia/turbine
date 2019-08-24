@@ -71,18 +71,24 @@ export abstract class Component<A, O> implements Monad<O> {
   output(handler: any): Component<A, any> {
     if (typeof handler === "function") {
       return new HandleOutput(
-        (a, o) => ({ available: a, output: mergeObj(o, handler(a)) }),
+        (a, o) => ({
+          available: a,
+          output: mergeObj(mergeObj({}, handler(a)), o)
+        }),
         this
       );
     } else {
       return new HandleOutput(
         (a, o) => ({
           available: a,
-          output: mergeObj(o, copyRemaps(handler, a))
+          output: mergeObj(mergeObj({}, o), copyRemaps(handler, a))
         }),
         this
       );
     }
+  }
+  result<R>(o: R): Result<R, O> {
+    return { available: o, child: this };
   }
   view(): Component<O, {}> {
     return view(this);
@@ -253,47 +259,68 @@ const placeholderProxyHandler = {
   }
 };
 
-class LoopComponent<O> extends Component<O, {}> {
+type Result<R, O> = { available: R; child: Child<O> };
+
+function isLoopResult(r: any): r is Result<any, any> {
+  return typeof r === "object" && "child" in r;
+}
+
+class LoopComponent<L, O> extends Component<O, {}> {
   constructor(
-    private f: (o: O) => Child<O> | Now<Child<O>>,
-    private placeholderNames?: string[]
+    private f: (
+      o: L
+    ) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
+    private placeholderNames?: (keyof L)[]
   ) {
     super();
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<O, {}> {
     let placeholderObject: any = { destroyed };
-    if (supportsProxy) {
+    if (this.placeholderNames !== undefined) {
+      for (const name of this.placeholderNames) {
+        placeholderObject[name] = placeholder();
+      }
+    } else if (supportsProxy) {
       placeholderObject = new Proxy(placeholderObject, placeholderProxyHandler);
     } else {
-      if (this.placeholderNames !== undefined) {
-        for (const name of this.placeholderNames) {
-          placeholderObject[name] = placeholder();
-        }
-      }
+      throw new Error(
+        "component called with no list of names and proxies are not supported."
+      );
     }
     const res = this.f(placeholderObject);
-    const child = Now.is(res) ? runNow(res) : res;
-    const { output } = toComponent(child).run(parent, destroyed);
+    const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
+    const { available, child } = isLoopResult(result)
+      ? result
+      : { available: {} as O, child: result };
+    const { output: looped } = toComponent(child).run(parent, destroyed);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
       if (name === "destroyed") {
         continue;
       }
-      if (output[name] === undefined) {
+      if (looped[name] === undefined) {
         throw new Error(`The property ${name} is missing.`);
       }
-      placeholderObject[name].replaceWith(output[name]);
+      placeholderObject[name].replaceWith(looped[name]);
     }
-    return { available: output, output: {} };
+    return { available, output: {} };
   }
 }
 
-export function loop<O extends ReactivesObject>(
-  f: (o: O) => Child<O> | Now<Child<O>>,
-  placeholderNames?: string[]
+export function component<L extends ReactivesObject>(
+  f: (l: L) => Child<L> | Now<Child<L>>,
+  placeholderNames?: (keyof L)[]
+): Component<{}, {}>;
+export function component<L extends ReactivesObject, O>(
+  f: (l: L) => Result<O, L> | Now<Result<O, L>>,
+  placeholderNames?: (keyof L)[]
+): Component<O, {}>;
+export function component<L, O extends ReactivesObject>(
+  f: (l: L) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
+  placeholderNames?: (keyof L)[]
 ): Component<O, {}> {
-  const f2 = isGeneratorFunction(f) ? fgo<O>(f) : f;
-  return new LoopComponent<O>(f2, placeholderNames);
+  const f2 = isGeneratorFunction(f) ? fgo<L>(f) : f;
+  return new LoopComponent<L, O>(f2, placeholderNames);
 }
 
 class MergeComponent<
@@ -301,15 +328,17 @@ class MergeComponent<
   O extends object,
   B,
   P extends object
-> extends Component<O & P, O & P> {
+> extends Component<{}, O & P> {
   constructor(private c1: Component<A, O>, private c2: Component<B, P>) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<O & P, O & P> {
-    const { output: o1 } = this.c1.run(parent, destroyed);
-    const { output: o2 } = this.c2.run(parent, destroyed);
-    const output = Object.assign({}, o1, o2);
-    return { available: output, output };
+  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, O & P> {
+    const res1 = this.c1.run(parent, destroyed);
+    const res2 = this.c2.run(parent, destroyed);
+    return {
+      available: {},
+      output: mergeObj(mergeObj({}, res2.output), res1.output)
+    };
   }
 }
 
@@ -319,7 +348,7 @@ class MergeComponent<
 export function merge<O extends object, A, P extends object, B>(
   c1: Component<A, O>,
   c2: Component<B, P>
-): Component<O & P, O & P> {
+): Component<{}, O & P> {
   return new MergeComponent(c1, c2);
 }
 
@@ -539,11 +568,11 @@ class ListComponent extends Component<any, any> {
     }
   }
   run(parent: DomApi, destroyed: Future<boolean>): Out<any, any> {
-    const output: Record<string, any> = {};
+    let output: Record<string, any> = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
       const res = component.run(parent, destroyed);
-      Object.assign(output, res.output);
+      mergeObj(output, res.output);
     }
     return { available: output, output };
   }

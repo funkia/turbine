@@ -1,32 +1,26 @@
-import { Behavior, combine, stepper, Stream } from "@funkia/hareactive";
+import { Behavior, stepper, Stream } from "@funkia/hareactive";
 import { go } from "@funkia/jabz";
-import { elements, fgo, modelView, runComponent } from "../../../src";
+import { elements, fgo, runComponent, view, component } from "../../../src";
 import { main1 } from "./version1";
 import { main2 } from "./version2";
 import { main3 } from "./version3";
-import { counterList as main4 } from "./version4";
+import { main4 } from "./version4";
 
 const { button, div } = elements;
 
-const numberToApp = {
-  "1": main1,
-  "2": main2,
-  "3": main3,
-  "4": main4
-};
+const numberToApp = { "1": main1, "2": main2, "3": main3, "4": main4 };
 
 type AppId = keyof (typeof numberToApp);
 
-function selectorButton(n: AppId, selected: Behavior<AppId>) {
-  return button(
-    {
-      class: ["btn btn-default", { active: selected.map((m) => n === m) }]
-    },
-    `Version ${n}`
-  ).map(({ click }) => ({
-    select: click.mapTo(n)
-  }));
-}
+const selectorButton = (n: AppId, selected: Behavior<AppId>) =>
+  view(
+    button(
+      {
+        class: ["btn btn-default", { active: selected.map((m) => n === m) }]
+      },
+      `Version ${n}`
+    ).output((o) => ({ selectVersion: o.click.mapTo(n).log(n) }))
+  );
 
 type FromView = {
   selectVersion: Stream<AppId>;
@@ -36,26 +30,20 @@ type FromModel = {
   selected: Behavior<AppId>;
 };
 
-const versionSelector = modelView<FromModel, FromView>(
+const versionSelector = component<FromView, FromModel>(
   fgo(function*({ selectVersion }) {
     const selected = yield stepper("1", selectVersion);
-    return { selected };
-  }),
-  ({ selected }) =>
-    div({ class: "btn-group" }, [
-      selectorButton("1", selected).output({ select1: "select" }),
-      selectorButton("2", selected).output({ select2: "select" }),
-      selectorButton("3", selected).output({ select3: "select" }),
-      selectorButton("4", selected).output({ select4: "select" })
-    ])
-      .map((o) => ({
-        selectVersion: combine(o.select1, o.select2, o.select3, o.select4)
-      }))
-      .output({ selectVersion: "selectVersion" })
+    return div({ class: "btn-group" }, [
+      selectorButton("1", selected).output({ selectVersion: "selectVersion" }),
+      selectorButton("2", selected).output({ selectVersion: "selectVersion" }),
+      selectorButton("3", selected).output({ selectVersion: "selectVersion" }),
+      selectorButton("4", selected).output({ selectVersion: "selectVersion" })
+    ]).result({ selected });
+  })
 );
 
 const main = go(function*() {
-  const { selected } = yield versionSelector();
+  const { selected } = yield versionSelector.output({ selected: "selected" });
   const currentApp = selected.map((n: AppId) => numberToApp[n]);
   yield div(currentApp);
   return {};

@@ -15,7 +15,7 @@ import {
   view,
   emptyComponent,
   elements,
-  loop,
+  component,
   testComponent,
   list,
   runComponent,
@@ -34,7 +34,7 @@ describe("component specs", () => {
       let result: number | undefined = undefined;
       const c = performComponent(() => (result = 12));
       assert.strictEqual(result, undefined);
-      const { output, available } = testComponent(c);
+      const { output } = testComponent(c);
       assert.strictEqual(result, 12);
       assert.strictEqual(output, 12);
     });
@@ -98,7 +98,7 @@ describe("component specs", () => {
           newFoo: "foo",
           newBar: "bar"
         });
-      const { dom, available, output } = testComponent(comp);
+      const { available, output } = testComponent(comp);
       expect(output.newFoo).to.equal(1);
       expect(output.newBar).to.equal(2);
       expect((available as any).newFoo).to.be.undefined;
@@ -121,10 +121,33 @@ describe("component specs", () => {
       const b2 = button().output({ click2: "click" });
       const m = merge(b1, b2);
       const { output, available } = testComponent(m);
-      expect(available).to.have.property("click1");
-      expect(available).to.have.property("click2");
+      assert.deepEqual(available, {});
       expect(output).to.have.property("click1");
       expect(output).to.have.property("click2");
+    });
+    it("merges colliding streams", () => {
+      const sink1 = H.sinkStream<number>();
+      const sink2 = H.sinkStream<number>();
+      const m = merge(
+        Component.of({ click: sink1 }),
+        Component.of({ click: sink2 })
+      );
+      const { output } = testComponent(m);
+      expect(output).to.have.property("click");
+      const result: number[] = [];
+      output.click.subscribe((n) => result.push(n));
+      sink1.push(0);
+      sink2.push(1);
+      assert.deepEqual(result, [0, 1]);
+    });
+    it("throws on all other collisions", () => {
+      assert.throws(() => {
+        const m = merge(
+          Component.of({ click: H.Behavior.of(0) }),
+          Component.of({ click: H.empty })
+        );
+        testComponent(m);
+      }, "colliding");
     });
   });
   describe("empty component", () => {
@@ -221,23 +244,26 @@ describe("component specs", () => {
     });
   });
 
-  describe("loop", () => {
+  describe("component loop", () => {
     type Looped = { name: H.Behavior<string>; destroyed: H.Future<boolean> };
     it("passed selected output as argument", () => {
       let b: H.Behavior<number> | undefined = undefined;
-      const comp = loop<{ foo: H.Behavior<number> }>((input) => {
+      const comp = component<
+        { foo: H.Behavior<number> },
+        { bar: H.Behavior<number> }
+      >((input) => {
         b = input.foo;
         return Component.of({
           foo: H.Behavior.of(2)
-        });
+        }).result({ bar: H.Behavior.of(3) });
       });
       const { available, output } = testComponent(comp);
       assert.deepEqual(Object.keys(output), []);
-      assert.deepEqual(Object.keys(available), ["foo"]);
+      assert.deepEqual(Object.keys(available), ["bar"]);
       expect(H.at(b!)).to.equal(2);
     });
     it("works with selected fgo and looped behavior", () => {
-      const comp = loop(
+      const comp = component(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
           ({ name } = yield input({ props: { value: "Foo" } }).output({
@@ -252,7 +278,7 @@ describe("component specs", () => {
     });
     it("can be told to destroy", () => {
       let toplevel = false;
-      const comp = loop(
+      const comp = component(
         fgo(function*({
           name,
           destroyed
@@ -273,7 +299,7 @@ describe("component specs", () => {
       expect(toplevel).to.equal(true);
     });
     it("throws helpful error is a reactive is missing", () => {
-      const c = loop((props: { foo: H.Behavior<string> }) => {
+      const c = component((props: { foo: H.Behavior<string> }) => {
         // Access something that isn't there
         (props as any).bar;
         return div([dynamic(props.foo)]).output((_) => ({
