@@ -88,7 +88,7 @@ export abstract class Component<A, O> implements Monad<O> {
     }
   }
   result<R>(o: R): Result<R, O> {
-    return { output: o, child: this };
+    return { available: o, child: this };
   }
   view(): Component<O, {}> {
     return view(this);
@@ -259,7 +259,7 @@ const placeholderProxyHandler = {
   }
 };
 
-type Result<R, O> = { output: R; child: Child<O> };
+type Result<R, O> = { available: R; child: Child<O> };
 
 function isLoopResult(r: any): r is Result<any, any> {
   return typeof r === "object" && "child" in r;
@@ -289,9 +289,9 @@ class LoopComponent<L, O> extends Component<O, {}> {
     }
     const res = this.f(placeholderObject);
     const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
-    const { output, child } = isLoopResult(result)
+    const { available, child } = isLoopResult(result)
       ? result
-      : { output: {} as O, child: result };
+      : { available: {} as O, child: result };
     const { output: looped } = toComponent(child).run(parent, destroyed);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
@@ -303,7 +303,7 @@ class LoopComponent<L, O> extends Component<O, {}> {
       }
       placeholderObject[name].replaceWith(looped[name]);
     }
-    return { available: output, output: {} };
+    return { available, output: {} };
   }
 }
 
