@@ -18,11 +18,11 @@ const counter = component<On>(
       "Counter ",
       count,
       " ",
-      button({ class: "btn btn-default" }, " + ").output({
+      button({ class: "btn btn-default" }, " + ").use({
         incrementClick: "click"
       }),
       " ",
-      button({ class: "btn btn-default" }, " - ").output({
+      button({ class: "btn btn-default" }, " - ").use({
         decrementClick: "click"
       })
     ]);

@@ -64,11 +64,11 @@ export abstract class Component<A, O> implements Monad<O> {
   chain<B, P>(f: (o: O) => Component<B, P>): Component<A, P> {
     return new FlatMapComponent(this, f);
   }
-  output<P>(f: (a: A) => P): Component<A, O & P>;
-  output<B extends Record<string, keyof A>>(
+  use<P>(f: (a: A) => P): Component<A, O & P>;
+  use<B extends Record<string, keyof A>>(
     remaps: B
   ): Component<A, O & Remap<A, B>>;
-  output(handler: any): Component<A, any> {
+  use(handler: any): Component<A, any> {
     if (typeof handler === "function") {
       return new HandleOutput(
         (a, o) => ({
@@ -87,8 +87,8 @@ export abstract class Component<A, O> implements Monad<O> {
       );
     }
   }
-  result<R>(o: R): Result<R, O> {
-    return { available: o, child: this };
+  output<R>(o: R): Result<R, O> {
+    return { available: o, component: this };
   }
   view(): Component<O, {}> {
     return view(this);
@@ -162,19 +162,19 @@ export type Remap<
   B extends Record<any, keyof A>
 > = Id<{ [K in keyof B]: A[B[K]] }>;
 
-export function output<A, O, P>(
+export function use<A, O, P>(
   f: (a: A) => P,
   c: Component<A, O>
 ): Component<A, O & P>;
-export function output<A, O, B extends Record<string, keyof A>>(
+export function use<A, O, B extends Record<string, keyof A>>(
   remaps: B,
   c: Component<A, O>
 ): Component<A, O & Remap<A, B>>;
-export function output<A>(
+export function use<A>(
   remaps: any,
   component: Component<any, A>
 ): Component<any, A> {
-  return component.output(remaps);
+  return component.use(remaps);
 }
 
 /**
@@ -259,10 +259,10 @@ const placeholderProxyHandler = {
   }
 };
 
-type Result<R, O> = { available: R; child: Child<O> };
+type Result<R, O> = { available: R; component: Child<O> };
 
 function isLoopResult(r: any): r is Result<any, any> {
-  return typeof r === "object" && "child" in r;
+  return typeof r === "object" && "available" in r && "component" in r;
 }
 
 class LoopComponent<L, O> extends Component<O, {}> {
@@ -289,10 +289,10 @@ class LoopComponent<L, O> extends Component<O, {}> {
     }
     const res = this.f(placeholderObject);
     const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
-    const { available, child } = isLoopResult(result)
+    const { available, component } = isLoopResult(result)
       ? result
-      : { available: {} as O, child: result };
-    const { output: looped } = toComponent(child).run(parent, destroyed);
+      : { available: {} as O, component: result };
+    const { output: looped } = toComponent(component).run(parent, destroyed);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
       if (name === "destroyed") {

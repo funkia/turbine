@@ -1,14 +1,9 @@
-import { Behavior, combine, stepper, Stream } from "@funkia/hareactive";
-import { elements, fgo, modelView, runComponent } from "../../src";
+import { combine, Stream } from "@funkia/hareactive";
+import { elements, runComponent, component } from "../../src";
 
 const { input, div, label } = elements;
 
-type Model = {
-  celsius: Behavior<number>;
-  fahren: Behavior<number>;
-};
-
-type View = {
+type On = {
   fahrenChange: Stream<string>;
   celsiusChange: Stream<string>;
 };
@@ -18,36 +13,33 @@ const getValue = (ev: any) => ev.currentTarget.value;
 const parseNumbers = (s: Stream<string>) =>
   s.map(parseFloat).filter((n) => !isNaN(n));
 
-const model = fgo(function*({ fahrenChange, celsiusChange }: View) {
-  const fahrenNrChange = parseNumbers(fahrenChange);
-  const celsiusNrChange = parseNumbers(celsiusChange);
-  const celsius = yield stepper(
-    0,
-    combine(celsiusNrChange, fahrenNrChange.map((f) => (f - 32) / 1.8))
+const main = component<On>((on) => {
+  const fahrenNrChange = parseNumbers(on.fahrenChange);
+  const celsiusNrChange = parseNumbers(on.celsiusChange);
+  const celsius = combine(
+    celsiusNrChange,
+    fahrenNrChange.map((f) => (f - 32) / 1.8)
   );
-  const fahren = yield stepper(
-    0,
-    combine(fahrenNrChange, celsiusNrChange.map((c) => (c * 9) / 5 + 32))
+  const fahren = combine(
+    fahrenNrChange,
+    celsiusNrChange.map((c) => (c * 9) / 5 + 32)
   );
-  return { celsius, fahren };
-});
 
-const view = ({ fahren, celsius }: Model) =>
-  div([
+  return div([
     div([
       label("Fahrenheit"),
-      input({ value: fahren }).output({ fahrenInput: "input" })
+      input({ value: fahren }).use((o) => ({
+        fahrenChange: o.input.map(getValue)
+      }))
     ]),
     div([
       label("Celsius"),
-      input({ value: celsius }).output({ celsiusInput: "input" })
+      input({ value: celsius }).use((o) => ({
+        celsiusChange: o.input.map(getValue)
+      }))
     ])
-  ]).output((o) => ({
-    fahrenChange: o.fahrenInput.map(getValue),
-    celsiusChange: o.celsiusInput.map(getValue)
-  }));
-
-const main = modelView<Model, View>(model, view)();
+  ]);
+});
 
 // `runMain` should be the only impure function in application code
 runComponent("#mount", main);

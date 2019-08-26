@@ -89,7 +89,7 @@ const view = ({ status }: ToView) => [
   span("Please type a valid US zip code: "),
   input({
     props: { placeholder: "Zip code" }
-  }).output({ zipCode: "value" }),
+  }).use({ zipCode: "value" }),
   br,
   span(status)
 ];

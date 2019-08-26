@@ -19,7 +19,7 @@ const selectorButton = (n: AppId, selected: Behavior<AppId>) =>
         class: ["btn btn-default", { active: selected.map((m) => n === m) }]
       },
       `Version ${n}`
-    ).output((o) => ({ selectVersion: o.click.mapTo(n).log(n) }))
+    ).use((o) => ({ selectVersion: o.click.mapTo(n).log(n) }))
   );
 
 type FromView = {
@@ -34,16 +34,16 @@ const versionSelector = component<FromView, FromModel>(
   fgo(function*({ selectVersion }) {
     const selected = yield stepper("1", selectVersion);
     return div({ class: "btn-group" }, [
-      selectorButton("1", selected).output({ selectVersion: "selectVersion" }),
-      selectorButton("2", selected).output({ selectVersion: "selectVersion" }),
-      selectorButton("3", selected).output({ selectVersion: "selectVersion" }),
-      selectorButton("4", selected).output({ selectVersion: "selectVersion" })
-    ]).result({ selected });
+      selectorButton("1", selected).use({ selectVersion: "selectVersion" }),
+      selectorButton("2", selected).use({ selectVersion: "selectVersion" }),
+      selectorButton("3", selected).use({ selectVersion: "selectVersion" }),
+      selectorButton("4", selected).use({ selectVersion: "selectVersion" })
+    ]).output({ selected });
   })
 );
 
 const main = go(function*() {
-  const { selected } = yield versionSelector.output({ selected: "selected" });
+  const { selected } = yield versionSelector.use({ selected: "selected" });
   const currentApp = selected.map((n: AppId) => numberToApp[n]);
   yield div(currentApp);
   return {};

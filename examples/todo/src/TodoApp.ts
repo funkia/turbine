@@ -112,7 +112,7 @@ export const app = component<FromView>(
       section({ class: "todoapp" }, [
         header({ class: "header" }, [
           h1("todos"),
-          todoInput.output({ addItem: "addItem" })
+          todoInput.use({ addItem: "addItem" })
         ]),
         section(
           {
@@ -123,22 +123,20 @@ export const app = component<FromView>(
               class: "toggle-all",
               attrs: { id: "toggle-all" },
               props: { checked: areAllCompleted }
-            }).output({ toggleAll: "checkedChange" }),
+            }).use({ toggleAll: "checkedChange" }),
             label({ attrs: { for: "toggle-all" } }, "Mark all as complete"),
             ul(
               { class: "todo-list" },
               list(
                 (n) =>
-                  item({ toggleAll: on.toggleAll, currentFilter, ...n }).output(
-                    {
-                      completed: "completed",
-                      destroyItemId: "destroyItemId",
-                      id: "id"
-                    }
-                  ),
+                  item({ toggleAll: on.toggleAll, currentFilter, ...n }).use({
+                    completed: "completed",
+                    destroyItemId: "destroyItemId",
+                    id: "id"
+                  }),
                 todoNames,
                 (o) => o.id
-              ).output((o) => ({ itemOutputs: o }))
+              ).use((o) => ({ itemOutputs: o }))
             )
           ]
         ),
@@ -147,7 +145,7 @@ export const app = component<FromView>(
           areAnyCompleted,
           currentFilter,
           hidden
-        }).output({ clearCompleted: "clearCompleted" })
+        }).use({ clearCompleted: "clearCompleted" })
       ]),
       footer({ class: "info" }, [
         p("Double-click to edit a todo"),

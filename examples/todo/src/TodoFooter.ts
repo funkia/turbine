@@ -22,7 +22,7 @@ const filterItem = (
           class: { selected: currentFilter.map((s) => s === path) }
         },
         name
-      ).output({ click: "click" })
+      ).use({ click: "click" })
     )
   );
 
@@ -41,7 +41,7 @@ const todoFooter = (props: Props) =>
       button(
         { class: ["clear-completed", { hidden: props.areAnyCompleted }] },
         "Clear completed"
-      ).output({ clearCompleted: "click" })
+      ).use({ clearCompleted: "click" })
     ])
   );
 

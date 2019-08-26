@@ -60,35 +60,35 @@ describe("dom-builder", () => {
 
   describe("output", () => {
     it("renames output as output", () => {
-      const c = button().output({ buttonClick: "click" });
+      const c = button().use({ buttonClick: "click" });
       const { available, output } = testComponent(c);
       assert(!isStream((available as any).buttonClick));
       assert(isStream(output.buttonClick));
     });
     it("passes output child output through", () => {
-      const c = div(button().output({ buttonClick: "click" }));
+      const c = div(button().use({ buttonClick: "click" }));
       const { output } = testComponent(c);
       assert(isStream(output.buttonClick));
     });
     it("merges output from list of elements", () => {
-      const btn = button("Click me").output({ fooClick: "click" });
-      const btn2 = button("Click me").output({ barClick: "click" });
+      const btn = button("Click me").use({ fooClick: "click" });
+      const btn2 = button("Click me").use({ barClick: "click" });
       const c = div({}, [btn, btn2]);
       const { output } = testComponent(c);
       assert(isStream(output.fooClick));
       assert(isStream(output.barClick));
     });
     it("merges output from list of elements alongside strings", () => {
-      const btn = button("Click me").output({ fooClick: "click" });
-      const btn2 = button("Click me").output({ barClick: "click" });
+      const btn = button("Click me").use({ fooClick: "click" });
+      const btn2 = button("Click me").use({ barClick: "click" });
       const c = div({}, [btn, "foo", btn2]);
       const { output } = testComponent(c);
       assert(isStream(output.fooClick));
       assert(isStream(output.barClick));
     });
     it("merges own output with output output in child array", () => {
-      const btn = button("Click me").output({ fooClick: "click" });
-      const myDiv = div([btn]).output({ divClick: "click" });
+      const btn = button("Click me").use({ fooClick: "click" });
+      const myDiv = div([btn]).use({ divClick: "click" });
       const { output } = testComponent(myDiv);
       assert(isStream(output.divClick));
       assert(isStream(output.fooClick));
@@ -96,14 +96,14 @@ describe("dom-builder", () => {
     it("merges all output from non-array child", () => {
       const child = Component.of({ bar: 1 })
         .view()
-        .output({ bar: "bar" });
-      const myDiv = div(child).output({ divClick: "click" });
+        .use({ bar: "bar" });
+      const myDiv = div(child).use({ divClick: "click" });
       const { output } = testComponent(myDiv);
       assert(isStream(output.divClick));
       assert.strictEqual(output.bar, 1);
     });
     it("can override existing property", () => {
-      testComponent(div(button("Reset").output({ reset: "click" })));
+      testComponent(div(button("Reset").use({ reset: "click" })));
     });
   });
 
@@ -146,7 +146,7 @@ describe("dom-builder", () => {
 
   describe("output", () => {
     it("can rename output", () => {
-      const btn = button("Click").output(({ click }) => ({
+      const btn = button("Click").use(({ click }) => ({
         foobar: click
       }));
       const { output } = testComponent(btn);
@@ -157,7 +157,7 @@ describe("dom-builder", () => {
         streams: { customClick: streamDescription("click", id) }
       });
       const { output } = testComponent(
-        myElement().output({ horse: "customClick" })
+        myElement().use({ horse: "customClick" })
       );
       assert.isTrue(isStream(output.horse));
     });

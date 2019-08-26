@@ -43,18 +43,18 @@ const counter = (id: Id) =>
         "Counter ",
         count,
         " ",
-        button({ class: "btn btn-default" }, " + ").output({
+        button({ class: "btn btn-default" }, " + ").use({
           incrementClick: "click"
         }),
         " ",
-        button({ class: "btn btn-default" }, " - ").output({
+        button({ class: "btn btn-default" }, " - ").use({
           decrementClick: "click"
         }),
         " ",
-        button({ class: "btn btn-default" }, "x").output({
+        button({ class: "btn btn-default" }, "x").use({
           deleteClick: "click"
         })
-      ]).result({ count, deleteS });
+      ]).output({ count, deleteS });
     })
   );
 
@@ -90,12 +90,12 @@ const counterList = component<ToModel>(
     return [
       h1("Counters"),
       p(["Sum ", sum]),
-      button({ class: "btn btn-primary" }, "Add counter").output({
+      button({ class: "btn btn-primary" }, "Add counter").use({
         addCounter: "click"
       }),
       br,
       ul(
-        list((n) => counter(n).output((o) => o), counterIds).output((o) => ({
+        list((n) => counter(n).use((o) => o), counterIds).use((o) => ({
           listOut: o
         }))
       )

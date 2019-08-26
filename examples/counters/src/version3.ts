@@ -33,14 +33,14 @@ const counter = () =>
         "Counter ",
         count,
         " ",
-        button({ class: "btn btn-default" }, " + ").output({
+        button({ class: "btn btn-default" }, " + ").use({
           incrementClick: "click"
         }),
         " ",
-        button({ class: "btn btn-default" }, " - ").output({
+        button({ class: "btn btn-default" }, " - ").use({
           decrementClick: "click"
         })
-      ]).result({ count });
+      ]).output({ count });
     })
   );
 
@@ -62,7 +62,7 @@ const counterList = component<ListOn>(
     );
     return [
       h1("Counters"),
-      button({ class: "btn btn-primary" }, "Add counter").output({
+      button({ class: "btn btn-primary" }, "Add counter").use({
         addCounter: "click"
       }),
       br,

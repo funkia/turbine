@@ -91,15 +91,15 @@ export default (props: Props) =>
           checkbox({
             class: "toggle",
             props: { checked: completed }
-          }).output({ toggleTodo: "checkedChange" }),
-          label(taskName).output({ startEditing: "dblclick" }),
-          button({ class: "destroy" }).output({ deleteClicked: "click" })
+          }).use({ toggleTodo: "checkedChange" }),
+          label(taskName).use({ startEditing: "dblclick" }),
+          button({ class: "destroy" }).use({ deleteClicked: "click" })
         ]),
         input({
           class: "edit",
           value: H.snapshot(on.taskName, on.startEditing),
           actions: { focus: on.startEditing }
-        }).output((o) => ({
+        }).use((o) => ({
           newName: o.value,
           stopEditing: H.combine(
             o.keyup.filter((ev) => ev.keyCode === enter).mapTo(true),
@@ -108,7 +108,7 @@ export default (props: Props) =>
           )
         }))
       ])
-        .output(() => ({ taskName, editing }))
-        .result({ destroyItemId, completed, id: props.id });
+        .use(() => ({ taskName, editing }))
+        .output({ destroyItemId, completed, id: props.id });
     })
   );

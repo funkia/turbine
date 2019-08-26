@@ -37,7 +37,7 @@ const model = fgo(function*({ snapClick }: ViewOut) {
 const view = ({ time, message }: ToView) => [
   h1("Continuous time example"),
   p(map(formatTime, time)),
-  p(button("Click to snap time").output({ snapClick: "click" })),
+  p(button("Click to snap time").use({ snapClick: "click" })),
   p(message)
 ];
 

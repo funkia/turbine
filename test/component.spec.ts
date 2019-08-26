@@ -1,6 +1,6 @@
-import { assert, use, expect } from "chai";
+import { assert, use as chaiUse, expect } from "chai";
 import * as chaiDom from "chai-dom";
-use(chaiDom);
+chaiUse(chaiDom);
 import { fgo } from "@funkia/jabz";
 import * as H from "@funkia/hareactive";
 import * as fakeRaf from "fake-raf";
@@ -19,7 +19,7 @@ import {
   testComponent,
   list,
   runComponent,
-  output,
+  use,
   merge,
   performComponent,
   liftNow
@@ -70,7 +70,7 @@ describe("component specs", () => {
       const component = toComponent([
         span("Hello"),
         div("There"),
-        button("Click me").output({ click: "click" })
+        button("Click me").use({ click: "click" })
       ]);
       const { dom, available } = testComponent(component);
 
@@ -83,7 +83,7 @@ describe("component specs", () => {
     it("only combines selected output in array", () => {
       const component = toComponent([
         button("Click me"),
-        button().output({ trigger: "click" })
+        button().use({ trigger: "click" })
       ]);
       const { available } = testComponent(component);
       expect(available).to.have.property("trigger");
@@ -94,7 +94,7 @@ describe("component specs", () => {
     it("has output method", () => {
       const comp = Component.of({ foo: 1, bar: 2, baz: 3 })
         .view()
-        .output({
+        .use({
           newFoo: "foo",
           newBar: "bar"
         });
@@ -105,7 +105,7 @@ describe("component specs", () => {
     });
     it("has output function", () => {
       const comp = view(Component.of({ foo: 1, bar: "two", baz: 3 }));
-      const comp2 = output({ newFoo: "foo", newBar: "bar" }, comp);
+      const comp2 = use({ newFoo: "foo", newBar: "bar" }, comp);
       const { available, output: out } = testComponent(comp2);
       // type asserts to check that the types work
       out.newFoo as number;
@@ -117,8 +117,8 @@ describe("component specs", () => {
   });
   describe("merge", () => {
     it("merges output", () => {
-      const b1 = button().output({ click1: "click" });
-      const b2 = button().output({ click2: "click" });
+      const b1 = button().use({ click1: "click" });
+      const b2 = button().use({ click2: "click" });
       const m = merge(b1, b2);
       const { output, available } = testComponent(m);
       assert.deepEqual(available, {});
@@ -222,7 +222,7 @@ describe("component specs", () => {
         H.Behavior.of(
           Component.of({ foo: 1, bar: 2 })
             .view()
-            .output({ baz: "bar" })
+            .use({ baz: "bar" })
         )
       );
       const { output, available } = testComponent(c);
@@ -255,7 +255,7 @@ describe("component specs", () => {
         b = input.foo;
         return Component.of({
           foo: H.Behavior.of(2)
-        }).result({ bar: H.Behavior.of(3) });
+        }).output({ bar: H.Behavior.of(3) });
       });
       const { available, output } = testComponent(comp);
       assert.deepEqual(Object.keys(output), []);
@@ -266,7 +266,7 @@ describe("component specs", () => {
       const comp = component(
         fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
-          ({ name } = yield input({ props: { value: "Foo" } }).output({
+          ({ name } = yield input({ props: { value: "Foo" } }).use({
             name: "value"
           }));
           return { name };
@@ -285,7 +285,7 @@ describe("component specs", () => {
         }: Looped): IterableIterator<Component<any, any>> {
           yield div(name);
           destroyed.subscribe((b) => (toplevel = b));
-          ({ name } = yield input({ props: { value: "Foo" } }).output({
+          ({ name } = yield input({ props: { value: "Foo" } }).use({
             name: "value"
           }));
           return { name };
@@ -302,11 +302,21 @@ describe("component specs", () => {
       const c = component((props: { foo: H.Behavior<string> }) => {
         // Access something that isn't there
         (props as any).bar;
-        return div([dynamic(props.foo)]).output((_) => ({
+        return div([dynamic(props.foo)]).use((_) => ({
           foo: H.Behavior.of("foo")
         }));
       });
       assert.throws(() => testComponent(c), /bar/);
+    });
+    it.skip("works with integrate", () => {
+      // For this to work we need to chain a timestamp through component, like
+      // we do with now, and use that timestamp when observing behaviors.
+      const c = component<{ number: H.Behavior<number> }>((on) =>
+        H.integrate(on.number).map((n) =>
+          span(dynamic(n)).use((_) => ({ number: H.Behavior.of(1) }))
+        )
+      );
+      const {} = testComponent(c);
     });
   });
 });
@@ -331,7 +341,7 @@ describe("modelView", () => {
         assert.deepEqual(Object.keys(input), ["spanClicked", "destroyed"]);
         return H.Now.of({ n: H.Behavior.of(n) });
       },
-      ({ n }) => span(n).output({ spanClicked: "click" })
+      ({ n }) => span(n).use({ spanClicked: "click" })
     );
     const { dom } = testComponent(c(12));
     expect(dom.querySelector("span")).to.have.text("12");
@@ -339,7 +349,7 @@ describe("modelView", () => {
   it("passes argument to view", () => {
     const c = modelView(
       ({ click }) => H.Now.of({}),
-      ({  }: {}, n: number) => span(n).output({ click: "click" })
+      ({  }: {}, n: number) => span(n).use({ click: "click" })
     );
     const { dom } = testComponent(c(7));
     expect(dom.querySelector("span")).to.have.text("7");
@@ -352,7 +362,7 @@ describe("modelView", () => {
         fromView = args;
         return H.Now.of({});
       },
-      (): Child<FromView> => [span("Hello"), input().output({ value: "value" })]
+      (): Child<FromView> => [span("Hello"), input().use({ value: "value" })]
     )();
     const { dom } = testComponent(c);
     expect(dom.querySelector("span")).to.exist;
@@ -407,14 +417,14 @@ describe("modelView", () => {
 describe("view", () => {
   const obj = { a: 0, b: 1 };
   it("turns selected output into available output", () => {
-    const c = view(Component.of(obj).output((o) => o));
+    const c = view(Component.of(obj).use((o) => o));
     const { available, output } = testComponent(c);
     expect(output).to.deep.equal({});
     expect(available).to.deep.equal(obj);
   });
   it("is available as method", () => {
     const c = Component.of(obj)
-      .output((o) => o)
+      .use((o) => o)
       .view();
     const { available, output } = testComponent(c);
     expect(output).to.deep.equal({});
@@ -456,7 +466,7 @@ describe("list", () => {
   it("outputs object with property", () => {
     const listB = H.sinkBehavior(initial);
     const { output } = testComponent(
-      list(createSpan, listB).output((o) => ({ foobar: o }))
+      list(createSpan, listB).use((o) => ({ foobar: o }))
     );
     assert.notEqual(output.foobar, undefined);
   });

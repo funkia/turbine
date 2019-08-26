@@ -31,10 +31,10 @@ export default component<FromView, Out>(
       autocomplete: "off",
       placeholder: "What needs to be done?"
     })
-      .output((o) => ({
+      .use((o) => ({
         value: o.value,
         enterPressed: o.keyup.filter((ev) => ev.keyCode === KEYCODE_ENTER)
       }))
-      .result({ addItem });
+      .output({ addItem });
   })
 );

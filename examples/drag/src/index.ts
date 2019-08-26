@@ -68,7 +68,7 @@ const boxView = ({ isBeingDragged, position }: BoxViewInput, color: string) =>
       left: position.map(({ x }) => x + "px"),
       top: position.map(({ y }) => y + "px")
     }
-  }).output({ startDrag: "mousedown", endDrag: "mouseup" });
+  }).use({ startDrag: "mousedown", endDrag: "mouseup" });
 
 const box = modelView(boxModel, boxView);
 
