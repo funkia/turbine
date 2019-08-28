@@ -7,10 +7,11 @@ import {
   runNow,
   sinkBehavior,
   sinkFuture,
-  Stream
+  Stream,
+  instant
 } from "@funkia/hareactive";
 import { render } from "@funkia/hareactive/dom";
-import { fgo, go, Monad, monad } from "@funkia/jabz";
+import { go, Monad, monad } from "@funkia/jabz";
 import { copyRemaps, id, Merge, mergeObj } from "./utils";
 
 const supportsProxy = typeof Proxy !== "undefined";
@@ -20,16 +21,6 @@ export type Showable = string | number | boolean;
 function isShowable(s: any): s is Showable {
   return (
     typeof s === "string" || typeof s === "number" || typeof s === "boolean"
-  );
-}
-
-export function isGeneratorFunction(
-  fn: any
-): fn is (...a: any[]) => IterableIterator<any> {
-  return (
-    fn !== undefined &&
-    fn.constructor !== undefined &&
-    fn.constructor.name === "GeneratorFunction"
   );
 }
 
@@ -268,7 +259,8 @@ function isLoopResult(r: any): r is Result<any, any> {
 class LoopComponent<L, O> extends Component<O, {}> {
   constructor(
     private f: (
-      o: L
+      o: L,
+      start: <A>(n: Now<A>) => A
     ) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
     private placeholderNames?: (keyof L)[]
   ) {
@@ -287,7 +279,7 @@ class LoopComponent<L, O> extends Component<O, {}> {
         "component called with no list of names and proxies are not supported."
       );
     }
-    const res = this.f(placeholderObject);
+    const res = runNow(instant((start) => this.f(placeholderObject, start)));
     const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
     const { available, component } = isLoopResult(result)
       ? result
@@ -308,19 +300,21 @@ class LoopComponent<L, O> extends Component<O, {}> {
 }
 
 export function component<L extends ReactivesObject>(
-  f: (l: L) => Child<L> | Now<Child<L>>,
+  f: (l: L, start: <A>(n: Now<A>) => A) => Child<L> | Now<Child<L>>,
   placeholderNames?: (keyof L)[]
 ): Component<{}, {}>;
 export function component<L extends ReactivesObject, O>(
-  f: (l: L) => Result<O, L> | Now<Result<O, L>>,
+  f: (l: L, start: <A>(n: Now<A>) => A) => Result<O, L> | Now<Result<O, L>>,
   placeholderNames?: (keyof L)[]
 ): Component<O, {}>;
 export function component<L, O extends ReactivesObject>(
-  f: (l: L) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
+  f: (
+    l: L,
+    start: <A>(n: Now<A>) => A
+  ) => Child<L> | Now<Child<L>> | Result<O, L> | Now<Result<O, L>>,
   placeholderNames?: (keyof L)[]
 ): Component<O, {}> {
-  const f2 = isGeneratorFunction(f) ? fgo<L>(f) : f;
-  return new LoopComponent<L, O>(f2, placeholderNames);
+  return new LoopComponent<L, O>(f, placeholderNames);
 }
 
 class MergeComponent<
@@ -416,9 +410,8 @@ class ModelViewComponent<M extends Record<string, any>, V> extends Component<
   }
 }
 
-export type ModelReturn<M> = Now<M> | Iterator<any>;
-export type Model<V, M> = (v: V) => ModelReturn<M>;
-export type Model1<V, M, A> = (v: V, a: A) => ModelReturn<M>;
+export type Model<V, M> = (v: V) => Now<M>;
+export type Model1<V, M, A> = (v: V, a: A) => Now<M>;
 export type View<M, V> = (m: OnlyReactives<M>) => Child<V>;
 export type View1<M, V, A> = (m: OnlyReactives<M>, a: A) => Child<V>;
 
@@ -437,9 +430,8 @@ export function modelView<M extends Record<string, any>, V>(
   view: any,
   toViewReactiveNames?: string[]
 ): (...args: any[]) => Component<M, {}> {
-  const m: any = isGeneratorFunction(model) ? fgo(model) : model;
   return (...args: any[]) =>
-    new ModelViewComponent<M, V>(args, m, view, toViewReactiveNames);
+    new ModelViewComponent<M, V>(args, model, view, toViewReactiveNames);
 }
 
 export function view<O>(c: Component<any, O>): Component<O, {}> {
@@ -528,13 +520,7 @@ export type TC<A> = A extends Component<any, infer O>
 export type ToComponent<A> = A extends Child[] ? ArrayToComponent<A> : TC<A>;
 
 export function isChild(a: any): a is Child {
-  return (
-    isComponent(a) ||
-    isGeneratorFunction(a) ||
-    isBehavior(a) ||
-    isShowable(a) ||
-    Array.isArray(a)
-  );
+  return isComponent(a) || isBehavior(a) || isShowable(a) || Array.isArray(a);
 }
 
 class TextComponent extends Component<{}, {}> {
@@ -583,8 +569,6 @@ export function toComponent<A extends Child>(child: A): ToComponent<A> {
     return child as any;
   } else if (isBehavior(child)) {
     return dynamic(child).mapTo({}) as any;
-  } else if (isGeneratorFunction(child)) {
-    return go(child);
   } else if (isShowable(child)) {
     return text(child) as any;
   } else if (Array.isArray(child)) {

@@ -1,7 +1,7 @@
 import { withEffects } from "@funkia/jabz";
 import { Behavior, fromFunction } from "@funkia/hareactive";
 
-export function itemBehavior(key: string): Behavior<any | null> {
+export function itemBehavior<A = any>(key: string): Behavior<A | null> {
   return fromFunction(() => JSON.parse(localStorage.getItem(key)!));
 }
 

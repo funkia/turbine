@@ -14,7 +14,7 @@ import {
   modelView,
   view,
   emptyComponent,
-  elements,
+  elements as e,
   component,
   testComponent,
   list,
@@ -24,7 +24,7 @@ import {
   performComponent,
   liftNow
 } from "../src";
-const { span, div, button, input } = elements;
+const { span, div, button, input } = e;
 
 const supportsProxy = "Proxy" in window;
 
@@ -275,6 +275,19 @@ describe("component specs", () => {
       const { dom } = testComponent(comp);
       expect(dom).to.have.length(2);
       expect(dom.firstChild).to.have.text("Foo");
+    });
+    it("passes `start` function", () => {
+      const c = component<{ click: H.Stream<number> }>((on, start) => {
+        const count = start(H.accum((n, m) => n + m, 0, on.click));
+        return e.div([
+          e.span(dynamic(count)),
+          e.button("Click me").use((o) => ({ click: o.click.mapTo(1) }))
+        ]);
+      });
+      const { dom } = testComponent(c);
+      expect(dom.firstChild!.firstChild).to.have.text("0");
+      dom.querySelector("button")!.click();
+      expect(dom.firstChild!.firstChild).to.have.text("1");
     });
     it("can be told to destroy", () => {
       let toplevel = false;
