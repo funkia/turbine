@@ -1,14 +1,13 @@
-import { elements } from "../../../src";
-const { div, button } = elements;
+import { elements as E } from "../../../src";
 
 // Counter
-const counterView = div([
+const counterView = E.div([
   "Counter ",
   1,
   " ",
-  button({ class: "btn btn-default" }, "+"),
+  E.button({ class: "btn btn-default" }, "+"),
   " ",
-  button({ class: "btn btn-default" }, " - ")
+  E.button({ class: "btn btn-default" }, " - ")
 ]);
 
 export const main1 = counterView;

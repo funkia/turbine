@@ -10,8 +10,7 @@ import {
   moment
 } from "@funkia/hareactive";
 
-import { list, elements, component } from "../../../src";
-const { ul, li, p, br, button, h1 } = elements;
+import { list, elements as E, component } from "../../../src";
 
 const add = (n: number, m: number) => n + m;
 const apply = <A>(f: (a: A) => A, a: A) => f(a);
@@ -35,19 +34,19 @@ const counter = (id: Id) =>
     const deleteS = on.deleteClick.mapTo(id);
     const count = start(accum(add, 0, on.delta));
 
-    return li([
+    return E.li([
       "Counter ",
       count,
       " ",
-      button({ class: "btn btn-default" }, " + ").use((o) => ({
+      E.button({ class: "btn btn-default" }, " + ").use((o) => ({
         delta: o.click.mapTo(1)
       })),
       " ",
-      button({ class: "btn btn-default" }, " - ").use((o) => ({
+      E.button({ class: "btn btn-default" }, " - ").use((o) => ({
         delta: o.click.mapTo(-1)
       })),
       " ",
-      button({ class: "btn btn-default" }, "x").use({
+      E.button({ class: "btn btn-default" }, "x").use({
         deleteClick: "click"
       })
     ]).output({ count, deleteS });
@@ -75,13 +74,13 @@ const counterList = component<ToModel>((on, start) => {
   const modifications = combine(appendCounterFn, removeCounterIdFn);
   const counterIds = start(accum(apply, [0, 1, 2], modifications));
   return [
-    h1("Counters"),
-    p(["Sum ", sum]),
-    button({ class: "btn btn-primary" }, "Add counter").use({
+    E.h1("Counters"),
+    E.p(["Sum ", sum]),
+    E.button({ class: "btn btn-primary" }, "Add counter").use({
       addCounter: "click"
     }),
-    br,
-    ul(
+    E.br,
+    E.ul(
       list((n) => counter(n).use((o) => o), counterIds).use((o) => ({
         listOut: o
       }))

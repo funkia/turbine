@@ -1,46 +1,27 @@
-import {
-  Behavior,
-  map,
-  snapshot,
-  stepper,
-  Stream,
-  time
-} from "@funkia/hareactive";
-import { elements, fgo, modelView, runComponent } from "../../src/index";
+import { map, snapshot, stepper, Stream, time } from "@funkia/hareactive";
+import { elements as E, runComponent, component } from "../../src/index";
 
-const { p, button, h1 } = elements;
+const formatTime = (t: number) => new Date(t).toTimeString().split(" ")[0];
 
-const formatTime = (t: number): string =>
-  new Date(t).toTimeString().split(" ")[0];
-
-type ToView = {
-  time: Behavior<number>;
-  message: Behavior<string>;
-};
-
-type ViewOut = {
+type On = {
   snapClick: Stream<any>;
 };
 
-const model = fgo(function*({ snapClick }: ViewOut) {
+const main = component<On>((on, start) => {
   const msgFromClick = map(
     (t) => "You last pressed the button at " + formatTime(t),
-    snapshot(time, snapClick)
+    snapshot(time, on.snapClick)
   );
-  const message = yield stepper(
-    "You've not clicked the button yet",
-    msgFromClick
+  const message = start(
+    stepper("You've not clicked the button yet", msgFromClick)
   );
-  return { time, message };
+
+  return [
+    E.h1("Continuous time example"),
+    E.p(map(formatTime, time)),
+    E.p(E.button("Click to snap time").use({ snapClick: "click" })),
+    E.p(message)
+  ];
 });
-
-const view = ({ time, message }: ToView) => [
-  h1("Continuous time example"),
-  p(map(formatTime, time)),
-  p(button("Click to snap time").use({ snapClick: "click" })),
-  p(message)
-];
-
-const main = modelView<ToView, ViewOut>(model, view)();
 
 runComponent("#mount", main);

@@ -1,7 +1,6 @@
 import { Behavior, map, accum, scan, Stream } from "@funkia/hareactive";
 
-import { elements, list, component } from "../../../src";
-const { br, li, button, h1, ul } = elements;
+import { elements as E, list, component } from "../../../src";
 
 const add = (n: number, m: number) => n + m;
 const apply = <A, B>(f: (a: A) => B, a: A) => f(a);
@@ -18,15 +17,15 @@ const counter = () =>
   component<CounterOn, CounterOutput>((on, start) => {
     const count = start(accum(add, 0, on.delta));
 
-    return li([
+    return E.li([
       "Counter ",
       count,
       " ",
-      button({ class: "btn btn-default" }, " + ").use((o) => ({
+      E.button({ class: "btn btn-default" }, " + ").use((o) => ({
         delta: o.click.mapTo(1)
       })),
       " ",
-      button({ class: "btn btn-default" }, " - ").use((o) => ({
+      E.button({ class: "btn btn-default" }, " - ").use((o) => ({
         delta: o.click.mapTo(-1)
       }))
     ]).output({ count });
@@ -44,12 +43,12 @@ const counterList = component<ListOn>(({ addCounter }, start) => {
   );
   const counterIds = start(accum(apply, [0], appendCounterFn));
   return [
-    h1("Counters"),
-    button({ class: "btn btn-primary" }, "Add counter").use({
+    E.h1("Counters"),
+    E.button({ class: "btn btn-primary" }, "Add counter").use({
       addCounter: "click"
     }),
-    br,
-    ul(list(counter, counterIds))
+    E.br,
+    E.ul(list(counter, counterIds))
   ];
 });
 

@@ -1,26 +1,13 @@
-import {
-  map,
-  streamFromEvent,
-  stepper,
-  toggle,
-  snapshot,
-  switcher,
-  Behavior,
-  combine,
-  lift,
-  runNow,
-  Stream,
-  accum
-} from "@funkia/hareactive";
-import { runComponent, elements, go, fgo, modelView } from "../../../src";
-const { div } = elements;
+import * as H from "@funkia/hareactive";
+import { streamFromEvent } from "@funkia/hareactive/dom";
+import { runComponent, elements as E, component } from "../../../src";
 
 type Point = { x: number; y: number };
 
-const mousemove = streamFromEvent(window, "mousemove");
-const mousePosition = runNow(
-  stepper({ x: 0, y: 0 }, mousemove.map((e) => ({ x: e.pageX, y: e.pageY })))
-);
+const mousemove = streamFromEvent(window, "mousemove", (e) => ({
+  x: e.pageX,
+  y: e.pageY
+}));
 
 const addPoint = (p1: Point, p2: Point) => ({
   x: p1.x + p2.x,
@@ -28,52 +15,38 @@ const addPoint = (p1: Point, p2: Point) => ({
 });
 
 type BoxModelInput = {
-  startDrag: Stream<void>;
-  endDrag: Stream<void>;
+  startDrag: H.Stream<void>;
+  endDrag: H.Stream<void>;
 };
 
-const boxModel = fgo(function*(
-  { startDrag, endDrag }: BoxModelInput,
-  color: string
-) {
-  const startDragAt = snapshot(mousePosition, startDrag);
-  const dragOffset = map(
-    (p) => map((p2) => ({ x: p2.x - p.x, y: p2.y - p.y }), mousePosition),
-    startDragAt
-  );
-  const offset: Behavior<Point> = yield switcher(
-    Behavior.of({ x: 0, y: 0 }),
-    combine(dragOffset, endDrag.mapTo(Behavior.of({ x: 0, y: 0 })))
-  );
-  const committed: Behavior<Point> = yield accum(
-    addPoint,
-    { x: 0, y: 0 },
-    snapshot(offset, endDrag)
-  );
-  const position = lift(addPoint, committed, offset);
-  const isBeingDragged = yield toggle(false, startDrag, endDrag);
-  return { isBeingDragged, position };
-});
+const box = (color: string) =>
+  component<BoxModelInput>((on, start) => {
+    const mousePosition = start(H.stepper({ x: 0, y: 0 }, mousemove));
+    const startDragAt = H.snapshot(mousePosition, on.startDrag);
+    const dragOffset = H.map(
+      (p) => H.map((p2) => ({ x: p2.x - p.x, y: p2.y - p.y }), mousePosition),
+      startDragAt
+    );
+    const offset: H.Behavior<Point> = start(
+      H.switcher(
+        H.Behavior.of({ x: 0, y: 0 }),
+        H.combine(dragOffset, on.endDrag.mapTo(H.Behavior.of({ x: 0, y: 0 })))
+      )
+    );
+    const committed: H.Behavior<Point> = start(
+      H.accum(addPoint, { x: 0, y: 0 }, H.snapshot(offset, on.endDrag))
+    );
+    const position = H.lift(addPoint, committed, offset);
+    const isBeingDragged = start(H.toggle(false, on.startDrag, on.endDrag));
 
-type BoxViewInput = {
-  position: Behavior<Point>;
-  isBeingDragged: Behavior<boolean>;
-};
+    return E.div({
+      class: ["box", { dragged: isBeingDragged }],
+      style: {
+        background: color,
+        left: position.map(({ x }) => x + "px"),
+        top: position.map(({ y }) => y + "px")
+      }
+    }).use({ startDrag: "mousedown", endDrag: "mouseup" });
+  });
 
-const boxView = ({ isBeingDragged, position }: BoxViewInput, color: string) =>
-  div({
-    class: ["box", { dragged: isBeingDragged }],
-    style: {
-      background: color,
-      left: position.map(({ x }) => x + "px"),
-      top: position.map(({ y }) => y + "px")
-    }
-  }).use({ startDrag: "mousedown", endDrag: "mouseup" });
-
-const box = modelView(boxModel, boxView);
-
-const main = go(function*() {
-  yield box("red");
-});
-
-runComponent("#mount", main);
+runComponent("#mount", box("red"));

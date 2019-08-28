@@ -1,6 +1,5 @@
 import { accum, Stream, combine } from "@funkia/hareactive";
-import { elements, component } from "../../../src";
-const { div, button } = elements;
+import { elements as E, component } from "../../../src";
 
 type On = {
   incrementClick: Stream<any>;
@@ -13,15 +12,15 @@ const counter = component<On>((on, start) => {
   const changes = combine(increment, decrement);
   const count = start(accum((n, m) => n + m, 0, changes));
 
-  return div([
+  return E.div([
     "Counter ",
     count,
     " ",
-    button({ class: "btn btn-default" }, " + ").use({
+    E.button({ class: "btn btn-default" }, " + ").use({
       incrementClick: "click"
     }),
     " ",
-    button({ class: "btn btn-default" }, " - ").use({
+    E.button({ class: "btn btn-default" }, " - ").use({
       decrementClick: "click"
     })
   ]);
