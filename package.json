@@ -46,20 +46,20 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "^0.3.3",
-    "@types/chai": "^4.1.7",
-    "@types/chai-dom": "0.0.7",
-    "@types/jest": "^24.0.15",
+    "@funkia/hareactive": "0.3.4",
+    "@types/chai": "^4.2.0",
+    "@types/chai-dom": "0.0.8",
+    "@types/jest": "^24.0.18",
     "chai": "^4.2.0",
     "chai-dom": "^1.8.1",
-    "codecov": "^3.3.0",
+    "codecov": "^3.5.0",
     "fake-raf": "^1.0.1",
-    "jest": "^24.8.0",
-    "np": "^5.0.1",
-    "prettier": "^1.17.0",
+    "jest": "^24.9.0",
+    "np": "^5.0.3",
+    "prettier": "^1.18.2",
     "ts-jest": "^24.0.2",
-    "tslint": "^5.16.0",
-    "typescript": "^3.4.5"
+    "tslint": "^5.19.0",
+    "typescript": "^3.5.3"
   },
   "contributors": [
     {
