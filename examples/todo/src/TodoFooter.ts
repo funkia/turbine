@@ -5,7 +5,7 @@ const { span, button, ul, li, a, footer, strong } = elements;
 export type Props = {
   currentFilter: H.Behavior<string>;
   itemsLeft: H.Behavior<number>;
-  areAnyCompleted: H.Behavior<boolean>;
+  noneAreCompleted: H.Behavior<boolean>;
   hidden: H.Behavior<boolean>;
 };
 
@@ -39,7 +39,7 @@ const todoFooter = (props: Props) =>
         filterItem("Completed", "completed", props.currentFilter)
       ]),
       button(
-        { class: ["clear-completed", { hidden: props.areAnyCompleted }] },
+        { class: ["clear-completed", { hidden: props.noneAreCompleted }] },
         "Clear completed"
       ).use({ clearCompleted: "click" })
     ])

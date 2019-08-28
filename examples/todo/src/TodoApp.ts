@@ -25,10 +25,10 @@ type FromView = {
 // A behavior representing the current value of the localStorage property
 const todoListStorage = itemBehavior("todoList");
 
-const getCompletedIds = (outputs: H.Behavior<ItemOut[]>) =>
+const getCompletedIds = (outputs: H.Behavior<ItemOut[]>, completed: boolean) =>
   H.moment((at) => {
     return at(outputs)
-      .filter((o) => at(o.completed))
+      .filter((o) => at(o.completed) === completed)
       .map((o) => o.id);
   });
 
@@ -70,7 +70,8 @@ export const app = component<FromView>(
         list.length > 0 ? combine(...list.map((o) => o.destroyItemId)) : H.empty
       )
     );
-    const completedIds = getCompletedIds(on.itemOutputs);
+    const completedIds = getCompletedIds(on.itemOutputs, true);
+    const uncompletedIds = getCompletedIds(on.itemOutputs, false);
 
     const savedTodoName: ItemParams[] = yield H.sample(todoListStorage);
     const restoredTodoName = savedTodoName === null ? [] : savedTodoName;
@@ -92,13 +93,6 @@ export const app = component<FromView>(
     yield H.performStream(
       H.changes(todoNames).map((n) => setItemIO("todoList", n))
     );
-
-    const areAllCompleted = H.lift(
-      (a, b) => a.length === b.length,
-      completedIds,
-      on.itemOutputs
-    );
-    const areAnyCompleted = completedIds.map(isEmpty).map((b) => !b);
 
     // Strip the leading `/` from the hash location
     const currentFilter = locationHashB.map((s) => s.slice(1));
@@ -122,7 +116,7 @@ export const app = component<FromView>(
             checkbox({
               class: "toggle-all",
               attrs: { id: "toggle-all" },
-              props: { checked: areAllCompleted }
+              props: { checked: uncompletedIds.map(isEmpty) }
             }).use({ toggleAll: "checkedChange" }),
             label({ attrs: { for: "toggle-all" } }, "Mark all as complete"),
             ul(
@@ -142,7 +136,7 @@ export const app = component<FromView>(
         ),
         todoFooter({
           itemsLeft,
-          areAnyCompleted,
+          noneAreCompleted: completedIds.map(isEmpty),
           currentFilter,
           hidden
         }).use({ clearCompleted: "clearCompleted" })
