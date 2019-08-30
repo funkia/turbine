@@ -42,20 +42,19 @@ making it even better.
 
 ### Email validator
 
-[See the example live here](https://codesandbox.io/s/jv74x1jny3?module=%2Fsrc%2Findex.js).
+[See the example live and editable here.](https://codesandbox.io/s/xenodochial-williams-xok6q)
 
 ```js
 const isValidEmail = (s: string) => /.+@.+\..+/i.test(s);
 
-function* main() {
-  yield span("Please enter an email address: ");
-  const { value: email } = yield value();
-  const isValid = email.map(isValidEmail);
-  yield div([
-    "The address is ",
-    map((b) => (b ? "valid" : "invalid"), isValid)
-  ]);
-}
+const app = component((on) => {
+  const isValid = on.email.map(isValidEmail);
+  return [
+    span("Please enter an email address: "),
+    input().use({ email: "value" }),
+    div(["The address is ", isValid.map((b) => (b ? "valid" : "invalid"))])
+  ];
+});
 
 // `runComponent` is the only impure function in application code
 runComponent("#mount", main);
@@ -63,30 +62,25 @@ runComponent("#mount", main);
 
 ### Counter
 
-[See the example live here](https://codesandbox.io/s/k9y0po3vv3?module=%2Fsrc%2Findex.js).
+[See the example live and editable here.](https://codesandbox.io/s/pedantic-frog-beisw)
 
 ```js
-const counterModel = fgo(function*({ incrementClick, decrementClick }) {
-  const increment = incrementClick.mapTo(1);
-  const decrement = decrementClick.mapTo(-1);
-  const changes = combine(increment, decrement);
-  const count = yield accum((n, m) => n + m, 0, changes);
-  return { count };
-});
-
-const counterView = ({ count }) =>
-  div([
+const counter = component((on, start) => {
+  const count = start(accum((n, m) => n + m, 0, on.delta));
+  return E.div([
     "Counter ",
     count,
-    button({ class: "btn btn-default" }, "+").output({
-      incrementClick: "click"
-    }),
-    button({ class: "btn btn-default" }, "-").output({
-      decrementClick: "click"
-    })
+    E.button({ class: "btn btn-default" }, " + ").use(o => ({
+      delta: o.click.mapTo(1)
+    })),
+    E.button({ class: "btn btn-default" }, " - ").use(o => ({
+      delta: o.click.mapTo(-1)
+    }))
   ]);
+});
 
-const counter = modelView(counterModel, counterView);
+// `runComponent` is the only impure function in application code
+runComponent("#mount", counter);
 ```
 
 [See more examples here](#more-examples).
@@ -238,7 +232,7 @@ Alternatively, for quickly trying out Turbine you may want to see our
 Here is a series of examples that demonstrate how to use Turbine.
 Approximately listed in order of increasing complexity.
 
-- [Simple](/examples/simple) — Very simple example of an email
+- [Email validator](/examples/email-validator) — Very simple example of an email
   validator.
 - [Fahrenheit celsius](/examples/fahrenheit-celsius) — A converter
   between fahrenheit and celsius.
