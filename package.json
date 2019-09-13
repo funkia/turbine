@@ -47,7 +47,7 @@
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
     "@funkia/hareactive": "0.3.4",
-    "@types/chai": "^4.2.0",
+    "@types/chai": "^4.2.2",
     "@types/chai-dom": "0.0.8",
     "@types/jest": "^24.0.18",
     "chai": "^4.2.0",
@@ -57,9 +57,9 @@
     "jest": "^24.9.0",
     "np": "^5.0.3",
     "prettier": "^1.18.2",
-    "ts-jest": "^24.0.2",
-    "tslint": "^5.19.0",
-    "typescript": "^3.5.3"
+    "ts-jest": "^24.1.0",
+    "tslint": "^5.20.0",
+    "typescript": "^3.6.3"
   },
   "contributors": [
     {

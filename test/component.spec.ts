@@ -264,7 +264,7 @@ describe("component specs", () => {
     });
     it("works with selected fgo and looped behavior", () => {
       const comp = component(
-        fgo(function*({ name }: Looped): IterableIterator<Component<any, any>> {
+        fgo(function*({ name }: Looped): Generator<any, any, any> {
           yield div(name);
           ({ name } = yield input({ props: { value: "Foo" } }).use({
             name: "value"
@@ -292,10 +292,7 @@ describe("component specs", () => {
     it("can be told to destroy", () => {
       let toplevel = false;
       const comp = component(
-        fgo(function*({
-          name,
-          destroyed
-        }: Looped): IterableIterator<Component<any, any>> {
+        fgo(function*({ name, destroyed }: Looped): Generator<any, any, any> {
           yield div(name);
           destroyed.subscribe((b) => (toplevel = b));
           ({ name } = yield input({ props: { value: "Foo" } }).use({
