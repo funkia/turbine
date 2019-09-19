@@ -11,6 +11,7 @@
     "todo": "parcel todo/index.html",
     "zip-codes": "parcel zip-codes/index.html",
     "drag": "parcel drag/index.html",
+    "timer": "parcel timer/index.html",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Funkia",
