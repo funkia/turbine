@@ -8,10 +8,12 @@ import {
   sinkBehavior,
   sinkFuture,
   Stream,
-  instant
+  instant,
+  Time,
+  tick
 } from "@funkia/hareactive";
 import { render } from "@funkia/hareactive/dom";
-import { go, Monad, monad } from "@funkia/jabz";
+import { Monad, monad } from "@funkia/jabz";
 import { copyRemaps, id, Merge, mergeObj } from "./utils";
 
 const supportsProxy = typeof Proxy !== "undefined";
@@ -86,7 +88,11 @@ export abstract class Component<A, O> implements Monad<O> {
   }
   static multi: boolean = false;
   multi: boolean = false;
-  abstract run(parent: DomApi, destroyed: Future<boolean>): Out<A, O>;
+  abstract run(
+    parent: DomApi,
+    destroyed: Future<boolean>,
+    time: Time
+  ): Out<A, O>;
   // Definitions below are inserted by Jabz
   flatten: <B, P>(this: Component<A, Component<B, P>>) => Component<A, P>;
   map: <P>(f: (a: O) => P) => Component<A, P>;
@@ -135,8 +141,8 @@ class HandleOutput<A, O, B, P> extends Component<B, P> {
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<B, P> {
-    const { available, output } = this.c.run(parent, destroyed);
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<B, P> {
+    const { available, output } = this.c.run(parent, destroyed, t);
     return this.handler(available, output);
   }
 }
@@ -181,12 +187,13 @@ class FlatMapComponent<A, O, B, P> extends Component<A, P> {
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<A, P> {
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<A, P> {
     const { available, output: outputFirst } = this.component.run(
       parent,
-      destroyed
+      destroyed,
+      t
     );
-    const { output } = this.f(outputFirst).run(parent, destroyed);
+    const { output } = this.f(outputFirst).run(parent, destroyed, t);
     return { available, output };
   }
 }
@@ -205,7 +212,7 @@ export function runComponent<A>(
   if (typeof parent === "string") {
     parent = document.querySelector(parent)!;
   }
-  return toComponent(component).run(parent, destroy).output;
+  return toComponent(component).run(parent, destroy, tick()).output;
 }
 
 export function testComponent<A, O>(
@@ -218,7 +225,7 @@ export function testComponent<A, O>(
 } {
   const dom = document.createElement("div");
   const destroyed = sinkFuture<boolean>();
-  const { available, output } = c.run(dom, destroyed);
+  const { available, output } = c.run(dom, destroyed, tick());
   const destroy = destroyed.resolve.bind(destroyed);
   return { available, output, dom, destroy };
 }
@@ -266,7 +273,7 @@ class LoopComponent<L, O> extends Component<O, {}> {
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<O, {}> {
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<O, {}> {
     let placeholderObject: any = { destroyed };
     if (this.placeholderNames !== undefined) {
       for (const name of this.placeholderNames) {
@@ -279,12 +286,12 @@ class LoopComponent<L, O> extends Component<O, {}> {
         "component called with no list of names and proxies are not supported."
       );
     }
-    const res = runNow(instant((start) => this.f(placeholderObject, start)));
-    const result = Now.is(res) ? runNow<Child<L> | Result<O, L>>(res) : res;
+    const res = instant((start) => this.f(placeholderObject, start)).run(t);
+    const result = Now.is(res) ? res.run(t) : res;
     const { available, component } = isLoopResult(result)
       ? result
       : { available: {} as O, component: result };
-    const { output: looped } = toComponent(component).run(parent, destroyed);
+    const { output: looped } = toComponent(component).run(parent, destroyed, t);
     const needed = Object.keys(placeholderObject);
     for (const name of needed) {
       if (name === "destroyed") {
@@ -293,7 +300,7 @@ class LoopComponent<L, O> extends Component<O, {}> {
       if (looped[name] === undefined) {
         throw new Error(`The property ${name} is missing.`);
       }
-      placeholderObject[name].replaceWith(looped[name]);
+      placeholderObject[name].replaceWith(looped[name], t);
     }
     return { available, output: {} };
   }
@@ -326,9 +333,9 @@ class MergeComponent<
   constructor(private c1: Component<A, O>, private c2: Component<B, P>) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<{}, O & P> {
-    const res1 = this.c1.run(parent, destroyed);
-    const res2 = this.c2.run(parent, destroyed);
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<{}, O & P> {
+    const res1 = this.c1.run(parent, destroyed, t);
+    const res2 = this.c2.run(parent, destroyed, t);
     return {
       available: {},
       output: mergeObj(mergeObj({}, res2.output), res1.output)
@@ -380,7 +387,7 @@ class ModelViewComponent<M extends Record<string, any>, V> extends Component<
   ) {
     super();
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<M, {}> {
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<M, {}> {
     const { viewF, model, args } = this;
     let placeholders: any;
     if (supportsProxy) {
@@ -395,7 +402,7 @@ class ModelViewComponent<M extends Record<string, any>, V> extends Component<
     }
     const { output: viewOutput } = toComponent(
       viewF(placeholders, ...args)
-    ).run(parent, destroyed);
+    ).run(parent, destroyed, t);
     const helpfulViewOutput = addErrorHandler(
       model.name,
       viewF.name,
@@ -553,11 +560,11 @@ class ListComponent extends Component<any, any> {
       this.components.push(component);
     }
   }
-  run(parent: DomApi, destroyed: Future<boolean>): Out<any, any> {
+  run(parent: DomApi, destroyed: Future<boolean>, t: Time): Out<any, any> {
     let output: Record<string, any> = {};
     for (let i = 0; i < this.components.length; ++i) {
       const component = this.components[i];
-      const res = component.run(parent, destroyed);
+      const res = component.run(parent, destroyed, t);
       mergeObj(output, res.output);
     }
     return { available: output, output };
@@ -601,7 +608,11 @@ class DynamicComponent<O> extends Component<Behavior<O>, {}> {
   constructor(private behavior: Behavior<Child<O>>) {
     super();
   }
-  run(parent: DomApi, dynamicDestroyed: Future<boolean>): Out<Behavior<O>, {}> {
+  run(
+    parent: DomApi,
+    dynamicDestroyed: Future<boolean>,
+    t: Time
+  ): Out<Behavior<O>, {}> {
     let destroyPrevious: Future<boolean>;
     const parentWrap = new FixedDomPosition(parent, dynamicDestroyed);
 
@@ -612,12 +623,13 @@ class DynamicComponent<O> extends Component<Behavior<O>, {}> {
       destroyPrevious = sinkFuture<boolean>();
       const { output } = toComponent(child).run(
         parentWrap,
-        destroyPrevious.combine(dynamicDestroyed)
+        destroyPrevious.combine(dynamicDestroyed),
+        t
       );
       return output;
     });
     // To activate behavior
-    render(id, available);
+    render(id, available, t);
 
     return { available, output: {} };
   }
@@ -668,7 +680,11 @@ class ComponentList<A, O> extends Component<Behavior<O[]>, {}> {
   ) {
     super();
   }
-  run(parent: DomApi, listDestroyed: Future<boolean>): Out<Behavior<O[]>, {}> {
+  run(
+    parent: DomApi,
+    listDestroyed: Future<boolean>,
+    t: Time
+  ): Out<Behavior<O[]>, {}> {
     // The reordering code below is neither pretty nor fast. But it at
     // least avoids recreating elements and is quite simple.
     const resultB = sinkBehavior<O[]>([]);
@@ -687,7 +703,8 @@ class ComponentList<A, O> extends Component<Behavior<O[]>, {}> {
           const recorder = new DomRecorder(parentWrap);
           const { output } = this.compFn(a).run(
             recorder,
-            destroy.combine(listDestroyed)
+            destroy.combine(listDestroyed),
+            t
           );
           info = { elms: recorder.elms, output, destroy };
         } else {

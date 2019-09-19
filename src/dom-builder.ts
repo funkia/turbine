@@ -3,7 +3,8 @@ import {
   Future,
   isBehavior,
   Stream,
-  isStream
+  isStream,
+  Time
 } from "@funkia/hareactive";
 import {
   behaviorFromEvent,
@@ -175,14 +176,15 @@ const styleSetter = (element: HTMLElement) => (key: string, value: string) =>
 function handleObject<A>(
   object: { [key: string]: A | Behavior<A> | Stream<A> } | undefined,
   element: HTMLElement,
-  createSetter: (element: HTMLElement) => (key: string, value: A) => void
+  createSetter: (element: HTMLElement) => (key: string, value: A) => void,
+  t: Time
 ): void {
   if (object !== undefined) {
     const setter = createSetter(element);
     for (const key of Object.keys(object)) {
       const value = object[key];
       if (isBehavior(value)) {
-        render((newValue) => setter(key, newValue), value);
+        render((newValue) => setter(key, newValue), value, t);
       } else if (isStream(value)) {
         value.subscribe((newValue) => setter(key, newValue));
       } else {
@@ -213,7 +215,8 @@ function handleCustom(
 
 function handleClass(
   desc: ClassDescription | ClassDescription[],
-  elm: HTMLElement
+  elm: HTMLElement,
+  t: Time
 ): void {
   if (isBehavior(desc)) {
     let previousClasses: string[];
@@ -226,13 +229,13 @@ function handleClass(
     }, desc);
   } else if (Array.isArray(desc)) {
     for (const d of desc) {
-      handleClass(d, elm);
+      handleClass(d, elm, t);
     }
   } else if (typeof desc === "string") {
     const classes = desc.split(" ");
     elm.classList.add(...classes);
   } else {
-    handleObject(desc, elm, classSetter);
+    handleObject(desc, elm, classSetter, t);
   }
 }
 
@@ -266,7 +269,11 @@ const propKeywords = new Set([
  */
 const isProperty = new Set(["value"]);
 
-export function handleProps<A>(props: InitialProperties, elm: HTMLElement): A {
+export function handleProps<A>(
+  props: InitialProperties,
+  elm: HTMLElement,
+  t: Time
+): A {
   let output: any = {};
 
   let attrs = Object.assign({}, props.attrs);
@@ -281,11 +288,11 @@ export function handleProps<A>(props: InitialProperties, elm: HTMLElement): A {
     }
   }
 
-  handleObject(<any>props.style, elm, styleSetter);
-  handleObject(attrs, elm, attributeSetter);
-  handleObject(properties, elm, propertySetter);
+  handleObject(<any>props.style, elm, styleSetter, t);
+  handleObject(attrs, elm, attributeSetter, t);
+  handleObject(properties, elm, propertySetter, t);
   if (props.class !== undefined) {
-    handleClass(props.class, elm);
+    handleClass(props.class, elm, t);
   }
   if (props.entry !== undefined) {
     if (props.entry.class !== undefined) {
@@ -348,19 +355,23 @@ class DomComponent<O, P, A> extends Component<A, O & P> {
       this.child = toComponent(child);
     }
   }
-  run(parent: Node, destroyed: Future<boolean>): Out<A & P, O & P> {
+  run(parent: Node, destroyed: Future<boolean>, t: Time): Out<A & P, O & P> {
     const namespace = (this.props as any).namespace;
     const elm: HTMLElement = namespace
       ? (document.createElementNS(namespace, this.tagName) as HTMLElement)
       : document.createElement(this.tagName);
 
-    const available: any = handleProps(this.props, elm);
+    const available: any = handleProps(this.props, elm, t);
     let output: any = {};
 
     parent.appendChild(elm);
 
     if (this.child !== undefined) {
-      const childResult = this.child.run(elm, destroyed.mapTo(false));
+      const childResult = this.child.run(
+        elm,
+        destroyed.mapTo(false as boolean),
+        t
+      );
       Object.assign(output, childResult.output);
     }
     destroyed.subscribe((toplevel) => {

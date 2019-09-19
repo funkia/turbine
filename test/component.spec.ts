@@ -318,15 +318,18 @@ describe("component specs", () => {
       });
       assert.throws(() => testComponent(c), /bar/);
     });
-    it.skip("works with integrate", () => {
-      // For this to work we need to chain a timestamp through component, like
-      // we do with now, and use that timestamp when observing behaviors.
-      const c = component<{ number: H.Behavior<number> }>((on) =>
-        H.integrate(on.number).map((n) =>
-          span(dynamic(n)).use((_) => ({ number: H.Behavior.of(1) }))
-        )
-      );
-      const {} = testComponent(c);
+    it("works with integrate", () => {
+      // This test depends on the chaining of a timestamp through component. The
+      // call to `dynamic` must `observe` the `n` behavior with exactly the same
+      // timestamp that was used to sample the `integrate(..)` behavior.
+      // Otherwise the integrate behavior will attemp to sample its parent which
+      // is a non-replaced placeholder.
+      const c = component<{ number: H.Behavior<number> }>((on, start) => {
+        const n = start(H.integrate(on.number)).map(n => n*n);
+        return span(dynamic(n)).use((_) => ({ number: H.Behavior.of(3) }));
+      });
+      const { dom } = testComponent(c);
+      expect(dom.firstChild!.firstChild).to.have.text("0");
     });
   });
 });
