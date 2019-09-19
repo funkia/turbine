@@ -16,7 +16,7 @@
   "author": "Funkia",
   "license": "MIT",
   "dependencies": {
-    "@funkia/hareactive": "0.3.4",
+    "@funkia/hareactive": "^0.4.0",
     "@funkia/rudolph": "^0.1.0",
     "@funkia/turbine": "file:..",
     "todomvc-app-css": "^2.2.0"

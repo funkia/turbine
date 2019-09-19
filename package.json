@@ -36,7 +36,7 @@
   ],
   "license": "MIT",
   "peerDependencies": {
-    "@funkia/hareactive": "0.3.x"
+    "@funkia/hareactive": "0.4.x"
   },
   "dependencies": {
     "@funkia/jabz": "0.0.24"
@@ -46,8 +46,8 @@
   },
   "homepage": "https://github.com/funkia/turbine#readme",
   "devDependencies": {
-    "@funkia/hareactive": "0.3.4",
-    "@types/chai": "^4.2.2",
+    "@funkia/hareactive": "^0.4.0",
+    "@types/chai": "^4.2.3",
     "@types/chai-dom": "0.0.8",
     "@types/jest": "^24.0.18",
     "chai": "^4.2.0",
@@ -55,7 +55,7 @@
     "codecov": "^3.5.0",
     "fake-raf": "^1.0.1",
     "jest": "^24.9.0",
-    "np": "^5.0.3",
+    "np": "^5.1.0",
     "prettier": "^1.18.2",
     "ts-jest": "^24.1.0",
     "tslint": "^5.20.0",
