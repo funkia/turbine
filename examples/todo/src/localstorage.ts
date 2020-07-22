@@ -1,4 +1,4 @@
-import { withEffects } from "@funkia/jabz";
+import { withEffects } from "@funkia/io";
 import { Behavior, fromFunction } from "@funkia/hareactive";
 
 export function itemBehavior<A = any>(key: string): Behavior<A | null> {

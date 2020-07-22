@@ -1,6 +1,5 @@
 import * as H from "@funkia/hareactive";
-import { elements, view } from "../../../src";
-const { span, button, ul, li, a, footer, strong } = elements;
+import { elements as E, view } from "../../../src";
 
 export type Props = {
   currentFilter: H.Behavior<string>;
@@ -15,11 +14,11 @@ const filterItem = (
   currentFilter: H.Behavior<string>
 ) =>
   view(
-    li(
-      a(
+    E.li(
+      E.a(
         {
           href: `#/${path}`,
-          class: { selected: currentFilter.map((s) => s === path) }
+          class: { selected: currentFilter.map((s) => s === path) },
         },
         name
       ).use({ click: "click" })
@@ -28,20 +27,20 @@ const filterItem = (
 
 const todoFooter = (props: Props) =>
   view(
-    footer({ class: ["footer", { hidden: props.hidden }] }, [
-      span({ class: "todo-count" }, [
-        strong(props.itemsLeft),
-        props.itemsLeft.map((n) => ` item${n === 1 ? "" : "s"} left`)
+    E.footer({ class: ["footer", { hidden: props.hidden }] }, [
+      E.span({ class: "todo-count" }, [
+        E.strong(props.itemsLeft),
+        props.itemsLeft.map((n) => ` item${n === 1 ? "" : "s"} left`),
       ]),
-      ul({ class: "filters" }, [
+      E.ul({ class: "filters" }, [
         filterItem("All", "", props.currentFilter),
         filterItem("Active", "active", props.currentFilter),
-        filterItem("Completed", "completed", props.currentFilter)
+        filterItem("Completed", "completed", props.currentFilter),
       ]),
-      button(
+      E.button(
         { class: ["clear-completed", { hidden: props.noneAreCompleted }] },
         "Clear completed"
-      ).use({ clearCompleted: "click" })
+      ).use({ clearCompleted: "click" }),
     ])
   );
 

@@ -1,7 +1,6 @@
 import { combine } from "@funkia/jabz";
 import * as H from "@funkia/hareactive";
-import { elements, component } from "../../../src";
-const { div, li, input, label, button, checkbox } = elements;
+import { elements as E, component } from "../../../src";
 
 import { setItemIO, itemBehavior, removeItemIO } from "./localstorage";
 
@@ -43,7 +42,10 @@ export default (props: Props) =>
     const initial = savedItem ? savedItem : defaultItem;
 
     const editing = start(H.toggle(false, on.startEditing, on.stopEditing));
-    const nameChange = H.snapshot(on.newName, on.stopEditing.filter((b) => b));
+    const nameChange = H.snapshot(
+      on.newName,
+      on.stopEditing.filter((b) => b)
+    );
 
     // Initialize task to restored values
     const taskName = start(H.stepper(initial.taskName, nameChange));
@@ -78,27 +80,27 @@ export default (props: Props) =>
       props.currentFilter
     );
 
-    return li({ class: ["todo", { completed, editing, hidden }] }, [
-      div({ class: "view" }, [
-        checkbox({
+    return E.li({ class: ["todo", { completed, editing, hidden }] }, [
+      E.div({ class: "view" }, [
+        E.checkbox({
           class: "toggle",
-          props: { checked: completed }
+          props: { checked: completed },
         }).use({ toggleTodo: "checkedChange" }),
-        label(taskName).use({ startEditing: "dblclick" }),
-        button({ class: "destroy" }).use({ deleteClicked: "click" })
+        E.label(taskName).use({ startEditing: "dblclick" }),
+        E.button({ class: "destroy" }).use({ deleteClicked: "click" }),
       ]),
-      input({
+      E.input({
         class: "edit",
         value: H.snapshot(on.taskName, on.startEditing),
-        actions: { focus: on.startEditing }
+        actions: { focus: on.startEditing },
       }).use((o) => ({
         newName: o.value,
         stopEditing: H.combine(
           o.keyup.filter((ev) => ev.keyCode === enter).mapTo(true),
           H.keepWhen(o.blur, editing).mapTo(true),
           o.keyup.filter((ev) => ev.keyCode === esc).mapTo(false)
-        )
-      }))
+        ),
+      })),
     ])
       .use(() => ({ taskName, editing }))
       .output({ destroyItemId, completed, id: props.id });

@@ -1,23 +1,14 @@
 import * as H from "@funkia/hareactive";
-import {
-  catchE,
-  combine,
-  Either,
-  IO,
-  left,
-  right,
-  withEffectsP
-} from "@funkia/jabz";
+import { combine, Either, left, right } from "@funkia/jabz";
+import { withEffectsP, catchE, IO } from "@funkia/io";
 import { elements as E, runComponent, component } from "../../src/index";
 
 const apiUrl = "http://api.zippopotam.us/us/";
 
-const fetchJSON = withEffectsP(
-  (url: string): Promise<any> => {
-    return fetch(url).then((resp) =>
-      resp.ok ? resp.json() : Promise.reject("Not found")
-    );
-  }
+const fetchJSON = withEffectsP((url: string) =>
+  fetch(url).then((resp) =>
+    resp.ok ? resp.json() : Promise.reject("Not found")
+  )
 );
 
 function fetchZip(zip: string): IO<Either<string, ZipResult>> {
@@ -51,17 +42,18 @@ const main = component<ViewOut>((on, start) => {
   // A stream of IO requests for each time the zipCode changes
   const requests = validZipCodeChange.map(fetchZip);
   // A stream of results obtained from performing the IO requests
-  const results = start(H.performStreamLatest(requests));
+  const results = start(H.performStream(requests));
+  const latestResult = start(H.flatFuturesLatest(results));
   const status = start(
     H.stepper(
       "",
       combine(
         invalidZipCodeChange.mapTo("Not a valid zip code"),
         validZipCodeChange.mapTo("Loading ..."),
-        results.map((r) =>
+        latestResult.map((r) =>
           r.match({
             left: () => "Zip code does not exist",
-            right: (res) => `Valid zip code for ${res.places[0]["place name"]}`
+            right: (res) => `Valid zip code for ${res.places[0]["place name"]}`,
           })
         )
       )
@@ -71,10 +63,10 @@ const main = component<ViewOut>((on, start) => {
   return [
     E.span("Please type a valid US zip code: "),
     E.input({
-      props: { placeholder: "Zip code" }
+      props: { placeholder: "Zip code" },
     }).use({ zipCode: "value" }),
     E.br,
-    E.span(status)
+    E.span(status),
   ];
 });
 

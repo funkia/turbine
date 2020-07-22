@@ -18,11 +18,12 @@
   "license": "MIT",
   "dependencies": {
     "@funkia/hareactive": "^0.4.0",
+    "@funkia/io": "0.0.5",
     "@funkia/rudolph": "^0.1.0",
     "@funkia/turbine": "file:..",
-    "todomvc-app-css": "^2.2.0"
+    "todomvc-app-css": "^2.3.0"
   },
   "devDependencies": {
-    "parcel-bundler": "^1.12.3"
+    "parcel-bundler": "^1.12.4"
   }
 }

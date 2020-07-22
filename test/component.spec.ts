@@ -92,12 +92,10 @@ describe("component specs", () => {
   });
   describe("selected output", () => {
     it("has output method", () => {
-      const comp = Component.of({ foo: 1, bar: 2, baz: 3 })
-        .view()
-        .use({
-          newFoo: "foo",
-          newBar: "bar"
-        });
+      const comp = Component.of({ foo: 1, bar: 2, baz: 3 }).view().use({
+        newFoo: "foo",
+        newBar: "bar"
+      });
       const { available, output } = testComponent(comp);
       expect(output.newFoo).to.equal(1);
       expect(output.newBar).to.equal(2);
@@ -220,9 +218,7 @@ describe("component specs", () => {
     it("only outputs selected output", () => {
       const c = dynamic(
         H.Behavior.of(
-          Component.of({ foo: 1, bar: 2 })
-            .view()
-            .use({ baz: "bar" })
+          Component.of({ foo: 1, bar: 2 }).view().use({ baz: "bar" })
         )
       );
       const { output, available } = testComponent(c);
@@ -264,7 +260,7 @@ describe("component specs", () => {
     });
     it("works with selected fgo and looped behavior", () => {
       const comp = component(
-        fgo(function*({ name }: Looped): Generator<any, any, any> {
+        fgo(function* ({ name }: Looped): Generator<any, any, any> {
           yield div(name);
           ({ name } = yield input({ props: { value: "Foo" } }).use({
             name: "value"
@@ -292,7 +288,7 @@ describe("component specs", () => {
     it("can be told to destroy", () => {
       let toplevel = false;
       const comp = component(
-        fgo(function*({ name, destroyed }: Looped): Generator<any, any, any> {
+        fgo(function* ({ name, destroyed }: Looped): Generator<any, any, any> {
           yield div(name);
           destroyed.subscribe((b) => (toplevel = b));
           ({ name } = yield input({ props: { value: "Foo" } }).use({
@@ -325,7 +321,7 @@ describe("component specs", () => {
       // Otherwise the integrate behavior will attemp to sample its parent which
       // is a non-replaced placeholder.
       const c = component<{ number: H.Behavior<number> }>((on, start) => {
-        const n = start(H.integrate(on.number)).map(n => n*n);
+        const n = start(H.integrate(on.number)).map((n) => n * n);
         return span(dynamic(n)).use((_) => ({ number: H.Behavior.of(3) }));
       });
       const { dom } = testComponent(c);
@@ -362,7 +358,7 @@ describe("modelView", () => {
   it("passes argument to view", () => {
     const c = modelView(
       ({ click }) => H.Now.of({}),
-      ({  }: {}, n: number) => span(n).use({ click: "click" })
+      ({}: {}, n: number) => span(n).use({ click: "click" })
     );
     const { dom } = testComponent(c(7));
     expect(dom.querySelector("span")).to.have.text("7");
@@ -401,7 +397,7 @@ describe("modelView", () => {
   it("can be told to destroy", () => {
     let toplevel = false;
     const c = modelView(
-      function model({ destroyed }): H.Now<any> {
+      function model({ destroyed }) {
         destroyed.subscribe((b: boolean) => (toplevel = b));
         return H.Now.of({});
       },
@@ -418,11 +414,11 @@ describe("modelView", () => {
   });
   it("model can return non-reactive but the view can't use it", () => {
     const c = modelView(
-      ({}) => H.Now.of({ foo: H.Behavior.of("foo"), bar: "bar" }),
+      () => H.Now.of({ foo: H.Behavior.of("foo"), bar: "bar" }),
       // Using `bar` in the view below would give a type error.
       ({ foo }) => span(["World", dynamic(foo)])
-    )();
-    const { available } = testComponent(c);
+    );
+    const { available } = testComponent(c());
     assert.strictEqual(available.bar, "bar");
   });
 });

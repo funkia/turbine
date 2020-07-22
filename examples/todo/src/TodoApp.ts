@@ -1,4 +1,5 @@
-import { sequence, IO, combine } from "@funkia/jabz";
+import { sequence, combine } from "@funkia/jabz";
+import { IO } from "@funkia/io";
 import * as H from "@funkia/hareactive";
 import { elements, list, component } from "../../../src";
 const { h1, p, header, footer, section, checkbox, ul, label } = elements;
@@ -43,8 +44,8 @@ function listModel<A, B>(props: ListModel<A, B>) {
       [
         props.removeKeyListS,
         (keys, list) =>
-          list.filter((item) => !includes(props.itemToKey(item), keys))
-      ]
+          list.filter((item) => !includes(props.itemToKey(item), keys)),
+      ],
     ],
     props.initial
   );
@@ -72,20 +73,26 @@ export const app = component<FromView>((on, start) => {
   const restoredTodoName = savedTodoName === null ? [] : savedTodoName;
 
   const clearCompletedIdS = H.snapshot(completedIds, on.clearCompleted);
-  const removeListS = combine(deleteS.map((a) => [a]), clearCompletedIdS);
+  const removeListS = combine(
+    deleteS.map((a) => [a]),
+    clearCompletedIdS
+  );
   const todoNames = start(
     listModel<{ id: number; name: string }, number>({
       prependItemS: newTodoS,
       removeKeyListS: removeListS,
       itemToKey: ({ id }) => id,
-      initial: restoredTodoName
+      initial: restoredTodoName,
     })
   );
 
   start(
     H.performStream(
       clearCompletedIdS.map((ids) =>
-        sequence(IO, ids.map((id) => removeItemIO(itemIdToPersistKey(id))))
+        sequence(
+          IO,
+          ids.map((id) => removeItemIO(itemIdToPersistKey(id)))
+        )
       )
     )
   );
@@ -105,17 +112,17 @@ export const app = component<FromView>((on, start) => {
     section({ class: "todoapp" }, [
       header({ class: "header" }, [
         h1("todos"),
-        todoInput.use({ addItem: "addItem" })
+        todoInput.use({ addItem: "addItem" }),
       ]),
       section(
         {
-          class: ["main", { hidden }]
+          class: ["main", { hidden }],
         },
         [
           checkbox({
             class: "toggle-all",
             attrs: { id: "toggle-all" },
-            props: { checked: uncompletedIds.map(isEmpty) }
+            props: { checked: uncompletedIds.map(isEmpty) },
           }).use({ toggleAll: "checkedChange" }),
           label({ attrs: { for: "toggle-all" } }, "Mark all as complete"),
           ul(
@@ -125,25 +132,25 @@ export const app = component<FromView>((on, start) => {
                 item({ toggleAll: on.toggleAll, currentFilter, ...n }).use({
                   completed: "completed",
                   destroyItemId: "destroyItemId",
-                  id: "id"
+                  id: "id",
                 }),
               todoNames,
               (o) => o.id
             ).use((o) => ({ itemOutputs: o }))
-          )
+          ),
         ]
       ),
       todoFooter({
         itemsLeft,
         noneAreCompleted: completedIds.map(isEmpty),
         currentFilter,
-        hidden
-      }).use({ clearCompleted: "clearCompleted" })
+        hidden,
+      }).use({ clearCompleted: "clearCompleted" }),
     ]),
     footer({ class: "info" }, [
       p("Double-click to edit a todo"),
       p("Written with Turbine"),
-      p("Part of TodoMVC")
-    ])
+      p("Part of TodoMVC"),
+    ]),
   ];
 });
