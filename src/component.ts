@@ -249,7 +249,7 @@ type OnlyReactives<R> = {
 };
 
 const placeholderProxyHandler = {
-  get: function(target: any, name: string): Behavior<any> | Stream<any> {
+  get(target: any, name: string): Behavior<any> | Stream<any> {
     if (!(name in target)) {
       target[name] = placeholder();
     }

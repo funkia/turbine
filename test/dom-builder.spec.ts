@@ -94,9 +94,7 @@ describe("dom-builder", () => {
       assert(isStream(output.fooClick));
     });
     it("merges all output from non-array child", () => {
-      const child = Component.of({ bar: 1 })
-        .view()
-        .use({ bar: "bar" });
+      const child = Component.of({ bar: 1 }).view().use({ bar: "bar" });
       const myDiv = div(child).use({ divClick: "click" });
       const { output } = testComponent(myDiv);
       assert(isStream(output.divClick));
@@ -119,7 +117,11 @@ describe("dom-builder", () => {
     it("can add custom behavior output", () => {
       const myElement = element("span", {
         behaviors: {
-          x: behaviorDescription("click", (e) => e.clientX, () => 0)
+          x: behaviorDescription(
+            "click",
+            (e) => e.clientX,
+            () => 0
+          )
         }
       });
       const myCreatedElement = myElement();
