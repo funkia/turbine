@@ -105,7 +105,7 @@ class OfComponent<O> extends Component<{}, O> {
   constructor(private readonly o: O) {
     super();
   }
-  run(_1: Node, _2: Future<boolean>): Out<{}, O> {
+  run(_1: DomApi, _2: Future<boolean>): Out<{}, O> {
     return { output: this.o, available: {} };
   }
 }
@@ -114,7 +114,7 @@ class PerformComponent<O> extends Component<{}, O> {
   constructor(private cb: () => O) {
     super();
   }
-  run(_1: Node, _2: Future<boolean>): Out<{}, O> {
+  run(_1: DomApi, _2: Future<boolean>): Out<{}, O> {
     return { available: {}, output: this.cb() };
   }
 }

@@ -449,6 +449,7 @@ export function svgElement<P extends InitialProperties>(
   tagName: string,
   defaultElementProps?: P
 ): Wrapped<InitialProperties | undefined, InitialOutput<P>> {
+  // @ts-ignore
   return element(tagName, {
     ...defaultElementProps,
     namespace: "http://www.w3.org/2000/svg"
