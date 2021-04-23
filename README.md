@@ -25,18 +25,18 @@ programming. Experimental.
 
 The JavaScript world is full of frameworks. So why another one?
 Because we want something _different_. We want something that is
-purely functional without compromises. Something that takes the best
+purely functional without compromise. Something that takes the best
 lessons from existing JavaScript frameworks and couples them with the
 powerful techniques found in functional languages like Haskell. We
 want a framework that is highly expressive. Because when functional
 programming is at its best it gives you more power, not less. Turbine
 is supposed to be approachable for typical JavaScript developers while
-still preserving the benefits that comes from embracing purely
+still preserving the benefits that come from embracing purely
 functional programming.
 
 We have done our best to realize our goal. But we are not done yet. We
 hope you will find Turbine interesting, try it and maybe even help us
-making it even better.
+make it even better.
 
 ## Examples
 
@@ -87,19 +87,19 @@ runComponent("#mount", counter);
 
 ## High-level overview
 
-Here our some of our key features.
+### Key features:
 
 - Purely functional. A Turbine app is made up of only pure functions.
-- Leverage TypeScript and runtime checking to improve the developing
+- Leverage TypeScript and runtime checking to improve the development
   experience.
-- Based on classic FRP. Behaviors represents values that change over
+- Based on classic FRP. Behaviors represent values that change over
   time and streams provide reactivity. Turbine uses the FRP
   library [Hareactive](https://github.com/funkia/hareactive).
-- A component-based architecture. Components are immutable,
+- Component-based architecture. Components are immutable,
   encapsulated and composable. Components are monads and are typically
   used and composed with do-notation (we implement do-notation with
   generators).
-- Constructed DOM elements reacts directly to behaviors and streams.
+- Constructed DOM elements react directly to behaviors and streams.
   This avoids the overhead of using virtual DOM and should lead to
   great performance.
 - Side-effects are expressed with a declarative IO monad. This allows
@@ -110,12 +110,11 @@ Here our some of our key features.
 - Our libraries are available both as CommonJS and ES2015 modules.
   This allows for tree-shaking.
 
-Here are some of the features we want to implement and goals we're
-working towards.
+### Features we want to implement and goals we're working towards:
 
 - Declarative and concise testing of time-dependent FRP code.
-- Performance. We think Turbine can be made very efficient. But we are
-  not yet at a point where we focus on performance.
+- Performance. We think Turbine can be made very efficient, but we
+  aren't yet at a point where we can focus on performance.
 - Support for server side rendering.
 - Browser devtools for easier development and debugging.
 - Hot-module replacement (if possible given our design).
@@ -129,10 +128,10 @@ the design of Turbine.
 
 Turbine is purely functional. We mean that in the most strict sense of
 the term. In a Turbine app, every single expression is pure. This
-gives a huge benefit in how easy it is to understand and maintain a
-Turbine app is.
+offers a huge benefit in the ease of understanding and maintaining a
+Turbine app.
 
-One benefit of the complete purity is that every function in Turbine
+One benefit of complete purity is that every function in Turbine
 supports what is called "referential transparency". This means that an
 expression can always be replaced with its value.
 
@@ -147,7 +146,7 @@ const view = div([
 
 One may notice that `myComponent` is called twice with the exact same
 arguments. Since all functions in a Turbine app are pure `myComponent`
-is no exception. Hence, we can make the following simple refactoring.
+is no exception. Hence, we can make the following simple refactoring:
 
 ```js
 const component = myComponent({foo: "bar", something: 12}),
@@ -157,7 +156,7 @@ const view = div([
 ]);
 ```
 
-Such refactorings can always be safely done in Turbine.
+Such refactoring is always safe in Turbine.
 
 ### Completely explicit data flow
 
@@ -203,7 +202,7 @@ function* counterModel({ incrementClick, decrementClick, deleteClick }) {
 ```
 
 Each line is a declaration of a piece of the state. All models in
-Turbine follows this pattern. This makes state in a Turbine app very
+Turbine follow this pattern. This makes state in a Turbine app very
 easy to understand. One can look at a single definition and be certain
 that it tells everything there is to know about that specific piece of
 state.
@@ -213,7 +212,7 @@ frameworks where state is stepped forward by reducer functions. With
 such approaches a single piece of state can potentially be affected
 and changed in several places. That can make it hard to understand how
 the state evolves. The benefits of having a definition as a
-single source of truth is lost.
+single source of truth are lost.
 
 ## Installation
 
@@ -224,13 +223,13 @@ npm install @funkia/turbine @funkia/hareactive
 [Hareactive](https://github.com/funkia/hareactive) is a peer
 dependency. It is the FRP library that that Turbine is based upon.
 
-Alternatively, for quickly trying out Turbine you may want to see our
+Alternately, for quickly trying out Turbine you may want to see our
 [Turbine starter kit](https://github.com/funkia/turbine-starter).
 
 ## More examples
 
-Here is a series of examples that demonstrate how to use Turbine.
-Approximately listed in order of increasing complexity.
+Here is a series of examples that demonstrate how to use Turbine,
+listed approximately in order of increasing complexity:
 
 - [Email validator](/examples/email-validator) — Very simple example of an email
   validator.
@@ -283,49 +282,49 @@ things to understand are behavior and stream.
 
 ### What is `Component`
 
-On top of the FRP primitives Turbine adds `Component`. Component is the
+Turbine adds `Component` On top of the FRP primitives. Component is the
 key concept in Turbine. Once you understand `Component`—and how to use
-it—you understand Turbine. A Turbine app is just one big component.
+it—you understand Turbine. In fact, every Turbine app is just one big
+component.
 
-Here is a high-level overview of what a component is.
+Here is a high-level overview of Component in Turbine:
 
-- Components can **contain logic** expressed through operations on
+- A component can **contain logic** expressed through operations on
   behaviors and streams.
-- Components are **encapsulated** and have completely private state.
-- Components **contain output** through which they selectively decide
-  what state they share with their parent.
-- Components **write DOM elements** as children to their parent. They
-  can write zero, one or more DOM elements.
-- Components can **declare side-effects** expressed as `IO`-actions.
-- Components are **composable**—one component can be combined with
-  another component and the result is a third component.
+- A component is **encapsulated** and has completely private state.
+- A component **generates output**, by which it selectively decides
+  what state to share with its parent.
+- A component can **create DOM elements** as children of its parent.
+- A component can **declare side-effects** expressed as `IO`-actions.
+- A component is **composable**—components can be easily combined,
+  and each composition of components yields a new component.
 
-A `Component` in Turbine is pure and immutable. A `Component` can be
-thought of as a huge description of all of the above mentioned things.
-For instance, a `Component` contains a description about what its DOM
-look like. That part is a bit like virtual DOM. But, on top op that
-the description also explain how the DOM changes over time. The
-description also tells what output the `Component` contains. More on
+A Turbine `Component` can be thought of as a pure and immutable
+description of all the aforementioned properties. For instance, a
+`Component` describes its DOM, similar to virtual DOM. Unlike vdom,
+however, a `Component` also describes how its DOM will change over
+time, as well as the output it will share with its parent. More on
 that later.
 
 ### Creating HTML-elements
 
 Turbine includes functions for creating components that represent
-standard HTML-elements. When you create your own components they will
-be made of these.
+standard HTML elements. These are the building blocks you will use
+to create your own custom components.
 
-The element functions accept two arguments, both of which are
-optional. The first is an object describing various things like
-attributes, classes, etc. The second argument is a child component.
-For instance, to create a div with a span child we would write.
+Each element function accepts two optional arguments. The first
+argument is an object describing HTML element attributes. The
+second allows you to specify a child component. For instance, in
+order to create a div with a child span, we would write:
 
 ```typescript
 const myDiv = div({ class: "foo" }, span("Some text"));
 ```
 
-The element functions are overloaded. So instead of giving `span` a
-component as child we can give it a string. The element functions also
-accept an array of child elements like this.
+The element functions are overloaded, allowing us to simply pass a
+string to `span`, rather than a child component. Element functions
+also accept an array of child elements in the second argument, like
+this:
 
 ```typescript
 const myDiv = div({ class: "foo" }, [h1("A header"), p("Some text")]);
